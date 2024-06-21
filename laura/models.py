@@ -1,6 +1,7 @@
 from django.db import models
 
 import laura.settings as laura_settings
+from laura.agent import Agent, AIMessage, BaseMessage, HumanMessage, SystemMessage
 
 
 class XMPPChannel(models.Model):
@@ -30,3 +31,20 @@ class XMPPMessage(models.Model):
     sender = models.CharField(max_length=255)
     role = models.CharField(max_length=255)
     body = models.TextField()
+
+    def as_message(self) -> BaseMessage:
+        if self.role == "system":
+            return SystemMessage(self.body)
+        if self.role == "assistant":
+            return AIMessage(self.body)
+        else:
+            return HumanMessage(self.body)
+
+    @classmethod
+    def from_message(cls, channel: XMPPChannel, sender: str, message: BaseMessage):
+        return cls(
+            channel=channel,
+            sender=sender,
+            role=message.role,
+            body=message.content,
+        )

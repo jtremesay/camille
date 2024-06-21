@@ -1,51 +1,25 @@
 import json
 
-from openai import OpenAI
 from slixmpp import ClientXMPP
 
 from laura import settings as laura_settings
+from laura.agent import Agent, Messages, SystemMessage
 from laura.models import XMPPChannel, XMPPMessage
 
-tools = [
-    {
-        "type": "function",
-        "function": {
-            "name": "get_current_weather",
-            "description": "Get the current weather",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "location": {
-                        "type": "string",
-                        "description": "The city and state, e.g. San Francisco, CA",
-                    },
-                },
-                "required": ["location"],
-            },
-        },
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "get_n_day_weather_forecast",
-            "description": "Get an N-day weather forecast",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "location": {
-                        "type": "string",
-                        "description": "The city and state, e.g. San Francisco, CA",
-                    },
-                    "num_days": {
-                        "type": "integer",
-                        "description": "The number of days to forecast",
-                    },
-                },
-                "required": ["location", "num_days"],
-            },
-        },
-    },
-]
+
+async def aget_llm_messages_for_channel(channel: XMPPChannel) -> Messages:
+    llm_messages = Messages()
+    llm_messages |= SystemMessage.default()
+
+    # Build the history of messages
+    xmpp_llm_messages = Messages()
+    async for xmpp_message in channel.xmppmessage_set.order_by("-timestamp")[
+        : laura_settings.LLM_MESSAGES_COUNT
+    ]:
+        xmpp_llm_messages |= xmpp_message.as_message()
+    llm_messages |= reversed(xmpp_llm_messages)
+
+    return llm_messages
 
 
 class XMPPBot(ClientXMPP):
@@ -55,11 +29,7 @@ class XMPPBot(ClientXMPP):
             laura_settings.XMPP_PASSWORD,
         )
         self.joined_channels = set()
-
-        self.openai = OpenAI(
-            api_key=laura_settings.OPENAI_API_KEY,
-            base_url=laura_settings.OPENAI_BASE_URL,
-        )
+        self.agent = Agent()
 
         # Register plugins
         self.register_plugin("xep_0045")  # MUC
@@ -170,87 +140,17 @@ class XMPPBot(ClientXMPP):
         ):
             return
 
-        await self.ai_respond(channel)
-
-    async def ai_respond(self, channel: XMPPChannel):
         # Build the history of messages
-        llm_messages = []
+        llm_messages = await aget_llm_messages_for_channel(channel)
+        response = self.agent.process(channel.get_model(), llm_messages)
+        if response is None:
+            return
 
-        # Get the last 10 messages
-        async for message in channel.xmppmessage_set.order_by("-timestamp")[
-            : laura_settings.LLM_MESSAGES_COUNT
-        ]:
-            if message.role == "assistant":
-                llm_messages.append(
-                    {
-                        "role": "assistant",
-                        "content": message.body,
-                    }
-                )
-            else:
-                llm_messages.append(
-                    {
-                        "role": message.role,
-                        "content": f"User {message.sender} says: {message.body}",
-                    }
-                )
-
-        # Add the prompt
-        llm_messages.append(
-            {
-                "role": "system",
-                "content": channel.get_prompt(),
-            }
-        )
-
-        # Reverse the list
-        llm_messages.reverse()
-
-        # Generate the response
-        print(">", channel.get_model(), llm_messages[-1]["content"])
-        completion = self.openai.chat.completions.create(
-            model=channel.get_model(),
-            messages=llm_messages,
-            stream=False,
-            tools=tools,
-        )
-        assert len(completion.choices) == 1, completion.choices
-
-        choice = completion.choices[0].message
-        import pprint
-
-        pprint.pprint(llm_messages)
-        pprint.pprint(choice)
-        if choice.tool_calls:
-            response = json.dumps(
-                [
-                    {
-                        "id": tc.id,
-                        "function": {
-                            "name": tc.function.name,
-                            "args": json.loads(tc.function.arguments),
-                        },
-                    }
-                    for tc in choice.tool_calls
-                ],
-                indent=2,
-            )
-        else:
-            response = choice.content
-        print("<", response)
-
-        # Handle the response if needed
-
-        # Save the response
-        await XMPPMessage.objects.acreate(
-            channel=channel,
-            sender=laura_settings.NAME,
-            role="assistant",
-            body=response,
-        )
+        xmpp_message = XMPPMessage.from_message(channel, laura_settings.NAME, response)
+        await xmpp_message.asave()
 
         # Send the response
-        self.send_chat_message(channel, response)
+        self.send_chat_message(channel, response.content)
 
     def send_chat_message(self, channel: XMPPChannel, message: str):
         self.send_message(mto=channel, mbody=message, mtype="groupchat")
