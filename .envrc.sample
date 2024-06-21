@@ -1,0 +1,5 @@
+layout python
+
+export OPENAI_API_KEY="xxx"
+export LAURA_XMPP_JID="xxx@xxx"
+export LAURA_XMPP_PASSWORD="xxx"

@@ -1,0 +1,4 @@
+/.direnv/
+*.pyc
+*.sqlite3
+.envrc
