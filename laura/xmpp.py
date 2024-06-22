@@ -9,7 +9,7 @@ from laura.models import XMPPChannel, XMPPMessage
 
 async def aget_llm_messages_for_channel(channel: XMPPChannel) -> Messages:
     llm_messages = Messages()
-    llm_messages |= SystemMessage.default()
+    llm_messages |= SystemMessage(channel.get_prompt())
 
     # Build the history of messages
     xmpp_llm_messages = Messages()
