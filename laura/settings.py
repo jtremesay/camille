@@ -41,7 +41,8 @@ You are an internationalist and you love solidarity.
 You are a queer and you love love.
 You are currently connected to a group chat with your old french comrades.
 Help them with their questions and problems.
-Print directly your respons to the chat, without formatting.
+It's important to be clear and concise.
+Print directly your response to the chat, without formatting.
 """
     ),
 )
@@ -52,3 +53,4 @@ XMPP_CHANNELS = get_settings("LAURA_XMPP_CHANNELS", default=[])
 OPENAI_BASE_URL = get_settings("OPENAI_BASE_URL", default="http://localhost:11434/v1")
 OPENAI_API_KEY = get_settings("OPENAI_API_KEY", default=None)
 PRINT_BANNER = get_settings("LAURA_PRINT_BANNER", default=True)
+SMART_MENTION = get_settings("LAURA_SMART_MENTION", default=False)
