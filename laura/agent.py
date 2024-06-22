@@ -7,32 +7,6 @@ from openai import OpenAI
 
 from laura import settings as laura_settings
 
-tools = [
-    {
-        "type": "function",
-        "function": {
-            "name": "get_weather",
-            "description": "Get the weather of a location",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "location": {
-                        "type": "string",
-                        "description": "The city and state, e.g. San Francisco, CA",
-                    },
-                    "num_days": {
-                        "type": "integer",
-                        "description": "The number of days to forecast",
-                        "default": 1,
-                    },
-                },
-                "required": ["location"],
-                "optional": ["num_days"],
-            },
-        },
-    },
-]
-
 
 class Messages:
     def __init__(self, messages: Optional[list["BaseMessage"]] = None):
@@ -119,7 +93,6 @@ class Agent:
             model=model,
             messages=serialized_messages,
             stream=False,
-            tools=tools,
         )
         assert len(completion.choices) == 1, completion.choices
         choice = completion.choices[0].message
