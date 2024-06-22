@@ -38,7 +38,7 @@ class XMPPMessage(models.Model):
         if self.role == "assistant":
             return AIMessage(self.body)
         else:
-            return HumanMessage(self.body)
+            return HumanMessage(f"{self.sender} says: {self.body}")
 
     @classmethod
     def from_message(cls, channel: XMPPChannel, sender: str, message: BaseMessage):
