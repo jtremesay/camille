@@ -119,23 +119,21 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 
-LAURA_LLM_MESSAGES_COUNT = 64
-LAURA_LLM_MODEL = "qwen2:7b"
-
+OPENAI_BASE_URL = "https://llm.mdb.ai/"
+LAURA_LLM_MODEL = "claude-3-haiku"
+LAURA_NEED_MENTION = False
+LAURA_LLM_MESSAGES_COUNT = 256
+LAURA_PRINT_BANNER = False
+LAURA_XMPP_CHANNELS = [
+    "ujotu@conference.perso.pw",
+]
 
 DEV = os.environ.get("DEV", "true").lower() == "true"
 print(f"DEV: {DEV}")
+
 if DEV:
-    LAURA_NEED_MENTION = False
     LAURA_XMPP_CHANNELS = [
         "arasado@conference.perso.pw",
     ]
     LAURA_PRINT_BANNER = True
-    OPENAI_BASE_URL = "https://llm.mdb.ai/"
-    LAURA_LLM_MODEL = "claude-3-haiku"
-else:
-    LAURA_NEED_MENTION = True
-    LAURA_XMPP_CHANNELS = [
-        "kakamouloxxe@conference.perso.pw",
-    ]
-    LAURA_PRINT_BANNER = False
+    LAURA_LLM_MESSAGES_COUNT = 32
