@@ -26,7 +26,7 @@ class Messages:
             return Messages(self.messages + other.messages)
 
         try:
-            return Messages(self.messages + other)
+            return Messages(self.messages + list(other))
         except TypeError as e:
             if isinstance(other, BaseMessage):
                 return Messages(self.messages + [other])
