@@ -17,6 +17,14 @@ async def aget_llm_messages_for_channel(channel: XMPPChannel) -> Messages:
         : laura_settings.LLM_MESSAGES_COUNT
     ]:
         xmpp_llm_messages |= xmpp_message.as_message()
+
+    # assistant messages before first user message are not allowed :(
+    while (
+        xmpp_llm_messages.messages
+        and xmpp_llm_messages.messages[-1].role == "assistant"
+    ):
+        xmpp_llm_messages.messages.pop()
+
     llm_messages |= reversed(xmpp_llm_messages)
 
     return llm_messages
@@ -142,7 +150,12 @@ class XMPPBot(ClientXMPP):
 
         # Build the history of messages
         llm_messages = await aget_llm_messages_for_channel(channel)
-        response = self.agent.process(channel.get_model(), llm_messages)
+        try:
+            response = self.agent.process(channel.get_model(), llm_messages)
+        except Exception as e:
+            self.send_chat_message(channel, f"ERRO CRÍTICO: {e}")
+            return
+
         if response is None:
             return
 
