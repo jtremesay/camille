@@ -87,34 +87,20 @@ class Agent:
     def process(self, model: str, messages: Messages) -> Optional[AIMessage]:
         # Generate the response
         serialized_messages = messages.serialize()
-        pprint.pprint(serialized_messages)
-        print(">", model, serialized_messages)
+        # pprint.pprint(serialized_messages)
+        print(">", model, messages.messages[-1].content)
         completion = self.openai.chat.completions.create(
             model=model,
             messages=serialized_messages,
             stream=False,
         )
-        assert len(completion.choices) == 1, completion.choices
-        choice = completion.choices[0].message
-        pprint.pprint(choice)
+        try:
+            choice = completion.choices[0].message
+        except AttributeError:
+            raise RuntimeError("Unexpected response from OpenAI", completion.choices)
+        # pprint.pprint(choice)
 
-        # Handle the response if needed
-        if choice.tool_calls:
-            response = json.dumps(
-                [
-                    {
-                        "id": tc.id,
-                        "function": {
-                            "name": tc.function.name,
-                            "args": json.loads(tc.function.arguments),
-                        },
-                    }
-                    for tc in choice.tool_calls
-                ],
-                indent=2,
-            )
-        else:
-            response = choice.content
+        response = choice.content
         print("<", response)
 
         return AIMessage(response)
