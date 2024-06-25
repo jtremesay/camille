@@ -1,0 +1,50 @@
+# Camille - An AI assistant
+# Copyright (C) 2024 Jonathan Tremesaygues <jonathan.tremesaygues@slaanesh.org>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+services:
+  postgres:
+    image: "postgres:16"
+    environment:
+      - "POSTGRES_USER=camille"
+      - "POSTGRES_PASSWORD=camille"
+      - "POSTGRES_DB=camille"
+    volumes:
+      - "postgres_data:/var/lib/postgresql/data"
+
+  camille:
+    build: .
+    environment:
+      - "DATABASE_URL=postgres://camille:camille@postgres:5432/camille"
+      - "OPENAI_BASE_URL=https://llm.mdb.ai/"
+      - "OPENAI_API_KEY_FILE=/run/secrets/openai_api_key"
+      - "CAMILLE_XMPP_JID=laura.killoudotir@perso.pw"
+      - "CAMILLE_XMPP_PASSWORD_FILE=/run/secrets/camille_xmpp_password"
+      - "CAMILLE_XMPP_CHANNELS=ujotu@conference.perso.pw"
+    secrets:
+      - "openai_api_key"
+      - "camille_xmpp_password"
+
+volumes:
+  openwebui_data:
+  ollama_data:
+  mindsdb_data:
+  postgres_data:
+
+
+secrets:
+  camille_xmpp_password:
+    external: true
+  openai_api_key:
+    external: true
