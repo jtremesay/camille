@@ -30,12 +30,14 @@ services:
       - "DATABASE_URL=postgres://camille:camille@postgres:5432/camille"
       - "OPENAI_BASE_URL=https://llm.mdb.ai/"
       - "OPENAI_API_KEY_FILE=/run/secrets/openai_api_key"
-      - "CAMILLE_XMPP_JID=laura.killoudotir@perso.pw"
+      - "CAMILLE_XMPP_JID_FILE=/run/secrets/camille_xmpp_jid"
       - "CAMILLE_XMPP_PASSWORD_FILE=/run/secrets/camille_xmpp_password"
-      - "CAMILLE_XMPP_CHANNELS=ujotu@conference.perso.pw"
+      - "CAMILLE_XMPP_CHANNELS_FILE=/run/secrets/camille_xmpp_channels"
     secrets:
       - "openai_api_key"
+      - "camille_xmpp_jid"
       - "camille_xmpp_password"
+      - "camille_xmpp_channels"
 
 volumes:
   openwebui_data:
@@ -45,7 +47,11 @@ volumes:
 
 
 secrets:
+  camille_xmpp_jid:
+    external: true
   camille_xmpp_password:
+    external: true
+  camille_xmpp_channels:
     external: true
   openai_api_key:
     external: true
