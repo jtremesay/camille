@@ -25,7 +25,7 @@ services:
       - "postgres_data:/var/lib/postgresql/data"
 
   camille:
-    build: .
+    image: "killruana/camille:main"
     environment:
       - "DATABASE_URL=postgres://camille:camille@postgres:5432/camille"
       - "OPENAI_BASE_URL=https://llm.mdb.ai/"
