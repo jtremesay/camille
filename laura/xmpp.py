@@ -192,5 +192,5 @@ class XMPPBot(ClientXMPP):
             channel = (await XMPPChannel.objects.aget_or_create(jid=channel_jid))[0]
 
             if laura_settings.PRINT_BANNER:
-                body = f"Language Analysis and Understanding Robot Assistant / model '{channel.get_model()}' / Ready to assist!"
+                body = f"Language Analysis and Understanding Robot Assistant / model '{channel.get_model()}' / {laura_settings.LLM_MESSAGES_COUNT} msgs / Ready to assist!"
                 msg.reply(body).send()
