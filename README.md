@@ -41,7 +41,7 @@ Default: `"gemini-1.5-pro"`
 
 Conversation history window size. 
 
-Default: `128`
+Default: `64`
 
 ### CAMILLE_XMPP_JID
 
