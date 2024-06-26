@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # Camille - An AI assistant
 # Copyright (C) 2024 Jonathan Tremesaygues <jonathan.tremesaygues@slaanesh.org>
 #
@@ -21,6 +20,27 @@ from typing import Optional, Union
 from openai import OpenAI
 
 from camille import settings as camille_settings
+
+tools = [
+    {
+        "type": "function",
+        "function": {
+            "name": "get_weather",
+            "description": "Get the weather in a given location, up to n days in the future.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "location": {
+                        "type": "string",
+                        "description": "The city and state, e.g. San Francisco, CA",
+                    },
+                    "n": {"type": "int", "enum": ["celsius", "fahrenheit"]},
+                },
+                "required": ["location"],
+            },
+        },
+    }
+]
 
 
 class Messages:

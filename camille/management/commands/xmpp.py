@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # Camille - An AI assistant
 # Copyright (C) 2024 Jonathan Tremesaygues <jonathan.tremesaygues@slaanesh.org>
 #
