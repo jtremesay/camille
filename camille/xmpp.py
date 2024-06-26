@@ -14,6 +14,7 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
+from django.db import close_old_connections
 from slixmpp import ClientXMPP
 
 from camille import settings as camille_settings
@@ -61,7 +62,7 @@ class XMPPBot(ClientXMPP):
 
         # Register event handlers
         self.add_event_handler("session_start", self.on_session_start)
-        self.add_event_handler("message", self.on_message)
+        # self.add_event_handler("message", self.on_message)
         self.add_event_handler("groupchat_message", self.on_groupchat_message)
         self.add_event_handler("groupchat_subject", self.on_groupchat_subject)
 
@@ -74,11 +75,15 @@ class XMPPBot(ClientXMPP):
             print(f"Joining channel {channel}")
             await self.plugin["xep_0045"].join_muc(channel, camille_settings.NAME)
 
-    async def on_message(self, msg):
-        # print("on_message", msg)
-        ...
+    # async def on_message(self, msg):
+    #     close_old_connections()
+
+    #     # print("on_message", msg)
+    #     ...
 
     async def on_groupchat_message(self, msg):
+        close_old_connections()
+
         # print("on_groupchat_message", msg)
         # Ignore our own message
         sender = msg["from"].resource
@@ -115,9 +120,13 @@ class XMPPBot(ClientXMPP):
         self.send_chat_message(channel, response.content)
 
     def send_chat_message(self, channel: XMPPChannel, message: str):
+        close_old_connections()
+
         self.send_message(mto=channel, mbody=message, mtype="groupchat")
 
     async def on_groupchat_subject(self, msg):
+        close_old_connections()
+
         # The subject is sent when updated or joining a channel
         # Use the later to detect joining
 
