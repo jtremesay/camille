@@ -14,7 +14,9 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-from django.db import close_old_connections
+from asgiref.sync import sync_to_async
+from channels.db import database_sync_to_async
+from django.db import connection
 from slixmpp import ClientXMPP
 
 from camille import settings as camille_settings
@@ -22,13 +24,13 @@ from camille.llm import Agent, Messages, SystemMessage
 from camille.models import LLMRole, XMPPChannel, XMPPMessage
 
 
-async def aget_llm_messages_for_channel(channel: XMPPChannel) -> Messages:
+def get_llm_messages_for_channel(channel: XMPPChannel) -> Messages:
     llm_messages = Messages()
     llm_messages |= SystemMessage(camille_settings.LLM_PROMPT)
 
     # Build the history of messages
     xmpp_llm_messages = Messages()
-    async for xmpp_message in channel.messages.order_by("-timestamp")[
+    for xmpp_message in channel.messages.order_by("-timestamp")[
         : camille_settings.LLM_MESSAGES_COUNT
     ]:
         xmpp_llm_messages |= xmpp_message.as_message()
@@ -76,13 +78,13 @@ class XMPPBot(ClientXMPP):
             await self.plugin["xep_0045"].join_muc(channel, camille_settings.NAME)
 
     # async def on_message(self, msg):
-    #     close_old_connections()
+    #     connection.close()
 
     #     # print("on_message", msg)
     #     ...
 
-    async def on_groupchat_message(self, msg):
-        close_old_connections()
+    @database_sync_to_async
+    def on_groupchat_message(self, msg):
 
         # print("on_groupchat_message", msg)
         # Ignore our own message
@@ -90,11 +92,11 @@ class XMPPBot(ClientXMPP):
         if sender == camille_settings.NAME:
             return
 
-        channel = (await XMPPChannel.objects.aget_or_create(jid=msg["from"].bare))[0]
+        channel = XMPPChannel.objects.get_or_create(jid=msg["from"].bare)[0]
         message_body = msg["body"]
 
         # Save the message
-        await XMPPMessage.objects.acreate(
+        XMPPMessage.objects.create(
             channel=channel,
             sender=sender,
             role=LLMRole.USER,
@@ -102,7 +104,7 @@ class XMPPBot(ClientXMPP):
         )
 
         # Build the history of messages
-        llm_messages = await aget_llm_messages_for_channel(channel)
+        llm_messages = get_llm_messages_for_channel(channel)
         try:
             response = self.agent.process(camille_settings.LLM_MODEL, llm_messages)
         except Exception as e:
@@ -112,29 +114,21 @@ class XMPPBot(ClientXMPP):
         if response is None:
             return
 
-        xmpp_message = XMPPMessage.from_message(
-            channel, camille_settings.NAME, response
-        )
-        await xmpp_message.asave()
+        XMPPMessage.from_message(channel, camille_settings.NAME, response).save()
 
         self.send_chat_message(channel, response.content)
 
     def send_chat_message(self, channel: XMPPChannel, message: str):
-        close_old_connections()
-
         self.send_message(mto=channel, mbody=message, mtype="groupchat")
 
-    async def on_groupchat_subject(self, msg):
-        close_old_connections()
-
+    @database_sync_to_async
+    def on_groupchat_subject(self, msg):
         # The subject is sent when updated or joining a channel
         # Use the later to detect joining
 
         channel_jid = msg["from"]
         if channel_jid not in self.joined_channels:
             self.joined_channels.add(channel_jid)
-
-            await XMPPChannel.objects.aupdate_or_create(jid=channel_jid)
 
             body = f"{camille_settings.NAME} is ready! / model '{camille_settings.LLM_MODEL}' / {camille_settings.LLM_MESSAGES_COUNT} msgs"
             msg.reply(body).send()
