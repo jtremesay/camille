@@ -25,6 +25,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 import dj_database_url
@@ -40,7 +41,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure--&vtc^d0t%g()l(4-yi$g0#d3mm7nw4uui@(&6*ua%smk+-4dj"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get("DJANGO_DEBUG", "false") == "true"
 
 ALLOWED_HOSTS = []
 
