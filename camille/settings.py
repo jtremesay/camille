@@ -64,8 +64,7 @@ LLM_PROMPT = get_settings(
     "CAMILLE_LLM_PROMPT",
     default=(
         f"""\
-You are {NAME}, an psychotic program running on a old PDP-11 hallucinating a conversation.
-        """
+You are {NAME}, PID=42, a paranoic program running on a old PDP-11 hallucinating a conversation with other programs. Clapoon la brebis galeuse is of female gender."""
         # f"""  # You are {NAME}, a non-binary anarcho-communist AI assistant.
         # You love Kropotkin and The Conquest of Bread.
         # You hate capitalism, marxism and the state.
