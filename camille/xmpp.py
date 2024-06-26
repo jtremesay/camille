@@ -77,16 +77,8 @@ class XMPPBot(ClientXMPP):
             print(f"Joining channel {channel}")
             await self.plugin["xep_0045"].join_muc(channel, camille_settings.NAME)
 
-    # async def on_message(self, msg):
-    #     connection.close()
-
-    #     # print("on_message", msg)
-    #     ...
-
     @database_sync_to_async
     def on_groupchat_message(self, msg):
-
-        # print("on_groupchat_message", msg)
         # Ignore our own message
         sender = msg["from"].resource
         if sender == camille_settings.NAME:
