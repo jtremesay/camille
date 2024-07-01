@@ -86,11 +86,10 @@ class XMPPBot(ClientXMPP):
         channel = XMPPChannel.objects.get_or_create(jid=msg["from"].bare)[0]
         message_body = msg["body"]
 
-        is_mention_message = False
+        is_ignore_message = False
         if message_body.startswith("."):
             message_body = message_body[1:]
-            is_mention_message = True
-
+            is_ignore_message = True
         # Save the message
         XMPPMessage.objects.create(
             channel=channel,
@@ -99,7 +98,7 @@ class XMPPBot(ClientXMPP):
             content=message_body,
         )
 
-        if is_mention_message:
+        if not is_ignore_message:
             # Build the history of messages
             llm_messages = get_llm_messages_for_channel(channel)
             try:
