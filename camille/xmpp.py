@@ -86,6 +86,11 @@ class XMPPBot(ClientXMPP):
         channel = XMPPChannel.objects.get_or_create(jid=msg["from"].bare)[0]
         message_body = msg["body"]
 
+        is_mention_message = False
+        if message_body.startswith("."):
+            message_body = message_body[1:]
+            is_mention_message = True
+
         # Save the message
         XMPPMessage.objects.create(
             channel=channel,
@@ -94,20 +99,21 @@ class XMPPBot(ClientXMPP):
             content=message_body,
         )
 
-        # Build the history of messages
-        llm_messages = get_llm_messages_for_channel(channel)
-        try:
-            response = self.agent.process(camille_settings.LLM_MODEL, llm_messages)
-        except Exception as e:
-            self.send_chat_message(channel, f"ERRO CRÍTICO: {e}")
-            return
+        if is_mention_message:
+            # Build the history of messages
+            llm_messages = get_llm_messages_for_channel(channel)
+            try:
+                response = self.agent.process(camille_settings.LLM_MODEL, llm_messages)
+            except Exception as e:
+                self.send_chat_message(channel, f"ERRO CRÍTICO: {e}")
+                return
 
-        if response is None:
-            return
+            if response is None:
+                return
 
-        XMPPMessage.from_message(channel, camille_settings.NAME, response).save()
+            XMPPMessage.from_message(channel, camille_settings.NAME, response).save()
 
-        self.send_chat_message(channel, response.content)
+            self.send_chat_message(channel, response.content)
 
     def send_chat_message(self, channel: XMPPChannel, message: str):
         self.send_message(mto=channel, mbody=message, mtype="groupchat")
