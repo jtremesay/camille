@@ -28,6 +28,8 @@ class XMPPChannel(models.Model):
     # Could be an user or a muc
     jid = models.CharField(max_length=255, unique=True)
 
+    prompt = models.TextField(default="")
+
     def __str__(self):
         return self.jid
 

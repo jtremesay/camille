@@ -25,9 +25,11 @@ from camille.models import LLMRole, XMPPChannel, XMPPMessage
 
 def get_llm_messages_for_channel(channel: XMPPChannel) -> Messages:
     llm_messages = Messages()
-    llm_messages |= SystemMessage(camille_settings.LLM_PROMPT)
+    llm_messages |= SystemMessage(
+        channel.prompt if channel.prompt else camille_settings.LLM_PROMPT
+    )
 
-    # Build the history of messages
+    # Build the history of messags
     xmpp_llm_messages = Messages()
     for xmpp_message in channel.messages.order_by("-timestamp")[
         : camille_settings.LLM_MESSAGES_COUNT

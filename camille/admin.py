@@ -21,7 +21,7 @@ from camille.models import XMPPChannel, XMPPMessage
 # Register your models here.
 @admin.register(XMPPChannel)
 class XMPPChannelAdmin(admin.ModelAdmin):
-    list_display = ("jid",)
+    list_display = ("jid", "prompt")
 
 
 @admin.register(XMPPMessage)
