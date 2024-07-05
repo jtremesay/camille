@@ -21,6 +21,8 @@ services:
       - "POSTGRES_USER=camille"
       - "POSTGRES_PASSWORD=camille"
       - "POSTGRES_DB=camille"
+    networks:
+      - "database"
     volumes:
       - "postgres_data:/var/lib/postgresql/data"
 
@@ -41,6 +43,9 @@ services:
       - "camille_xmpp_jid"
       - "camille_xmpp_password"
       - "camille_xmpp_channels"
+    networks:
+      - "database"
+      - "traefik_public"
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.camille.entrypoints=websecure"
@@ -61,6 +66,8 @@ services:
       - "CAMILLE_XMPP_JID_FILE=/run/secrets/camille_xmpp_jid"
       - "CAMILLE_XMPP_PASSWORD_FILE=/run/secrets/camille_xmpp_password"
       - "CAMILLE_XMPP_CHANNELS_FILE=/run/secrets/camille_xmpp_channels"
+    networks:
+      - "database"
     secrets:
       - "openai_api_key"
       - "camille_secret_key"
@@ -74,6 +81,11 @@ volumes:
   mindsdb_data:
   postgres_data:
 
+
+networks:
+  database:
+  traefik_public:
+    external: true
 
 secrets:
   camille_secret_key:
