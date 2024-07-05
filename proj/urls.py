@@ -32,6 +32,12 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
+
+def my_view(request):
+    raise ValueError("An error occurred")
+
+
 urlpatterns = [
+    path("error", my_view),
     path("admin/", admin.site.urls),
 ]
