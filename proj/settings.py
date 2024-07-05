@@ -55,9 +55,11 @@ if not DEBUG and SECRET_KEY.startswith("django-insecure-"):
 
 
 ALLOWED_HOSTS = get_settings("ALLOWED_HOSTS", separator=",", default=["localhost"])
-CSRF_TRUSTED_ORIGINS = ALLOWED_HOSTS
-# Application definition
+CSRF_TRUSTED_ORIGINS = [
+    ("https://" if a != "localhost" else "http://") + a for a in ALLOWED_HOSTS
+]
 
+# Application definition
 INSTALLED_APPS = [
     "daphne",
     "django.contrib.admin",
