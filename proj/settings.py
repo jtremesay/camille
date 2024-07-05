@@ -55,7 +55,7 @@ if not DEBUG and SECRET_KEY.startswith("django-insecure-"):
 
 
 ALLOWED_HOSTS = get_settings("ALLOWED_HOSTS", separator=",", default=["localhost"])
-
+CSRF_TRUSTED_ORIGINS = ALLOWED_HOSTS
 # Application definition
 
 INSTALLED_APPS = [
