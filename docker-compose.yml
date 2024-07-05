@@ -37,6 +37,7 @@ services:
       - "CAMILLE_XMPP_JID_FILE=/run/secrets/camille_xmpp_jid"
       - "CAMILLE_XMPP_PASSWORD_FILE=/run/secrets/camille_xmpp_password"
       - "CAMILLE_XMPP_CHANNELS_FILE=/run/secrets/camille_xmpp_channels"
+      - "DJANGO_DEBUG=true"
     secrets:
       - "openai_api_key"
       - "camille_secret_key"
