@@ -38,6 +38,5 @@ def my_view(request):
 
 
 urlpatterns = [
-    path("error", my_view),
     path("admin/", admin.site.urls),
 ]
