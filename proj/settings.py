@@ -30,6 +30,8 @@ from pathlib import Path
 
 import dj_database_url
 
+from camille.settings_utils import get_settings
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -37,14 +39,21 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure--&vtc^d0t%g()l(4-yi$g0#d3mm7nw4uui@(&6*ua%smk+-4dj"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DJANGO_DEBUG", "false") == "true"
 
-ALLOWED_HOSTS = []
 
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = get_settings(
+    "SECRET_KEY",
+    default="django-insecure--&vtc^d0t%g()l(4-yi$g0#d3mm7nw4uui@(&6*ua%smk+-4dj",
+)
+if not DEBUG and SECRET_KEY.startswith("django-insecure-"):
+    raise ValueError("SECRET_KEY must be set in production.")
+
+
+ALLOWED_HOSTS = get_settings("ALLOWED_HOSTS", separator=",", default=["localhost"])
 
 # Application definition
 

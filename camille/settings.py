@@ -13,47 +13,7 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-import os
-from pathlib import Path
-
-from django.conf import settings
-
-
-def get_settings(key, **kwargs):
-    # In order of precedence:
-    # - docker secret
-    # - environment variable
-    # - settings.py
-    # - default value
-    # - raise error
-    can_split = False
-    try:
-        val = os.environ[key]
-        can_split = True
-    except KeyError:
-        try:
-            secret_key = os.environ[f"{key}_FILE"]
-            val = Path(secret_key).read_text()
-            can_split = True
-        except KeyError:
-            try:
-                val = getattr(settings, key)
-                can_split = False
-            except AttributeError:
-                try:
-                    val = kwargs["default"]
-                    can_split = False
-                except KeyError:
-                    raise RuntimeError(
-                        f"settings key {key} is not defined and no default value was provided"
-                    )
-    if can_split:
-        separator = kwargs.get("separator", None)
-        if separator is not None:
-            return val.split(separator)
-
-    return val
-
+from camille.settings_utils import get_settings
 
 NAME = get_settings("CAMILLE_NAME", default="Camille")
 OPENAI_API_KEY = get_settings("OPENAI_API_KEY")
