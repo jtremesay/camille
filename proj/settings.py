@@ -48,6 +48,7 @@ DEBUG = os.environ.get("DJANGO_DEBUG", "false") == "true"
 SECRET_KEY = get_settings(
     "SECRET_KEY",
     default="django-insecure--&vtc^d0t%g()l(4-yi$g0#d3mm7nw4uui@(&6*ua%smk+-4dj",
+    dont_use_settings=True,
 )
 if not DEBUG and SECRET_KEY.startswith("django-insecure-"):
     raise ValueError("SECRET_KEY must be set in production.")
@@ -58,17 +59,20 @@ ALLOWED_HOSTS = get_settings("ALLOWED_HOSTS", separator=",", default=["localhost
 # Application definition
 
 INSTALLED_APPS = [
+    "daphne",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
+    "whitenoise.runserver_nostatic",
     "django.contrib.staticfiles",
     "camille",
 ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -103,6 +107,19 @@ WSGI_APPLICATION = "proj.wsgi.application"
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 DATABASES = {"default": dj_database_url.config(default="sqlite:///db.sqlite3")}
+
+# Storage
+# https://docs.djangoproject.com/en/5.0/ref/settings/#storages
+
+
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 
 
 # Password validation

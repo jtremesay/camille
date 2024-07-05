@@ -37,6 +37,9 @@ def get_settings(key, **kwargs):
             can_split = True
         except KeyError:
             try:
+                if kwargs.get("dont_use_settings", False):
+                    raise AttributeError
+
                 val = getattr(settings, key)
                 can_split = False
             except AttributeError:

@@ -31,5 +31,15 @@ COPY manage.py entrypoint.sh ./
 COPY proj/ proj/
 COPY camille/ camille/
 
+# Theses variables need to exists before using manage.py
+ARG SECRET_KEY="build-key"
+ARG OPENAI_API_KEY=
+ARG OPENAI_BASE_URL=
+ARG CAMILLE_XMPP_JID=
+ARG CAMILLE_XMPP_PASSWORD=
+
+# Collect static files
+RUN python3 manage.py collectstatic --noinput
+
 ENTRYPOINT [ "/opt/laura/entrypoint.sh" ]
-CMD [ "python3", "manage.py", "xmpp"]
+CMD [ "daphne", "-b", "0.0.0.0", "proj.asgi:application"]

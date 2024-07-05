@@ -24,8 +24,34 @@ services:
     volumes:
       - "postgres_data:/var/lib/postgresql/data"
 
-  camille:
+  camille-web:
     image: "killruana/camille:main"
+    environment:
+      - "DATABASE_URL=postgres://camille:camille@postgres:5432/camille"
+      - "OPENAI_BASE_URL=https://llm.mdb.ai/"
+      - "ALLOWED_HOSTS=camille.jtremesay.org,camille.slaanesh.org"
+      - "SECRET_KEY_FILE=/run/secrets/camille_secret_key"
+      - "OPENAI_API_KEY_FILE=/run/secrets/openai_api_key"
+      - "CAMILLE_XMPP_JID_FILE=/run/secrets/camille_xmpp_jid"
+      - "CAMILLE_XMPP_PASSWORD_FILE=/run/secrets/camille_xmpp_password"
+      - "CAMILLE_XMPP_CHANNELS_FILE=/run/secrets/camille_xmpp_channels"
+    secrets:
+      - "openai_api_key"
+      - "camille_secret_key"
+      - "camille_xmpp_jid"
+      - "camille_xmpp_password"
+      - "camille_xmpp_channels"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.camille.entrypoints=websecure"
+      - "traefik.http.routers.camille.rule=Host(`camille.jtremesay.org`) || Host(`camille.slaanesh.org`)"
+      - "traefik.http.routers.camille.service=camille"
+      - "traefik.http.routers.camille.tls.certresolver=leresolver"
+      - "traefik.http.services.camille.loadbalancer.server.port=8000"
+
+  camille-xmpp:
+    image: "killruana/camille:main"
+    command: [ "python3", "manage.py", "xmpp" ]
     environment:
       - "DATABASE_URL=postgres://camille:camille@postgres:5432/camille"
       - "OPENAI_BASE_URL=https://llm.mdb.ai/"
