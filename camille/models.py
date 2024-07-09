@@ -41,7 +41,6 @@ class XMPPChannel(models.Model):
                 ]
             )
         )
-        print(xmpp_messages)
         while xmpp_messages and xmpp_messages[0].role == LLMRole.ASSISTANT:
             xmpp_messages.pop(0)
 
@@ -52,7 +51,6 @@ class XMPPChannel(models.Model):
             }
         ]
         for xmpp_message in xmpp_messages:
-            print(xmpp_message)
             llm_message = {
                 "role": xmpp_message.role,
                 "content": xmpp_message.content,
