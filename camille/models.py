@@ -15,7 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from django.db import models
 
-from camille.llm import AIMessage, BaseMessage, HumanMessage, SystemMessage
+from camille import settings as camille_settings
 
 
 class LLMRole(models.TextChoices):
@@ -33,6 +33,37 @@ class XMPPChannel(models.Model):
     def __str__(self):
         return self.jid
 
+    def llm_messages(self):
+        xmpp_messages = list(
+            reversed(
+                self.messages.order_by("-timestamp")[
+                    : camille_settings.LLM_MESSAGES_COUNT
+                ]
+            )
+        )
+        print(xmpp_messages)
+        while xmpp_messages and xmpp_messages[0].role == LLMRole.ASSISTANT:
+            xmpp_messages.pop(0)
+
+        llm_messages = [
+            {
+                "role": LLMRole.SYSTEM,
+                "content": self.prompt if self.prompt else camille_settings.LLM_PROMPT,
+            }
+        ]
+        for xmpp_message in xmpp_messages:
+            print(xmpp_message)
+            llm_message = {
+                "role": xmpp_message.role,
+                "content": xmpp_message.content,
+            }
+            if xmpp_message.role == LLMRole.USER:
+                llm_message["name"] = xmpp_message.sender
+
+            llm_messages.append(llm_message)
+
+        return llm_messages
+
 
 class XMPPMessage(models.Model):
     channel = models.ForeignKey(
@@ -47,20 +78,3 @@ class XMPPMessage(models.Model):
         max_length=255, choices=LLMRole.choices, default=LLMRole.USER
     )
     content = models.TextField()
-
-    def as_message(self) -> BaseMessage:
-        if self.role == LLMRole.SYSTEM:
-            return SystemMessage(self.body)
-        if self.role == LLMRole.ASSISTANT:
-            return AIMessage(self.content)
-        else:
-            return HumanMessage(f"{self.sender} says: {self.content}")
-
-    @classmethod
-    def from_message(cls, channel: XMPPChannel, sender: str, message: BaseMessage):
-        return cls(
-            channel=channel,
-            sender=sender,
-            role=message.role,
-            content=message.content,
-        )

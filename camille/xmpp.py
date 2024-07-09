@@ -15,37 +15,11 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from asgiref.sync import sync_to_async
 from channels.db import database_sync_to_async
-from django.db import connection
 from slixmpp import ClientXMPP
 
 from camille import settings as camille_settings
-from camille.llm import Agent, Messages, SystemMessage
+from camille.llm import Agent
 from camille.models import LLMRole, XMPPChannel, XMPPMessage
-
-
-def get_llm_messages_for_channel(channel: XMPPChannel) -> Messages:
-    llm_messages = Messages()
-    llm_messages |= SystemMessage(
-        channel.prompt if channel.prompt else camille_settings.LLM_PROMPT
-    )
-
-    # Build the history of messags
-    xmpp_llm_messages = Messages()
-    for xmpp_message in channel.messages.order_by("-timestamp")[
-        : camille_settings.LLM_MESSAGES_COUNT
-    ]:
-        xmpp_llm_messages |= xmpp_message.as_message()
-
-    # assistant messages before first user message are not allowed :(
-    while (
-        xmpp_llm_messages.messages
-        and xmpp_llm_messages.messages[-1].role == LLMRole.ASSISTANT
-    ):
-        xmpp_llm_messages.messages.pop()
-
-    llm_messages |= reversed(xmpp_llm_messages)
-
-    return llm_messages
 
 
 class XMPPBot(ClientXMPP):
@@ -102,7 +76,7 @@ class XMPPBot(ClientXMPP):
 
         if not is_ignore_message:
             # Build the history of messages
-            llm_messages = get_llm_messages_for_channel(channel)
+            llm_messages = channel.llm_messages()
             try:
                 response = self.agent.process(camille_settings.LLM_MODEL, llm_messages)
             except Exception as e:
@@ -112,9 +86,14 @@ class XMPPBot(ClientXMPP):
             if response is None:
                 return
 
-            XMPPMessage.from_message(channel, camille_settings.NAME, response).save()
+            XMPPMessage.objects.create(
+                channel=channel,
+                sender=camille_settings.NAME,
+                role=LLMRole.ASSISTANT,
+                content=response,
+            ).save()
 
-            self.send_chat_message(channel, response.content)
+            self.send_chat_message(channel, response)
 
     def send_chat_message(self, channel: XMPPChannel, message: str):
         self.send_message(mto=channel, mbody=message, mtype="groupchat")
