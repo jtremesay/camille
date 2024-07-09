@@ -15,7 +15,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from collections.abc import Mapping, Sequence
-from typing import Optional
 
 from openai import OpenAI
 
