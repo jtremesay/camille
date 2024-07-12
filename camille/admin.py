@@ -17,11 +17,18 @@ from django.contrib import admin
 
 from camille.models import XMPPChannel, XMPPMessage
 
-
 # Register your models here.
+
+
+@admin.action(description="Purge selected channels")
+def purge_channel(modeladmin, request, queryset):
+    XMPPMessage.objects.filter(channel__in=queryset).delete()
+
+
 @admin.register(XMPPChannel)
 class XMPPChannelAdmin(admin.ModelAdmin):
     list_display = ("jid", "prompt")
+    actions = [purge_channel]
 
 
 @admin.register(XMPPMessage)
