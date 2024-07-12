@@ -53,10 +53,14 @@ class XMPPChannel(models.Model):
         for xmpp_message in xmpp_messages:
             llm_message = {
                 "role": xmpp_message.role,
-                "content": xmpp_message.content,
             }
             if xmpp_message.role == LLMRole.USER:
                 llm_message["name"] = xmpp_message.sender
+                llm_message["content"] = (
+                    f"{xmpp_message.sender} says: {xmpp_message.content}"
+                )
+            else:
+                llm_message["content"] = xmpp_message.content
 
             llm_messages.append(llm_message)
 

@@ -18,7 +18,8 @@ from camille.settings_utils import get_settings
 NAME = get_settings("CAMILLE_NAME", default="Camille")
 OPENAI_API_KEY = get_settings("OPENAI_API_KEY")
 OPENAI_BASE_URL = get_settings("OPENAI_BASE_URL")
-LLM_MODEL = get_settings("CAMILLE_LLM_MODEL", default="gpt-3.5-turbo")
+# LLM_MODEL = get_settings("CAMILLE_LLM_MODEL", default="gpt-3.5-turbo")
+LLM_MODEL = get_settings("CAMILLE_LLM_MODEL", default="gemini-1.5-pro")
 LLM_MESSAGES_COUNT = get_settings("CAMILLE_LLM_MESSAGES_COUNT", default=64)
 LLM_PROMPT = get_settings(
     "CAMILLE_LLM_PROMPT",
