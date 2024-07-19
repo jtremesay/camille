@@ -33,8 +33,8 @@ services:
       - "OPENAI_BASE_URL=https://llm.mdb.ai/"
       - "ALLOWED_HOSTS=camille.jtremesay.org,camille.slaanesh.org"
       - "SECRET_KEY_FILE=/run/secrets/camille_secret_key"
-      - "OPENAI_API_KEY_FILE=/run/secrets/openai_api_key"
       - "GOOGLE_API_KEY_FILE=/run/secrets/google_api_key"
+      - "OPENAI_API_KEY_FILE=/run/secrets/openai_api_key"
       - "CAMILLE_XMPP_JID_FILE=/run/secrets/camille_xmpp_jid"
       - "CAMILLE_XMPP_PASSWORD_FILE=/run/secrets/camille_xmpp_password"
       - "CAMILLE_XMPP_CHANNELS_FILE=/run/secrets/camille_xmpp_channels"
@@ -64,6 +64,7 @@ services:
       - "OPENAI_BASE_URL=https://llm.mdb.ai/"
       - "ALLOWED_HOSTS=camille.jtremesay.org,camille.slaanesh.org"
       - "SECRET_KEY_FILE=/run/secrets/camille_secret_key"
+      - "GOOGLE_API_KEY_FILE=/run/secrets/google_api_key"
       - "OPENAI_API_KEY_FILE=/run/secrets/openai_api_key"
       - "CAMILLE_XMPP_JID_FILE=/run/secrets/camille_xmpp_jid"
       - "CAMILLE_XMPP_PASSWORD_FILE=/run/secrets/camille_xmpp_password"
@@ -71,6 +72,7 @@ services:
     networks:
       - "database"
     secrets:
+      - "google_api_key"
       - "openai_api_key"
       - "camille_secret_key"
       - "camille_xmpp_jid"
