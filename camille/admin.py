@@ -27,7 +27,7 @@ def purge_channel(modeladmin, request, queryset):
 
 @admin.register(XMPPChannel)
 class XMPPChannelAdmin(admin.ModelAdmin):
-    list_display = ("jid", "prompt")
+    list_display = ("jid", "_prompt")
     actions = [purge_channel]
 
 

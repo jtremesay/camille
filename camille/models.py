@@ -28,43 +28,18 @@ class XMPPChannel(models.Model):
     # Could be an user or a muc
     jid = models.CharField(max_length=255, unique=True)
 
-    prompt = models.TextField(default="")
+    _prompt = models.TextField(default="")
 
     def __str__(self):
         return self.jid
 
-    def llm_messages(self):
-        xmpp_messages = list(
-            reversed(
-                self.messages.order_by("-timestamp")[
-                    : camille_settings.LLM_MESSAGES_COUNT
-                ]
-            )
-        )
-        while xmpp_messages and xmpp_messages[0].role == LLMRole.ASSISTANT:
-            xmpp_messages.pop(0)
+    @property
+    def prompt(self):
+        return self._prompt or camille_settings.LLM_PROMPT
 
-        llm_messages = [
-            {
-                "role": LLMRole.SYSTEM,
-                "content": self.prompt if self.prompt else camille_settings.LLM_PROMPT,
-            }
-        ]
-        for xmpp_message in xmpp_messages:
-            llm_message = {
-                "role": xmpp_message.role,
-            }
-            if xmpp_message.role == LLMRole.USER:
-                llm_message["name"] = xmpp_message.sender
-                llm_message["content"] = (
-                    f"{xmpp_message.sender} says: {xmpp_message.content}"
-                )
-            else:
-                llm_message["content"] = xmpp_message.content
-
-            llm_messages.append(llm_message)
-
-        return llm_messages
+    @prompt.setter
+    def prompt(self, value):
+        self._prompt = value
 
 
 class XMPPMessage(models.Model):

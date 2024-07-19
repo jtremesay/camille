@@ -18,7 +18,7 @@ from channels.db import database_sync_to_async
 from slixmpp import ClientXMPP
 
 from camille import settings as camille_settings
-from camille.llm import Agent
+from camille.llm import AgentGemini, AgentOpenAI
 from camille.models import LLMRole, XMPPChannel, XMPPMessage
 
 
@@ -30,7 +30,13 @@ class XMPPBot(ClientXMPP):
             camille_settings.XMPP_PASSWORD,
         )
         self.joined_channels = set()
-        self.agent = Agent()
+
+        if camille_settings.LLM_PROVIDER == "openai":
+            self.agent = AgentOpenAI()
+        elif camille_settings.LLM_PROVIDER == "google":
+            self.agent = AgentGemini()
+        else:
+            raise ValueError(f"Invalid LLM provider '{camille_settings.LLM_PROVIDER}'")
 
         # Register plugins
         self.register_plugin("xep_0045")  # MUC
@@ -76,9 +82,8 @@ class XMPPBot(ClientXMPP):
 
         if not is_ignore_message:
             # Build the history of messages
-            llm_messages = channel.llm_messages()
             try:
-                response = self.agent.process(camille_settings.LLM_MODEL, llm_messages)
+                response = self.agent.process(channel)
             except Exception as e:
                 self.send_chat_message(channel, f"ERRO CRÍTICO: {e}")
                 return
@@ -107,5 +112,11 @@ class XMPPBot(ClientXMPP):
         if channel_jid not in self.joined_channels:
             self.joined_channels.add(channel_jid)
 
-            body = f"{camille_settings.NAME} is ready! / model '{camille_settings.LLM_MODEL}' / {camille_settings.LLM_MESSAGES_COUNT} msgs"
+            provider = camille_settings.LLM_PROVIDER
+            if provider == "openai":
+                model = camille_settings.OPENAI_MODEL
+            else:
+                model = camille_settings.GOOGLE_MODEL
+
+            body = f"{camille_settings.NAME} is ready! / model '{provider}-{model}' / {camille_settings.LLM_MESSAGES_COUNT} msgs"
             msg.reply(body).send()

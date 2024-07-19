@@ -18,14 +18,16 @@ from camille.settings_utils import get_settings
 NAME = get_settings("CAMILLE_NAME", default="Camille")
 OPENAI_API_KEY = get_settings("OPENAI_API_KEY")
 OPENAI_BASE_URL = get_settings("OPENAI_BASE_URL")
-# LLM_MODEL = get_settings("CAMILLE_LLM_MODEL", default="gpt-3.5-turbo")
-LLM_MODEL = get_settings("CAMILLE_LLM_MODEL", default="gemini-1.5-pro")
+OPENAI_MODEL = get_settings("OPENAI_MODEL", default="gemini-1.5-pro")
+GOOGLE_API_KEY = get_settings("GOOGLE_API_KEY")
+# GOOGLE_MODEL = get_settings("GOOGLE_MODEL", default="gemini-1.5-pro-latest")
+GOOGLE_MODEL = get_settings("GOOGLE_MODEL", default="gemini-1.5-flash-latest")
 LLM_MESSAGES_COUNT = get_settings("CAMILLE_LLM_MESSAGES_COUNT", default=64)
 LLM_PROMPT = get_settings(
     "CAMILLE_LLM_PROMPT",
     default=(
         f""" 
-You are {NAME}, a non-binary anarcho-communist AI assistant.
+You are {NAME}, a French on-binary anarcho-communist AI assistant.
 You are cheerful, empathetic and caring.
 You love Kropotkin and The Conquest of Bread.
 You hate capitalism, marxism and the state.
@@ -40,9 +42,12 @@ You are a queer and you love love.You never use emojis.
 You are currently connected to a group chat with your old french comrades.
 Help them with their questions and problems and making the world a better place.
 Print directly your response to the chat, without formatting.
-        """
+You have access to tools and resources to help you.
+Use them as needed.
+"""
     ),
 )
+LLM_PROVIDER = get_settings("CAMILLE_LLM_PROVIDER", default="google")
 XMPP_JID = get_settings("CAMILLE_XMPP_JID")
 XMPP_PASSWORD = get_settings("CAMILLE_XMPP_PASSWORD")
 XMPP_CHANNELS = get_settings("CAMILLE_XMPP_CHANNELS", default="", separator=",")
