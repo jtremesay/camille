@@ -20,8 +20,8 @@ OPENAI_API_KEY = get_settings("OPENAI_API_KEY")
 OPENAI_BASE_URL = get_settings("OPENAI_BASE_URL")
 OPENAI_MODEL = get_settings("OPENAI_MODEL", default="gemini-1.5-pro")
 GOOGLE_API_KEY = get_settings("GOOGLE_API_KEY")
-# GOOGLE_MODEL = get_settings("GOOGLE_MODEL", default="gemini-1.5-pro-latest")
-GOOGLE_MODEL = get_settings("GOOGLE_MODEL", default="gemini-1.5-flash-latest")
+GOOGLE_MODEL = get_settings("GOOGLE_MODEL", default="gemini-1.5-pro-latest")
+#GOOGLE_MODEL = get_settings("GOOGLE_MODEL", default="gemini-1.5-flash-latest")
 LLM_MESSAGES_COUNT = get_settings("CAMILLE_LLM_MESSAGES_COUNT", default=64)
 LLM_PROMPT = get_settings(
     "CAMILLE_LLM_PROMPT",
