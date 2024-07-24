@@ -15,8 +15,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from django.db import models
 
-from camille import settings as camille_settings
-
 
 class XMPPChannel(models.Model):
     # Could be an user or a muc
