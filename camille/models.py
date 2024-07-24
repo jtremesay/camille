@@ -18,40 +18,10 @@ from django.db import models
 from camille import settings as camille_settings
 
 
-class LLMRole(models.TextChoices):
-    USER = "user"
-    ASSISTANT = "assistant"
-    SYSTEM = "system"
-
-
 class XMPPChannel(models.Model):
     # Could be an user or a muc
     jid = models.CharField(max_length=255, unique=True)
-
-    _prompt = models.TextField(default="")
+    prompt = models.TextField(default="", blank=True)
 
     def __str__(self):
         return self.jid
-
-    @property
-    def prompt(self):
-        return self._prompt or camille_settings.LLM_PROMPT
-
-    @prompt.setter
-    def prompt(self, value):
-        self._prompt = value
-
-
-class XMPPMessage(models.Model):
-    channel = models.ForeignKey(
-        XMPPChannel,
-        on_delete=models.CASCADE,
-        related_name="messages",
-        related_query_name="message",
-    )
-    sender = models.CharField(max_length=255)
-    timestamp = models.DateTimeField(auto_now_add=True)
-    role = models.CharField(
-        max_length=255, choices=LLMRole.choices, default=LLMRole.USER
-    )
-    content = models.TextField()

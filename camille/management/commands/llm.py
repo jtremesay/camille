@@ -13,34 +13,32 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-import google.generativeai as genai
+
+import uuid
+from datetime import datetime
+
 from django.core.management.base import BaseCommand
 
-from camille import llm_tools
-from camille import settings as camille_settings
+from camille.llm.graph import part_1_graph, print_event
+
+thread_id = str(uuid.uuid4())
+config = {
+    "configurable": {
+        # Checkpoints are accessed by thread_id
+        "thread_id": thread_id,
+    }
+}
 
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        model = genai.GenerativeModel(
-            camille_settings.GOOGLE_MODEL,
-            tools=[llm_tools.get_weather_for_location],
-            system_instruction=camille_settings.LLM_PROMPT,
-        )
-        chat = model.start_chat(enable_automatic_function_calling=True)
-
-        try:
-            while True:
-                try:
-                    user_input = input("You: ")
-                except EOFError:
-                    break
-
-                response = chat.send_message(user_input)
-                print(response)
-                self.stdout.write(self.style.SUCCESS(f"Camille: {response.text}"))
-
-        except KeyboardInterrupt:
-            pass
-
-        print(chat.history)
+        _printed = set()
+        while True:
+            user_input = input("User: ")
+            if user_input.lower() in ["quit", "exit", "q"]:
+                print("Goodbye!")
+                break
+            for event in part_1_graph.stream(
+                {"messages": ("user", user_input)}, config, stream_mode="values"
+            ):
+                print_event(event, _printed)

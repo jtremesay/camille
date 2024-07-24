@@ -13,13 +13,14 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-from asgiref.sync import sync_to_async
+import traceback
+
 from channels.db import database_sync_to_async
 from slixmpp import ClientXMPP
 
 from camille import settings as camille_settings
-from camille.llm import AgentGemini, AgentOpenAI
-from camille.models import LLMRole, XMPPChannel, XMPPMessage
+from camille.llm.graph import part_1_graph, print_event
+from camille.models import XMPPChannel
 
 
 class XMPPBot(ClientXMPP):
@@ -30,13 +31,7 @@ class XMPPBot(ClientXMPP):
             camille_settings.XMPP_PASSWORD,
         )
         self.joined_channels = set()
-
-        if camille_settings.LLM_PROVIDER == "openai":
-            self.agent = AgentOpenAI()
-        elif camille_settings.LLM_PROVIDER == "google":
-            self.agent = AgentGemini()
-        else:
-            raise ValueError(f"Invalid LLM provider '{camille_settings.LLM_PROVIDER}'")
+        self.printed_messages = set()
 
         # Register plugins
         self.register_plugin("xep_0045")  # MUC
@@ -56,49 +51,39 @@ class XMPPBot(ClientXMPP):
         # Join MUC channels
         for channel in camille_settings.XMPP_CHANNELS:
             print(f"Joining channel {channel}")
-            await self.plugin["xep_0045"].join_muc(channel, camille_settings.NAME)
+            await self.plugin["xep_0045"].join_muc(channel, camille_settings.AGENT_NAME)
 
     @database_sync_to_async
     def on_groupchat_message(self, msg):
         # Ignore our own message
         sender = msg["from"].resource
-        if sender == camille_settings.NAME:
+        if sender == camille_settings.AGENT_NAME:
             return
 
         channel = XMPPChannel.objects.get_or_create(jid=msg["from"].bare)[0]
         message_body = msg["body"]
 
-        is_ignore_message = False
-        if message_body.startswith("."):
-            message_body = message_body[1:]
-            is_ignore_message = True
-        # Save the message
-        XMPPMessage.objects.create(
-            channel=channel,
-            sender=sender,
-            role=LLMRole.USER,
-            content=message_body,
-        )
+        config = {
+            "configurable": {
+                # Checkpoints are accessed by thread_id
+                "thread_id": channel.jid,
+                "optional_prompt": channel.prompt,
+            }
+        }
 
-        if not is_ignore_message:
-            # Build the history of messages
-            try:
-                response = self.agent.process(channel)
-            except Exception as e:
-                self.send_chat_message(channel, f"ERRO CRÍTICO: {e}")
-                return
-
-            if response is None:
-                return
-
-            XMPPMessage.objects.create(
-                channel=channel,
-                sender=camille_settings.NAME,
-                role=LLMRole.ASSISTANT,
-                content=response,
-            ).save()
-
-            self.send_chat_message(channel, response)
+        try:
+            for event in part_1_graph.stream(
+                {"messages": ("user", f"{sender}> {message_body}")},
+                config,
+                stream_mode="values",
+            ):
+                for message in print_event(event, self.printed_messages):
+                    if message.type == "ai":
+                        self.send_chat_message(channel, message.content)
+        except Exception as e:
+            traceback.print_exc()
+            self.send_chat_message(channel, f"ERRO CRÍTICO: {e}")
+            return
 
     def send_chat_message(self, channel: XMPPChannel, message: str):
         self.send_message(mto=channel, mbody=message, mtype="groupchat")
@@ -112,11 +97,5 @@ class XMPPBot(ClientXMPP):
         if channel_jid not in self.joined_channels:
             self.joined_channels.add(channel_jid)
 
-            provider = camille_settings.LLM_PROVIDER
-            if provider == "openai":
-                model = camille_settings.OPENAI_MODEL
-            else:
-                model = camille_settings.GOOGLE_MODEL
-
-            body = f"{camille_settings.NAME} is ready! / model '{provider}-{model}' / {camille_settings.LLM_MESSAGES_COUNT} msgs"
+            body = f"{camille_settings.AGENT_NAME} is ready! / model '{camille_settings.LLM_MODEL}"
             msg.reply(body).send()

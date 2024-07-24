@@ -34,8 +34,6 @@ COPY camille/ camille/
 # Theses variables need to exists before using manage.py
 ARG SECRET_KEY="build-key"
 ARG GOOGLE_API_KEY=
-ARG OPENAI_API_KEY=
-ARG OPENAI_BASE_URL=
 ARG CAMILLE_XMPP_JID=
 ARG CAMILLE_XMPP_PASSWORD=
 
