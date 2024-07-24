@@ -51,6 +51,7 @@ Current time: {current_time}
 """
     ),
 )
+LLM_CHECKPOINT_DB = get_settings("CAMILLE_LLM_CHECKPOINT", default="checkpoint.db")
 XMPP_JID = get_settings("CAMILLE_XMPP_JID")
 XMPP_PASSWORD = get_settings("CAMILLE_XMPP_PASSWORD")
 XMPP_CHANNELS = get_settings("CAMILLE_XMPP_CHANNELS", default="", separator=",")

@@ -6,6 +6,7 @@ from langgraph.checkpoint.sqlite import SqliteSaver
 from langgraph.graph import END, START, StateGraph
 from langgraph.prebuilt import ToolNode, tools_condition
 
+import camille.settings as camille_settings
 from camille.llm.agent import Assistant, part_1_assistant_runnable, part_1_tools
 from camille.llm.state import State
 
@@ -63,5 +64,5 @@ builder.add_edge("tools", "assistant")
 
 # The checkpointer lets the graph persist its state
 # this is a complete memory for the entire graph.
-saver = SqliteSaver.from_conn_string("checkpoint.db")
+saver = SqliteSaver.from_conn_string(camille_settings.LLM_CHECKPOINT_DB)
 part_1_graph = builder.compile(checkpointer=saver)
