@@ -129,7 +129,7 @@ class AgentGemini(Agent):
 
         model = genai.GenerativeModel(
             camille_settings.GOOGLE_MODEL,
-            tools=[llm_tools.get_weather],
+            tools=[llm_tools.get_weather_for_location],
             system_instruction=system_prompt,
         )
         chat = model.start_chat(

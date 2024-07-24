@@ -22,7 +22,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def get_weather(location: str):
+def get_weather_for_location(location: str):
     """Get the weather forecast for a location.
 
     Args:
