@@ -45,7 +45,9 @@ class Assistant:
         return {"messages": result}
 
 
-llm = ChatGoogleGenerativeAI(model=camille_settings.LLM_MODEL)
+llm = ChatGoogleGenerativeAI(
+    model=camille_settings.LLM_MODEL, api_key=camille_settings.GOOGLE_API_KEY
+)
 
 primary_assistant_prompt = ChatPromptTemplate.from_messages(
     [
