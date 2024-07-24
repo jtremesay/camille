@@ -23,10 +23,11 @@ from camille.llm.graph import part_1_graph, print_event
 
 thread_id = str(uuid.uuid4())
 config = {
+    "recursion_limit": 1024,
     "configurable": {
         # Checkpoints are accessed by thread_id
         "thread_id": thread_id,
-    }
+    },
 }
 
 

@@ -76,7 +76,10 @@ class XMPPBot(ClientXMPP):
         try:
             for event in part_1_graph.stream(
                 {"messages": ("user", f"{sender}> {message_body}")},
-                config,
+                {
+                    "recursion_limit": 1024,
+                    "configurable": config,
+                },
                 stream_mode="values",
             ):
                 for message in print_event(event, self.printed_messages):
