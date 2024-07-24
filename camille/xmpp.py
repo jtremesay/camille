@@ -32,6 +32,7 @@ class XMPPBot(ClientXMPP):
         )
         self.joined_channels = set()
         self.printed_messages = set()
+        self.configurables: dict[str, dict] = {}
 
         # Register plugins
         self.register_plugin("xep_0045")  # MUC
@@ -61,16 +62,17 @@ class XMPPBot(ClientXMPP):
             return
 
         channel = XMPPChannel.objects.get_or_create(jid=msg["from"].bare)[0]
+        config = self.configurables[channel.jid]
+
         message_body = msg["body"]
+        if message_body.startswith("."):  # Ignored message
+            return
 
-        config = {
-            "configurable": {
-                # Checkpoints are accessed by thread_id
-                "thread_id": channel.jid,
-                "optional_prompt": channel.prompt,
-            }
-        }
+        if message_body.startswith("!"):  # delayed message
+            config["buffered_messages"].append(f"{sender}> {message_body[1:]}")
+            return
 
+        config["optional_prompt"] = channel.prompt
         try:
             for event in part_1_graph.stream(
                 {"messages": ("user", f"{sender}> {message_body}")},
@@ -99,3 +101,8 @@ class XMPPBot(ClientXMPP):
 
             body = f"{camille_settings.AGENT_NAME} is ready! / model '{camille_settings.LLM_MODEL}"
             msg.reply(body).send()
+
+            self.configurables[channel_jid] = {
+                "thread_id": channel_jid,
+                "buffered_messages": [],
+            }

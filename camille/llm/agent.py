@@ -22,6 +22,14 @@ class Assistant:
                 "current_time": datetime.now().strftime("%H:%M:%S, %a %d %B %Y"),
                 "optional_prompt": configuration.get("optional_prompt", ""),
             }
+            if buffered_messages := configuration.get("buffered_messages", []):
+                last_message = state["messages"].pop()
+                state = {
+                    **state,
+                    "messages": state["messages"] + buffered_messages + [last_message],
+                }
+                configuration["buffered_messages"] = []
+
             result = self.runnable.invoke(state)
             # If the LLM happens to return an empty response, we will re-prompt it
             # for an actual response.
