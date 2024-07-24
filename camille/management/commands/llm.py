@@ -21,12 +21,10 @@ from camille import settings as camille_settings
 
 
 class Command(BaseCommand):
-    help = "The XMPP agent for Camille."
-
     def handle(self, *args, **options):
         model = genai.GenerativeModel(
             camille_settings.GOOGLE_MODEL,
-            tools=[llm_tools.get_weather],
+            tools=[llm_tools.get_weather_for_location],
             system_instruction=camille_settings.LLM_PROMPT,
         )
         chat = model.start_chat(enable_automatic_function_calling=True)
