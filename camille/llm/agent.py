@@ -34,6 +34,8 @@ class Assistant:
                 }
                 configuration["buffered_messages"] = []
 
+            state["messages"] = state["messages"][-63:]
+
             result = self.runnable.invoke(state)
             # If the LLM happens to return an empty response, we will re-prompt it
             # for an actual response.
