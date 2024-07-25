@@ -4,7 +4,11 @@ from langchain_community.tools import WikipediaQueryRun
 from langchain_community.utilities import WikipediaAPIWrapper
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import Runnable, RunnableConfig
-from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_google_genai import (
+    ChatGoogleGenerativeAI,
+    HarmBlockThreshold,
+    HarmCategory,
+)
 
 import camille.settings as camille_settings
 from camille.llm.state import State
@@ -46,7 +50,14 @@ class Assistant:
 
 
 llm = ChatGoogleGenerativeAI(
-    model=camille_settings.LLM_MODEL, api_key=camille_settings.GOOGLE_API_KEY
+    model=camille_settings.LLM_MODEL,
+    api_key=camille_settings.GOOGLE_API_KEY,
+    safety_settings={
+        HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
+        HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
+        HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
+        HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
+    },
 )
 
 primary_assistant_prompt = ChatPromptTemplate.from_messages(
