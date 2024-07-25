@@ -36,6 +36,9 @@ services:
       - "CAMILLE_XMPP_JID_FILE=/run/secrets/camille_xmpp_jid"
       - "CAMILLE_XMPP_PASSWORD_FILE=/run/secrets/camille_xmpp_password"
       - "CAMILLE_XMPP_CHANNELS_FILE=/run/secrets/camille_xmpp_channels"
+      - "CAMILLE_LLM_CHECKPOINT=/var/lib/camille/checkpoint.db"
+    volumes:
+      - "camille_data:/var/lib/camille"
     secrets:
       - "google_api_key"
       - "camille_secret_key"
@@ -64,6 +67,9 @@ services:
       - "CAMILLE_XMPP_JID_FILE=/run/secrets/camille_xmpp_jid"
       - "CAMILLE_XMPP_PASSWORD_FILE=/run/secrets/camille_xmpp_password"
       - "CAMILLE_XMPP_CHANNELS_FILE=/run/secrets/camille_xmpp_channels"
+      - "CAMILLE_LLM_CHECKPOINT=/var/lib/camille/checkpoint.db"
+    volumes:
+      - "camille_data:/var/lib/camille"
     networks:
       - "database"
     secrets:
@@ -78,6 +84,7 @@ volumes:
   ollama_data:
   mindsdb_data:
   postgres_data:
+  camille_data:
 
 
 networks:
