@@ -69,6 +69,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "whitenoise.runserver_nostatic",
     "django.contrib.staticfiles",
+    "langchain_django",
     "camille",
 ]
 

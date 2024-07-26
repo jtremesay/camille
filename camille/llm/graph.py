@@ -9,6 +9,7 @@ from langgraph.prebuilt import ToolNode, tools_condition
 import camille.settings as camille_settings
 from camille.llm.agent import Assistant, part_1_assistant_runnable, part_1_tools
 from camille.llm.state import State
+from langchain_django.checkpointer import DjangoSaver
 
 
 def print_event(event: dict, _printed: set, max_length=1500):
@@ -64,5 +65,6 @@ builder.add_edge("tools", "assistant")
 
 # The checkpointer lets the graph persist its state
 # this is a complete memory for the entire graph.
-saver = SqliteSaver.from_conn_string(camille_settings.LLM_CHECKPOINT_DB)
+# saver = SqliteSaver.from_conn_string(camille_settings.LLM_CHECKPOINT_DB)
+saver = DjangoSaver()
 part_1_graph = builder.compile(checkpointer=saver)
