@@ -41,7 +41,7 @@ class XMPPBot(ClientXMPP):
 
         # Register event handlers
         self.add_event_handler("session_start", self.on_session_start)
-        # self.add_event_handler("message", self.on_message)
+        self.add_event_handler("message", self.on_message)
         self.add_event_handler("groupchat_message", self.on_groupchat_message)
         self.add_event_handler("groupchat_subject", self.on_groupchat_subject)
 
@@ -53,6 +53,58 @@ class XMPPBot(ClientXMPP):
         for channel in camille_settings.XMPP_CHANNELS:
             print(f"Joining channel {channel}")
             await self.plugin["xep_0045"].join_muc(channel, camille_settings.AGENT_NAME)
+
+    def handle_command(self, command: str, channel: XMPPChannel) -> bool | str:
+        if command.startswith("\\prompt"):
+            return f"Prompt: {channel.prompt}"
+
+        if command.startswith("\\set_prompt"):
+            try:
+                channel.prompt = command.split(" ", 1)[1]
+            except IndexError:
+                channel.prompt = ""
+            channel.save()
+            return f"Prompt set to: {channel.prompt}"
+
+        return False
+
+    @database_sync_to_async
+    def on_message(self, msg):
+        if msg["type"] not in ("chat", "normal"):
+            return
+
+        channel = XMPPChannel.objects.get_or_create(jid=msg["from"].bare)[0]
+        message_body = msg["body"]
+        if response := self.handle_command(message_body, channel):
+            msg.reply(response).send()
+            return
+
+        try:
+            config = self.configurables[channel.jid]
+        except KeyError:
+            config = {
+                "thread_id": channel.jid,
+                "buffered_messages": [],
+            }
+            self.configurables[channel.jid] = config
+
+        config["optional_prompt"] = channel.prompt
+        try:
+            for event in part_1_graph.stream(
+                {"messages": ("user", message_body)},
+                {
+                    "recursion_limit": 1024,
+                    "configurable": config,
+                },
+                stream_mode="values",
+            ):
+                for message in print_event(event, self.printed_messages):
+                    if message.type == "ai":
+                        msg.reply(message.content).send()
+        except Exception as e:
+            traceback.print_exc()
+            self.send_chat_message(channel, f"ERRO CRÍTICO: {e}")
+            return
 
     @database_sync_to_async
     def on_groupchat_message(self, msg):
@@ -70,6 +122,11 @@ class XMPPBot(ClientXMPP):
 
         if message_body.startswith("!"):  # delayed message
             config["buffered_messages"].append(f"{sender}> {message_body[1:]}")
+            return
+
+        if response := self.handle_command(message_body, channel):
+            if isinstance(response, str):
+                self.send_chat_message(channel, response)
             return
 
         config["optional_prompt"] = channel.prompt
@@ -108,4 +165,5 @@ class XMPPBot(ClientXMPP):
             self.configurables[channel_jid] = {
                 "thread_id": channel_jid,
                 "buffered_messages": [],
+                "is_muc": True,
             }

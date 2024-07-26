@@ -40,6 +40,12 @@ class Assistant:
                 "current_time": datetime.now().strftime("%H:%M:%S, %a %d %B %Y"),
                 "optional_prompt": configuration.get("optional_prompt", ""),
             }
+
+            if configuration.get("is_muc", False):
+                state["solo_muc_prompt"] = "You are in a multi-user chat."
+            else:
+                state["solo_muc_prompt"] = ""
+
             if buffered_messages := configuration.get("buffered_messages", []):
                 last_message = state["messages"].pop()
                 state = {
