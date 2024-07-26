@@ -29,6 +29,7 @@ RUN pip install -Ur requirements.txt
 # Install other stuff
 COPY manage.py entrypoint.sh ./
 COPY proj/ proj/
+COPY langchain_django/ langchain_django/
 COPY camille/ camille/
 
 # Theses variables need to exists before using manage.py
