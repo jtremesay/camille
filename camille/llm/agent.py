@@ -1,8 +1,11 @@
 from datetime import datetime
 
+from langchain_community.agent_toolkits.load_tools import load_tools
 from langchain_community.tools import WikipediaQueryRun
+from langchain_community.tools.requests.tool import RequestsGetTool
 from langchain_community.tools.tavily_search import TavilySearchResults
 from langchain_community.utilities import WikipediaAPIWrapper
+from langchain_community.utilities.requests import GenericRequestsWrapper
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import Runnable, RunnableConfig
 from langchain_google_genai import (
@@ -13,6 +16,7 @@ from langchain_google_genai import (
 
 import camille.settings as camille_settings
 from camille.llm.state import State
+from camille.llm.tools import RequestsGetInput
 
 
 def filter_messages(messages: list[str]) -> list[str]:
@@ -78,18 +82,26 @@ primary_assistant_prompt = ChatPromptTemplate.from_messages(
     ]
 ).partial(name=camille_settings.AGENT_NAME)
 
+
 part_1_tools = [
-    # WikipediaQueryRun(
-    #     name=f"wikipedia_{lc}",
-    #     description=(
-    #         f"A wrapper around the {l} version of Wikipedia. "
-    #         "Useful for when you need to answer general questions about "
-    #         "people, places, companies, facts, historical events, or other subjects. "
-    #         "Input should be a search query."
-    #     ),
-    #     api_wrapper=WikipediaAPIWrapper(lang=lc),
-    # )
-    # for (lc, l) in [("en", "English"), ("fr", "French")]
+    RequestsGetTool(
+        requests_wrapper=GenericRequestsWrapper(),
+        allow_dangerous_requests=True,
+        args_schema=RequestsGetInput,
+    )
+]
+part_1_tools += [
+    WikipediaQueryRun(
+        name=f"wikipedia_{lc}",
+        description=(
+            f"A wrapper around the {l} version of Wikipedia. "
+            "Useful for when you need to answer general questions about "
+            "people, places, companies, facts, historical events, or other subjects. "
+            "Input should be a search query."
+        ),
+        api_wrapper=WikipediaAPIWrapper(lang=lc),
+    )
+    for (lc, l) in [("en", "English"), ("fr", "French")]
 ]
 
 if camille_settings.TAVILY_API_KEY:
