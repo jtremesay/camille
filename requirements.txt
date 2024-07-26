@@ -6,10 +6,10 @@ google-generativeai==0.7.2
 langchain-community==0.2.10 
 langchain-google-genai==1.0.8 
 langgraph==0.1.11
-meteofrance-api==1.3.0 
-openai==1.35.1
+lxml==5.2.2 
+meteofrance-api==1.3.0
 psycopg[binary]==3.1.19 
 slixmppbot==2.0.4
+tavily-python==0.3.5
 whitenoise[brotli]==6.7.0
 wikipedia==1.4.0  
-lxml==5.2.2 

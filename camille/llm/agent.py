@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from langchain_community.tools import WikipediaQueryRun
+from langchain_community.tools.tavily_search import TavilySearchResults
 from langchain_community.utilities import WikipediaAPIWrapper
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import Runnable, RunnableConfig
@@ -78,18 +79,30 @@ primary_assistant_prompt = ChatPromptTemplate.from_messages(
 ).partial(name=camille_settings.AGENT_NAME)
 
 part_1_tools = [
-    WikipediaQueryRun(
-        name=f"wikipedia_{lc}",
-        description=(
-            f"A wrapper around the {l} version of Wikipedia. "
-            "Useful for when you need to answer general questions about "
-            "people, places, companies, facts, historical events, or other subjects. "
-            "Input should be a search query."
-        ),
-        api_wrapper=WikipediaAPIWrapper(lang=lc),
-    )
-    for (lc, l) in [("en", "English"), ("fr", "French")]
+    # WikipediaQueryRun(
+    #     name=f"wikipedia_{lc}",
+    #     description=(
+    #         f"A wrapper around the {l} version of Wikipedia. "
+    #         "Useful for when you need to answer general questions about "
+    #         "people, places, companies, facts, historical events, or other subjects. "
+    #         "Input should be a search query."
+    #     ),
+    #     api_wrapper=WikipediaAPIWrapper(lang=lc),
+    # )
+    # for (lc, l) in [("en", "English"), ("fr", "French")]
 ]
+
+if camille_settings.TAVILY_API_KEY:
+    part_1_tools.append(
+        TavilySearchResults(
+            description="""A search engine optimized for comprehensive, accurate, \
+and trusted results. Useful for when you need to answer questions \
+about current events or about recent information. \
+Input should be a search query. \
+If the user is asking about something that you don't know about, \
+you should probably use this tool to see if that can provide any information."""
+        )
+    )
 
 
 part_1_assistant_runnable = primary_assistant_prompt | llm.bind_tools(part_1_tools)
