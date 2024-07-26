@@ -14,6 +14,14 @@ import camille.settings as camille_settings
 from camille.llm.state import State
 
 
+def filter_messages(messages: list[str]) -> list[str]:
+    messages = messages[-63:]
+    while messages and messages[0].type != "human":
+        messages.pop(0)
+
+    return messages
+
+
 class Assistant:
     def __init__(self, runnable: Runnable):
         self.runnable = runnable
@@ -34,7 +42,7 @@ class Assistant:
                 }
                 configuration["buffered_messages"] = []
 
-            state["messages"] = state["messages"][-63:]
+            state["messages"] = filter_messages(state["messages"])
 
             result = self.runnable.invoke(state)
             # If the LLM happens to return an empty response, we will re-prompt it
