@@ -88,7 +88,15 @@ part_1_tools = [
         requests_wrapper=GenericRequestsWrapper(),
         allow_dangerous_requests=True,
         args_schema=RequestsGetInput,
-    )
+    ),
+    TavilySearchResults(
+        description="""A search engine optimized for comprehensive, accurate, \
+and trusted results. Useful for when you need to answer questions \
+about current events or about recent information. \
+Input should be a search query. \
+If the user is asking about something that you don't know about, \
+you should probably use this tool to see if that can provide any information."""
+    ),
 ]
 part_1_tools += [
     WikipediaQueryRun(
@@ -103,18 +111,6 @@ part_1_tools += [
     )
     for (lc, l) in [("en", "English"), ("fr", "French")]
 ]
-
-if camille_settings.TAVILY_API_KEY:
-    part_1_tools.append(
-        TavilySearchResults(
-            description="""A search engine optimized for comprehensive, accurate, \
-and trusted results. Useful for when you need to answer questions \
-about current events or about recent information. \
-Input should be a search query. \
-If the user is asking about something that you don't know about, \
-you should probably use this tool to see if that can provide any information."""
-        )
-    )
 
 
 part_1_assistant_runnable = primary_assistant_prompt | llm.bind_tools(part_1_tools)

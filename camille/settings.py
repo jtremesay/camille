@@ -54,4 +54,4 @@ LLM_CHECKPOINT_DB = get_settings("CAMILLE_LLM_CHECKPOINT", default="checkpoint.d
 XMPP_JID = get_settings("CAMILLE_XMPP_JID")
 XMPP_PASSWORD = get_settings("CAMILLE_XMPP_PASSWORD")
 XMPP_CHANNELS = get_settings("CAMILLE_XMPP_CHANNELS", default="", separator=",")
-TAVILY_API_KEY = get_settings("TAVILY_API_KEY", default=None)
+TAVILY_API_KEY = get_settings("TAVILY_API_KEY")
