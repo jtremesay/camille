@@ -17,8 +17,8 @@ from camille.settings_utils import get_settings
 
 AGENT_NAME = get_settings("CAMILLE_NAME", default="Camille")
 GOOGLE_API_KEY = get_settings("GOOGLE_API_KEY")
-LLM_MODEL = get_settings("GOOGLE_MODEL", default="gemini-1.5-pro-latest")
-# LLM_MODEL = get_settings("GOOGLE_MODEL", default="gemini-1.5-flash-latest")
+# LLM_MODEL = get_settings("GOOGLE_MODEL", default="gemini-1.5-pro-latest")
+LLM_MODEL = get_settings("GOOGLE_MODEL", default="gemini-1.5-flash-latest")
 LLM_PROMPT = get_settings(
     "CAMILLE_LLM_PROMPT",
     default=(
