@@ -36,7 +36,7 @@ COPY camille/ camille/
 ARG SECRET_KEY="build-key"
 ARG CAMILLE_XMPP_JID=
 ARG CAMILLE_XMPP_PASSWORD=
-ARG GOOGLE_API_KEY=
+ARG GOOGLE_API_KEY="build-key"
 ARG TAVILY_API_KEY="build-key"
 
 # Collect static files
