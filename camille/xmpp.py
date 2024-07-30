@@ -20,6 +20,7 @@ from slixmpp import ClientXMPP
 
 from camille import settings as camille_settings
 from camille.llm.graph import part_1_graph, print_event
+from camille.llm.llm import LLMModel
 from camille.models import XMPPChannel
 
 
@@ -69,8 +70,11 @@ class XMPPBot(ClientXMPP):
             return """\
 Commands: 
 \\help                       Show this help
-\\set_prompt <new_prompt>    Change current prompt
 \\prompt                     Show current prompt
+\\set_prompt <new_prompt>    Change current prompt
+\\llm                        Show current LLM model
+\\set_llm <new_llm>          Change current LLM model
+\\llms                       List available LLM models
 """
 
         if command_name == "prompt":
@@ -81,6 +85,21 @@ Commands:
             channel.save(update_fields=["prompt"])
 
             return f"Prompt set to: {channel.prompt}"
+
+        if command_name == "llm":
+            return f"LLM model: {channel.llm_model}"
+
+        if command_name == "set_llm":
+            if args not in dict(LLMModel.choices):
+                return f"Invalid LLM model: {args}"
+
+            channel.llm_model = args
+            channel.save(update_fields=["llm_model"])
+
+            return f"LLM model set to: {channel.llm_model}"
+
+        if command_name == "llms":
+            return "Available LLM models: " + ", ".join(sorted(LLMModel))
 
         return "Unknown command"
 
@@ -146,6 +165,7 @@ Commands:
             return
 
         config["optional_prompt"] = channel.prompt
+        config["model"] = channel.llm_model
         try:
             for event in part_1_graph.stream(
                 {"messages": ("user", f"{sender}> {message_body}")},
@@ -174,8 +194,11 @@ Commands:
         channel_jid = msg["from"]
         if channel_jid not in self.joined_channels:
             self.joined_channels.add(channel_jid)
+            channel = XMPPChannel.objects.get_or_create(jid=channel_jid)[0]
 
-            body = f"{camille_settings.AGENT_NAME} is ready! / model '{camille_settings.LLM_MODEL}"
+            body = (
+                f"{camille_settings.AGENT_NAME} is ready! / model '{channel.llm_model}'"
+            )
             msg.reply(body).send()
 
             self.configurables[channel_jid] = {

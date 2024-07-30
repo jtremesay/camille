@@ -22,4 +22,4 @@ from camille.models import XMPPChannel
 
 @admin.register(XMPPChannel)
 class XMPPChannelAdmin(admin.ModelAdmin):
-    list_display = ("jid", "prompt")
+    list_display = ("jid", "llm_model", "prompt")

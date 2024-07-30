@@ -2,7 +2,6 @@
 
 Previously known as Laura.
 
-
 ## Configuration
 
 Camille search for its config in the following order:
@@ -12,36 +11,20 @@ Camille search for its config in the following order:
 - a default value if available
 - raise an error
 
-### OPENAI_API_KEY
+### GOOGLE_API_KEY
 
-The API key for the LLM model.
-
-Default: no default. You MUST provide a value
-
-### OPENAI_BASE_URL
-
-The API url for the LLM model.
+The API key for Gogle Gemini api model.
 
 Default: no default. You MUST provide a value
+
 
 
 ### CAMILLE_NAME
 
 The name of Camille.
 
-Default: `"Cmille"`
+Default: `"Camille"`
 
-### CAMILLE_LLM_MODEL
-
-The LLM model used by Camille.
-
-Default: `"gemini-1.5-pro"`
-
-### CAMILLE_LLM_MESSAGES_COUNT
-
-Conversation history window size. 
-
-Default: `64`
 
 ### CAMILLE_XMPP_JID
 
