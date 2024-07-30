@@ -55,18 +55,34 @@ class XMPPBot(ClientXMPP):
             await self.plugin["xep_0045"].join_muc(channel, camille_settings.AGENT_NAME)
 
     def handle_command(self, command: str, channel: XMPPChannel) -> bool | str:
-        if command.startswith("\\prompt"):
+        if not command or not command.startswith("\\"):
+            return False
+
+        command = command[1:].strip()
+        try:
+            command_name, args = command.split(" ", 1)
+        except ValueError:
+            command_name = command
+            args = ""
+
+        if command_name == "help":
+            return """\
+Commands: 
+\\help                       Show this help
+\\set_prompt <new_prompt>    Change current prompt
+\\prompt                     Show current prompt
+"""
+
+        if command_name == "prompt":
             return f"Prompt: {channel.prompt}"
 
-        if command.startswith("\\set_prompt"):
-            try:
-                channel.prompt = command.split(" ", 1)[1]
-            except IndexError:
-                channel.prompt = ""
-            channel.save()
+        if command_name == "set_prompt":
+            channel.prompt = args
+            channel.save(update_fields=["prompt"])
+
             return f"Prompt set to: {channel.prompt}"
 
-        return False
+        return "Unknown command"
 
     @database_sync_to_async
     def on_message(self, msg):

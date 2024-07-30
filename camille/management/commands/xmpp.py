@@ -24,4 +24,4 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         bot = XMPPBot()
         bot.connect()
-        bot.process()
+        bot.process(forever=False)
