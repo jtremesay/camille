@@ -37,6 +37,7 @@ services:
       - "CAMILLE_XMPP_CHANNELS_FILE=/run/secrets/camille_xmpp_channels"
       - "CAMILLE_LLM_CHECKPOINT=/var/lib/camille/checkpoint.db"
       - "GOOGLE_API_KEY_FILE=/run/secrets/google_api_key"
+      - "OPENWEATHERMAP_API_KEY_FILE=/run/secrets/openweathermap_api_key"
       - "TAVILY_API_KEY_FILE=/run/secrets/tavily_api_key"
     volumes:
       - "camille_data:/var/lib/camille"
@@ -46,6 +47,7 @@ services:
       - "camille_xmpp_password"
       - "camille_xmpp_channels"
       - "google_api_key"
+      - "openweathermap_api_key"
       - "tavily_api_key"
     networks:
       - "database"
@@ -70,6 +72,7 @@ services:
       - "CAMILLE_XMPP_CHANNELS_FILE=/run/secrets/camille_xmpp_channels"
       - "CAMILLE_LLM_CHECKPOINT=/var/lib/camille/checkpoint.db"
       - "GOOGLE_API_KEY_FILE=/run/secrets/google_api_key"
+      - "OPENWEATHERMAP_API_KEY_FILE=/run/secrets/openweathermap_api_key"
       - "TAVILY_API_KEY_FILE=/run/secrets/tavily_api_key"
     volumes:
       - "camille_data:/var/lib/camille"
@@ -81,6 +84,7 @@ services:
       - "camille_xmpp_password"
       - "camille_xmpp_channels"
       - "google_api_key"
+      - "openweathermap_api_key"
       - "tavily_api_key"
 
 volumes:
@@ -106,6 +110,8 @@ secrets:
   camille_xmpp_channels:
     external: true
   google_api_key:
+    external: true
+  openweathermap_api_key:
     external: true
   tavily_api_key:
     external: true

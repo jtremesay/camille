@@ -12,3 +12,4 @@ slixmppbot==2.0.4
 tavily-python==0.3.5
 whitenoise[brotli]==6.7.0
 wikipedia==1.4.0  
+pyowm==3.3.0

@@ -15,9 +15,10 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from django.db import models
 from langchain_community.tools import WikipediaQueryRun
+from langchain_community.tools.openweathermap.tool import OpenWeatherMapQueryRun
 from langchain_community.tools.requests.tool import RequestsGetTool
 from langchain_community.tools.tavily_search import TavilySearchResults
-from langchain_community.utilities import WikipediaAPIWrapper
+from langchain_community.utilities import OpenWeatherMapAPIWrapper, WikipediaAPIWrapper
 from langchain_community.utilities.requests import GenericRequestsWrapper
 from langchain_community.utilities.tavily_search import TavilySearchAPIWrapper
 from langchain_core.prompts import ChatPromptTemplate
@@ -59,6 +60,11 @@ about current events or about recent information. \
 Input should be a search query. \
 If the user is asking about something that you don't know about, \
 you should probably use this tool to see if that can provide any information.""",
+    ),
+    OpenWeatherMapQueryRun(
+        api_wrapper=OpenWeatherMapAPIWrapper(
+            openweathermap_api_key=camille_settings.OPENWEATHERMAP_API_KEY
+        )
     ),
 ]
 tools += [
