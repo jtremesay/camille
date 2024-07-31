@@ -14,8 +14,9 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import asyncio
 import uuid
-from datetime import datetime
+from typing import Any
 
 from django.core.management.base import BaseCommand
 
@@ -33,14 +34,17 @@ config = {
 
 
 class Command(BaseCommand):
-    def handle(self, *args, **options):
+    async def ahandle(self, *args, **options):
         _printed = set()
         while True:
             user_input = input("User: ")
             if user_input.lower() in ["quit", "exit", "q"]:
                 print("Goodbye!")
                 break
-            for event in graph.stream(
+            async for event in graph.astream(
                 {"messages": ("user", user_input)}, config, stream_mode="values"
             ):
                 print_event(event, _printed)
+
+    def handle(self, *args: Any, **options: Any) -> str | None:
+        asyncio.run(self.ahandle(*args, **options))
