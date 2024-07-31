@@ -32,23 +32,12 @@ services:
       - "DATABASE_URL=postgres://camille:camille@postgres:5432/camille"
       - "ALLOWED_HOSTS=camille.jtremesay.org,camille.slaanesh.org"
       - "SECRET_KEY_FILE=/run/secrets/camille_secret_key"
-      - "CAMILLE_XMPP_JID_FILE=/run/secrets/camille_xmpp_jid"
-      - "CAMILLE_XMPP_PASSWORD_FILE=/run/secrets/camille_xmpp_password"
-      - "CAMILLE_XMPP_CHANNELS_FILE=/run/secrets/camille_xmpp_channels"
-      - "CAMILLE_LLM_CHECKPOINT=/var/lib/camille/checkpoint.db"
       - "GOOGLE_API_KEY_FILE=/run/secrets/google_api_key"
-      - "OPENWEATHERMAP_API_KEY_FILE=/run/secrets/openweathermap_api_key"
-      - "TAVILY_API_KEY_FILE=/run/secrets/tavily_api_key"
     volumes:
       - "camille_data:/var/lib/camille"
     secrets:
       - "camille_secret_key"
-      - "camille_xmpp_jid"
-      - "camille_xmpp_password"
-      - "camille_xmpp_channels"
       - "google_api_key"
-      - "openweathermap_api_key"
-      - "tavily_api_key"
     networks:
       - "database"
       - "traefik_public"
@@ -70,10 +59,7 @@ services:
       - "CAMILLE_XMPP_JID_FILE=/run/secrets/camille_xmpp_jid"
       - "CAMILLE_XMPP_PASSWORD_FILE=/run/secrets/camille_xmpp_password"
       - "CAMILLE_XMPP_CHANNELS_FILE=/run/secrets/camille_xmpp_channels"
-      - "CAMILLE_LLM_CHECKPOINT=/var/lib/camille/checkpoint.db"
       - "GOOGLE_API_KEY_FILE=/run/secrets/google_api_key"
-      - "OPENWEATHERMAP_API_KEY_FILE=/run/secrets/openweathermap_api_key"
-      - "TAVILY_API_KEY_FILE=/run/secrets/tavily_api_key"
     volumes:
       - "camille_data:/var/lib/camille"
     networks:
@@ -84,8 +70,6 @@ services:
       - "camille_xmpp_password"
       - "camille_xmpp_channels"
       - "google_api_key"
-      - "openweathermap_api_key"
-      - "tavily_api_key"
 
 volumes:
   openwebui_data:
@@ -110,8 +94,4 @@ secrets:
   camille_xmpp_channels:
     external: true
   google_api_key:
-    external: true
-  openweathermap_api_key:
-    external: true
-  tavily_api_key:
     external: true

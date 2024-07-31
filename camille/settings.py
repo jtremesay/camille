@@ -13,10 +13,14 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
+import sys
+
 from camille.settings_utils import get_settings
 
 AGENT_NAME = get_settings("CAMILLE_NAME", default="Camille")
 GOOGLE_API_KEY = get_settings("GOOGLE_API_KEY")
+WINDOW_SIZE = 64
+RECURSION_LIMIT = sys.maxsize
 LLM_PROMPT = get_settings(
     "CAMILLE_LLM_PROMPT",
     default=(
@@ -49,9 +53,6 @@ Current time: {current_time}
 """
     ),
 )
-OPENWEATHERMAP_API_KEY = get_settings("OPENWEATHERMAP_API_KEY")
-LLM_CHECKPOINT_DB = get_settings("CAMILLE_LLM_CHECKPOINT", default="checkpoint.db")
-XMPP_JID = get_settings("CAMILLE_XMPP_JID")
-XMPP_PASSWORD = get_settings("CAMILLE_XMPP_PASSWORD")
+XMPP_JID = get_settings("CAMILLE_XMPP_JID", default=None)
+XMPP_PASSWORD = get_settings("CAMILLE_XMPP_PASSWORD", default=None)
 XMPP_CHANNELS = get_settings("CAMILLE_XMPP_CHANNELS", default="", separator=",")
-TAVILY_API_KEY = get_settings("TAVILY_API_KEY")

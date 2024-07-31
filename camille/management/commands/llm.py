@@ -19,14 +19,16 @@ from datetime import datetime
 
 from django.core.management.base import BaseCommand
 
-from camille.llm.graph import part_1_graph, print_event
+import camille.settings as camille_settings
+from camille.llm import LLMModel, graph, print_event
 
 thread_id = str(uuid.uuid4())
 config = {
-    "recursion_limit": 1024,
+    "recursion_limit": camille_settings.RECURSION_LIMIT,
     "configurable": {
         # Checkpoints are accessed by thread_id
         "thread_id": thread_id,
+        "model_name": LLMModel.GEMINI_FLASH,
     },
 }
 
@@ -39,7 +41,7 @@ class Command(BaseCommand):
             if user_input.lower() in ["quit", "exit", "q"]:
                 print("Goodbye!")
                 break
-            for event in part_1_graph.stream(
+            for event in graph.stream(
                 {"messages": ("user", user_input)}, config, stream_mode="values"
             ):
                 print_event(event, _printed)

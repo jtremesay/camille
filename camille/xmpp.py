@@ -19,21 +19,22 @@ from channels.db import database_sync_to_async
 from slixmpp import ClientXMPP
 
 from camille import settings as camille_settings
-from camille.llm.graph import part_1_graph, print_event
-from camille.llm.llm import LLMModel
+from camille.llm import LLMModel, graph, print_event
 from camille.models import XMPPChannel
 
 
 class XMPPBot(ClientXMPP):
 
     def __init__(self):
+        if not camille_settings.XMPP_JID or not camille_settings.XMPP_PASSWORD:
+            raise ValueError("XMPP_JID and XMPP_PASSWORD must be set")
+
         super().__init__(
             camille_settings.XMPP_JID,
             camille_settings.XMPP_PASSWORD,
         )
         self.joined_channels = set()
         self.printed_messages = set()
-        self.configurables: dict[str, dict] = {}
 
         # Register plugins
         self.register_plugin("xep_0045")  # MUC
@@ -110,25 +111,28 @@ Commands:
 
         channel = XMPPChannel.objects.get_or_create(jid=msg["from"].bare)[0]
         message_body = msg["body"]
-        if response := self.handle_command(message_body, channel):
-            msg.reply(response).send()
+
+        message_body = msg["body"]
+        if message_body.startswith("."):  # Ignored message
             return
 
-        try:
-            config = self.configurables[channel.jid]
-        except KeyError:
-            config = {
-                "thread_id": channel.jid,
-                "buffered_messages": [],
-            }
-            self.configurables[channel.jid] = config
+        if isinstance(response := self.handle_command(message_body, channel), str):
+            if response:
+                self.send_chat_message(channel, response)
+            return
 
-        config["optional_prompt"] = channel.prompt
+        config = {
+            "thread_id": channel.jid,
+            "is_muc": True,
+            "optional_prompt": channel.prompt,
+            "model_name": channel.llm_model,
+        }
+
         try:
-            for event in part_1_graph.stream(
+            for event in graph.stream(
                 {"messages": ("user", message_body)},
                 {
-                    "recursion_limit": 1024,
+                    "recursion_limit": camille_settings.RECURSION_LIMIT,
                     "configurable": config,
                 },
                 stream_mode="values",
@@ -149,28 +153,28 @@ Commands:
             return
 
         channel = XMPPChannel.objects.get_or_create(jid=msg["from"].bare)[0]
-        config = self.configurables[channel.jid]
 
         message_body = msg["body"]
         if message_body.startswith("."):  # Ignored message
             return
 
-        if message_body.startswith("!"):  # delayed message
-            config["buffered_messages"].append(f"{sender}> {message_body[1:]}")
-            return
-
-        if response := self.handle_command(message_body, channel):
-            if isinstance(response, str):
+        if isinstance(response := self.handle_command(message_body, channel), str):
+            if response:
                 self.send_chat_message(channel, response)
             return
 
-        config["optional_prompt"] = channel.prompt
-        config["model"] = channel.llm_model
+        config = {
+            "thread_id": channel.jid,
+            "is_muc": True,
+            "optional_prompt": channel.prompt,
+            "model_name": channel.llm_model,
+        }
+
         try:
-            for event in part_1_graph.stream(
+            for event in graph.stream(
                 {"messages": ("user", f"{sender}> {message_body}")},
                 {
-                    "recursion_limit": 1024,
+                    "recursion_limit": camille_settings.RECURSION_LIMIT,
                     "configurable": config,
                 },
                 stream_mode="values",
@@ -200,9 +204,3 @@ Commands:
                 f"{camille_settings.AGENT_NAME} is ready! / model '{channel.llm_model}'"
             )
             msg.reply(body).send()
-
-            self.configurables[channel_jid] = {
-                "thread_id": channel_jid,
-                "buffered_messages": [],
-                "is_muc": True,
-            }
