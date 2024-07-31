@@ -104,10 +104,7 @@ Commands:
 
         return "Unknown command"
 
-    async def on_message(self, msg):
-        if msg["type"] not in ("chat", "normal"):
-            return
-
+    async def handle_message(self, msg, is_muc: bool):
         channel = (await XMPPChannel.objects.aget_or_create(jid=msg["from"].bare))[0]
         message_body = msg["body"]
 
@@ -124,7 +121,7 @@ Commands:
 
         config = {
             "thread_id": channel.jid,
-            "is_muc": True,
+            "is_muc": is_muc,
             "optional_prompt": channel.prompt,
             "model_name": channel.llm_model,
         }
@@ -146,48 +143,19 @@ Commands:
             self.send_chat_message(channel, f"ERRO CRÍTICO: {e}")
             return
 
+    async def on_message(self, msg):
+        if msg["type"] not in ("chat", "normal"):
+            return
+
+        await self.handle_message(msg, is_muc=False)
+
     async def on_groupchat_message(self, msg):
         # Ignore our own message
         sender = msg["from"].resource
         if sender == camille_settings.AGENT_NAME:
             return
 
-        channel = (await XMPPChannel.objects.aget_or_create(jid=msg["from"].bare))[0]
-
-        message_body = msg["body"]
-        if message_body.startswith("."):  # Ignored message
-            return
-
-        if isinstance(
-            response := await self.handle_command(message_body, channel), str
-        ):
-            if response:
-                self.send_chat_message(channel, response)
-            return
-
-        config = {
-            "thread_id": channel.jid,
-            "is_muc": True,
-            "optional_prompt": channel.prompt,
-            "model_name": channel.llm_model,
-        }
-
-        try:
-            async for event in graph.astream(
-                {"messages": ("user", f"{sender}> {message_body}")},
-                {
-                    "recursion_limit": camille_settings.RECURSION_LIMIT,
-                    "configurable": config,
-                },
-                stream_mode="values",
-            ):
-                for message in print_event(event, self.printed_messages):
-                    if message.type == "ai":
-                        self.send_chat_message(channel, message.content)
-        except Exception as e:
-            traceback.print_exc()
-            self.send_chat_message(channel, f"ERRO CRÍTICO: {e}")
-            return
+        await self.handle_message(msg, is_muc=True)
 
     def send_chat_message(self, channel: XMPPChannel, message: str):
         self.send_message(mto=channel, mbody=message, mtype="groupchat")
