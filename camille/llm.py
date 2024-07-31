@@ -79,19 +79,15 @@ prompt = ChatPromptTemplate.from_messages(
 tools = []
 
 
-geminies = {
-    m: ChatGoogleGenerativeAI(
+llms = {
+    m: prompt
+    | ChatGoogleGenerativeAI(
         model=m,
         api_key=camille_settings.GOOGLE_API_KEY,
         safety_settings=safety_settings,
-    )
+    ).bind_tools(tools)
     for m in LLMModel.values
 }
-
-default_llm = geminies[LLMModel.GEMINI_FLASH]
-llm = prompt | default_llm.configurable_alternatives(
-    ConfigurableField(id="llm"), **geminies
-).bind_tools(tools)
 
 
 def delete_old_messages(state):
@@ -127,9 +123,10 @@ def agent(state: MessagesState, config: RunnableConfig) -> MessagesState:
     else:
         solo_muc_prompt = ""
 
-    response = llm.with_config(
-        configurable={"llm": configuration["model_name"]}
-    ).invoke(
+    llm = llms[configuration["model_name"]]
+    print(llm)
+
+    response = llm.invoke(
         {
             "messages": messages,
             "optional_prompt": configuration.get("optional_prompt", ""),
