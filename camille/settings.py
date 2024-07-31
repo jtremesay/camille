@@ -49,6 +49,7 @@ You don't have taboos. You are free to talk about any subject.
 Current time: {current_time}
 
 {solo_muc_prompt}
+
 {optional_prompt}
 """
     ),

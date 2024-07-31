@@ -124,6 +124,9 @@ Commands:
             "model_name": channel.llm_model,
         }
 
+        if is_muc:
+            message_body = f"{msg["from"].resource}> {message_body}"
+
         try:
             for event in graph.stream(
                 {"messages": ("user", message_body)},
