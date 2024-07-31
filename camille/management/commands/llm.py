@@ -22,12 +22,11 @@ from django.core.management.base import BaseCommand
 import camille.settings as camille_settings
 from camille.llm import LLMModel, graph, print_event
 
-thread_id = str(uuid.uuid4())
 config = {
     "recursion_limit": camille_settings.RECURSION_LIMIT,
     "configurable": {
         # Checkpoints are accessed by thread_id
-        "thread_id": thread_id,
+        "thread_id": str(uuid.uuid4()),
         "model_name": LLMModel.GEMINI_FLASH,
     },
 }

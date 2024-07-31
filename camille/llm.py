@@ -20,7 +20,7 @@ from typing import Literal
 from django.db import models
 from langchain_core.messages import RemoveMessage
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.runnables import ConfigurableField, RunnableConfig
+from langchain_core.runnables import RunnableConfig
 from langchain_google_genai import (
     ChatGoogleGenerativeAI,
     HarmBlockThreshold,
@@ -60,6 +60,7 @@ class Config(TypedDict):
     model_name: str
     optional_prompt: str
     current_time: datetime
+    is_muc: bool
 
 
 safety_settings = {
@@ -124,7 +125,6 @@ def agent(state: MessagesState, config: RunnableConfig) -> MessagesState:
         solo_muc_prompt = ""
 
     llm = llms[configuration["model_name"]]
-    print(llm)
 
     response = llm.invoke(
         {
