@@ -56,7 +56,7 @@ class XMPPBot(ClientXMPP):
             print(f"Joining channel {channel}")
             await self.plugin["xep_0045"].join_muc(channel, camille_settings.AGENT_NAME)
 
-    async def handle_command(self, command: str, channel: XMPPChannel) -> bool | str:
+    def handle_command(self, command: str, channel: XMPPChannel) -> bool | str:
         if not command or not command.startswith("\\"):
             return False
 
@@ -83,7 +83,7 @@ Commands:
 
         if command_name == "set_prompt":
             channel.prompt = args
-            await channel.asave(update_fields=["prompt"])
+            channel.save(update_fields=["prompt"])
 
             return f"Prompt set to: {channel.prompt}"
 
@@ -95,7 +95,7 @@ Commands:
                 return f"Invalid LLM model: {args}"
 
             channel.llm_model = args
-            await channel.asave(update_fields=["llm_model"])
+            channel.save(update_fields=["llm_model"])
 
             return f"LLM model set to: {channel.llm_model}"
 
@@ -104,17 +104,15 @@ Commands:
 
         return "Unknown command"
 
-    async def handle_message(self, msg, is_muc: bool):
-        channel = (await XMPPChannel.objects.aget_or_create(jid=msg["from"].bare))[0]
+    def handle_message(self, msg, is_muc: bool):
+        channel = XMPPChannel.objects.get_or_create(jid=msg["from"].bare)[0]
         message_body = msg["body"]
 
         message_body = msg["body"]
         if message_body.startswith("."):  # Ignored message
             return
 
-        if isinstance(
-            response := await self.handle_command(message_body, channel), str
-        ):
+        if isinstance(response := self.handle_command(message_body, channel), str):
             if response:
                 self.send_chat_message(channel, response)
             return
@@ -127,7 +125,7 @@ Commands:
         }
 
         try:
-            async for event in graph.astream(
+            for event in graph.stream(
                 {"messages": ("user", message_body)},
                 {
                     "recursion_limit": camille_settings.RECURSION_LIMIT,
@@ -143,31 +141,35 @@ Commands:
             self.send_chat_message(channel, f"ERRO CRÍTICO: {e}")
             return
 
-    async def on_message(self, msg):
+    @database_sync_to_async
+    def on_message(self, msg):
         if msg["type"] not in ("chat", "normal"):
             return
 
-        await self.handle_message(msg, is_muc=False)
+        self.handle_message(msg, is_muc=False)
 
-    async def on_groupchat_message(self, msg):
+    @database_sync_to_async
+    def on_groupchat_message(self, msg):
         # Ignore our own message
         sender = msg["from"].resource
         if sender == camille_settings.AGENT_NAME:
             return
 
-        await self.handle_message(msg, is_muc=True)
+        self.handle_message(msg, is_muc=True)
 
     def send_chat_message(self, channel: XMPPChannel, message: str):
         self.send_message(mto=channel, mbody=message, mtype="groupchat")
 
-    async def on_groupchat_subject(self, msg):
+    @database_sync_to_async
+    def on_groupchat_subject(self, msg):
+
         # The subject is sent when updated or joining a channel
         # Use the later to detect joining
 
         channel_jid = msg["from"]
         if channel_jid not in self.joined_channels:
             self.joined_channels.add(channel_jid)
-            channel = (await XMPPChannel.objects.aget_or_create(jid=channel_jid))[0]
+            channel = XMPPChannel.objects.get_or_create(jid=channel_jid)[0]
 
             body = (
                 f"{camille_settings.AGENT_NAME} is ready! / model '{channel.llm_model}'"

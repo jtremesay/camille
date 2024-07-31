@@ -34,17 +34,14 @@ config = {
 
 
 class Command(BaseCommand):
-    async def ahandle(self, *args, **options):
+    def handle(self, *args, **options):
         _printed = set()
         while True:
             user_input = input("User: ")
             if user_input.lower() in ["quit", "exit", "q"]:
                 print("Goodbye!")
                 break
-            async for event in graph.astream(
+            for event in graph.stream(
                 {"messages": ("user", user_input)}, config, stream_mode="values"
             ):
                 print_event(event, _printed)
-
-    def handle(self, *args: Any, **options: Any) -> str | None:
-        asyncio.run(self.ahandle(*args, **options))

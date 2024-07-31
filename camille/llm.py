@@ -115,7 +115,7 @@ def should_continue(state: MessagesState) -> Literal["action", "delete_messages"
     return "action"
 
 
-async def agent(state: MessagesState, config: RunnableConfig) -> MessagesState:
+def agent(state: MessagesState, config: RunnableConfig) -> MessagesState:
     configuration = config.get("configurable", {})
     messages = state["messages"]
 
@@ -126,7 +126,7 @@ async def agent(state: MessagesState, config: RunnableConfig) -> MessagesState:
 
     llm = llms[configuration["model_name"]]
 
-    response = await llm.ainvoke(
+    response = llm.invoke(
         {
             "messages": messages,
             "optional_prompt": configuration.get("optional_prompt", ""),
