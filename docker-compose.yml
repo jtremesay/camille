@@ -48,6 +48,9 @@ services:
       - "traefik.http.routers.camille.service=camille"
       - "traefik.http.routers.camille.tls.certresolver=leresolver"
       - "traefik.http.services.camille.loadbalancer.server.port=8000"
+    deploy:
+      labels:
+        - shepherd.autodeploy=false
 
   camille-xmpp:
     image: "killruana/camille:main"
@@ -70,6 +73,9 @@ services:
       - "camille_xmpp_password"
       - "camille_xmpp_channels"
       - "google_api_key"
+    deploy:
+      labels:
+        - shepherd.autodeploy=false
 
 volumes:
   openwebui_data:
