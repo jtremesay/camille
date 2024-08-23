@@ -26,6 +26,7 @@ from langchain_google_genai import (
     HarmBlockThreshold,
     HarmCategory,
 )
+from langchain_ollama import ChatOllama
 from langgraph.graph import END, START, MessagesState, StateGraph
 from langgraph.prebuilt import ToolNode
 from typing_extensions import TypedDict
@@ -37,6 +38,7 @@ from langchain_django.checkpointer import DjangoSaver
 class LLMModel(models.TextChoices):
     GEMINI_FLASH = "gemini-1.5-flash-latest", "Gemini Flash"
     GEMINI_PRO = "gemini-1.5-pro-latest", "Gemini Pro"
+    GEMMA2 = "gemma2", "Gemma 2"
 
 
 def print_event(event: dict, _printed: set, max_length=1500):
@@ -80,15 +82,24 @@ prompt = ChatPromptTemplate.from_messages(
 tools = []
 
 
-llms = {
-    m: prompt
-    | ChatGoogleGenerativeAI(
-        model=m,
-        api_key=camille_settings.GOOGLE_API_KEY,
-        safety_settings=safety_settings,
-    ).bind_tools(tools)
-    for m in LLMModel.values
-}
+def build_llm(llm_model: LLMModel):
+    if llm_model == LLMModel.GEMINI_FLASH:
+        return ChatGoogleGenerativeAI(
+            model=llm_model,
+            api_key=camille_settings.GOOGLE_API_KEY,
+            safety_settings=safety_settings,
+        )
+    elif llm_model == LLMModel.GEMINI_PRO:
+        return ChatGoogleGenerativeAI(
+            model=llm_model,
+            api_key=camille_settings.GOOGLE_API_KEY,
+            safety_settings=safety_settings,
+        )
+    else:
+        return ChatOllama(model=llm_model)
+
+
+llms = {m: prompt | build_llm(m).bind_tools(tools) for m in LLMModel.values}
 
 
 def delete_old_messages(state):
