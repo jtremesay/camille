@@ -15,11 +15,14 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from django.contrib import admin
 
-from camille.models import XMPPChannel
-
-# Register your models here.
+from camille.models import XMPPChannel, XMPPMessage
 
 
 @admin.register(XMPPChannel)
 class XMPPChannelAdmin(admin.ModelAdmin):
     list_display = ("jid", "llm_model", "prompt")
+
+
+@admin.register(XMPPMessage)
+class XMPPChannelAdmin(admin.ModelAdmin):
+    list_display = ("channel", "timestamp", "sender", "is_agent", "body")

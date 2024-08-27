@@ -13,7 +13,10 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
+from typing import Union
+
 from django.db import models
+from langchain_core.messages import AIMessage, HumanMessage
 
 from camille.llm import LLMModel
 
@@ -30,3 +33,26 @@ class XMPPChannel(models.Model):
 
     def __str__(self):
         return self.jid
+
+
+class XMPPMessage(models.Model):
+    channel = models.ForeignKey(
+        XMPPChannel, on_delete=models.CASCADE, related_name="messages"
+    )
+    timestamp = models.DateTimeField(auto_now_add=True)
+    sender = models.CharField(max_length=255)
+    is_agent = models.BooleanField(
+        default=False
+    )  # True if the message is from the agent
+    body = models.TextField()
+
+    def __str__(self):
+        return f"{self.sender}: {self.body}"
+
+    def as_lc_message(self) -> Union[HumanMessage, AIMessage]:
+        if self.is_agent:
+            return AIMessage(self.body)
+        else:
+            return HumanMessage(
+                f"{self.timestamp.isoformat()}|{self.sender}> {self.body}"
+            )

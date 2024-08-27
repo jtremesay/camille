@@ -13,56 +13,28 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
 from datetime import datetime
-from typing import Literal
 
 from django.db import models
-from langchain_core.messages import RemoveMessage
+from langchain_core.messages import BaseMessage
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.runnables import RunnableConfig
 from langchain_google_genai import (
     ChatGoogleGenerativeAI,
     HarmBlockThreshold,
     HarmCategory,
 )
 from langchain_ollama import ChatOllama
-from langgraph.graph import END, START, MessagesState, StateGraph
-from langgraph.prebuilt import ToolNode
-from typing_extensions import TypedDict
 
 import camille.settings as camille_settings
-from langchain_django.checkpointer import DjangoSaver
 
 
 class LLMModel(models.TextChoices):
     GEMINI_FLASH = "gemini-1.5-flash-latest", "Gemini Flash"
     GEMINI_PRO = "gemini-1.5-pro-latest", "Gemini Pro"
-    GEMMA2 = "gemma2", "Gemma 2"
 
-
-def print_event(event: dict, _printed: set, max_length=1500):
-    printed_messages = []
-    message = event.get("messages")
-    if message:
-        if isinstance(message, list):
-            message = message[-1]
-        if message.id not in _printed:
-            msg_repr = message.pretty_repr(html=True)
-            if len(msg_repr) > max_length:
-                msg_repr = msg_repr[:max_length] + " ... (truncated)"
-            print(msg_repr)
-            _printed.add(message.id)
-            printed_messages.append(message)
-
-    return printed_messages
-
-
-class Config(TypedDict):
-    model_name: str
-    optional_prompt: str
-    current_time: datetime
-    is_muc: bool
+    # Disable non-gemini models
+    # (my prod env doesn't have the resources to run them)
+    # GEMMA2 = "gemma2", "Gemma 2"
 
 
 safety_settings = {
@@ -78,8 +50,6 @@ prompt = ChatPromptTemplate.from_messages(
         ("placeholder", "{messages}"),
     ]
 ).partial(name=camille_settings.AGENT_NAME)
-
-tools = []
 
 
 def build_llm(llm_model: LLMModel):
@@ -99,71 +69,29 @@ def build_llm(llm_model: LLMModel):
         return ChatOllama(model=llm_model)
 
 
-llms = {m: prompt | build_llm(m).bind_tools(tools) for m in LLMModel.values}
+llms = {m: prompt | build_llm(m) for m in LLMModel.values}
 
 
-def delete_old_messages(state):
-    messages = state["messages"]
-    if len(messages) > camille_settings.WINDOW_SIZE:
-        return {
-            "messages": [
-                RemoveMessage(id=m.id)
-                for m in messages[: -camille_settings.WINDOW_SIZE]
-            ]
-        }
-
-
-def should_continue(state: MessagesState) -> Literal["action", "delete_messages"]:
-    """Return the next node to execute."""
-    messages = state["messages"]
-
-    last_message = messages[-1]
-    # If there is no function call, then we finish
-    if not last_message.tool_calls:
-        return "delete_messages"
-
-    # Otherwise if there is, we continue
-    return "action"
-
-
-def agent(state: MessagesState, config: RunnableConfig) -> MessagesState:
-    configuration = config.get("configurable", {})
-    messages = state["messages"]
-
-    if configuration.get("is_muc", False):
-        solo_muc_prompt = "You are in a multi-user chat."
-    else:
-        solo_muc_prompt = ""
-
-    llm = llms[configuration["model_name"]]
+def invoke_llm(
+    llm_model: LLMModel,
+    messages: list[BaseMessage],
+    optional_prompt: str = "",
+    is_muc: bool = False,
+) -> str:
+    print(messages)
+    llm = llms[llm_model]
 
     response = llm.invoke(
         {
             "messages": messages,
-            "optional_prompt": configuration.get("optional_prompt", ""),
+            "optional_prompt": optional_prompt,
             "current_time": datetime.now().strftime("%H:%M:%S, %a %d %B %Y"),
-            "solo_muc_prompt": solo_muc_prompt,
+            "solo_muc_prompt": (
+                "You are in a multi-users chat."
+                if is_muc
+                else "You are in a private conversation."
+            ),
         }
     )
-    return {"messages": response}
 
-
-action = ToolNode(tools)
-
-workflow = StateGraph(MessagesState, Config)
-workflow.add_node("agent", agent)
-workflow.add_node("action", action)
-workflow.add_node("delete_messages", delete_old_messages)
-
-workflow.add_edge(START, "agent")
-workflow.add_conditional_edges(
-    "agent",
-    should_continue,
-)
-
-workflow.add_edge("action", "agent")
-workflow.add_edge("delete_messages", END)
-
-
-# Build graph
-graph = workflow.compile(checkpointer=DjangoSaver())
+    return response

@@ -19,8 +19,8 @@ from channels.db import database_sync_to_async
 from slixmpp import ClientXMPP
 
 from camille import settings as camille_settings
-from camille.llm import LLMModel, graph, print_event
-from camille.models import XMPPChannel
+from camille.llm import LLMModel, invoke_llm
+from camille.models import XMPPChannel, XMPPMessage
 
 
 class XMPPBot(ClientXMPP):
@@ -117,32 +117,46 @@ Commands:
                 self.send_chat_message(channel, response)
             return
 
-        config = {
-            "thread_id": channel.jid,
-            "is_muc": is_muc,
-            "optional_prompt": channel.prompt,
-            "model_name": channel.llm_model,
-        }
+        # Register the message
+        XMPPMessage.objects.create(
+            channel=channel,
+            sender=msg["from"].resource,
+            body=message_body,
+            is_agent=False,
+        )
 
-        if is_muc:
-            message_body = f"{msg["from"].resource}> {message_body}"
+        # Get the N-last messages
+        xmpp_messages = list(
+            reversed(
+                XMPPMessage.objects.filter(channel=channel).order_by("-timestamp")[
+                    : camille_settings.WINDOW_SIZE
+                ]
+            )
+        )
+        # Some LLM force the first message to be a a user message
+        while xmpp_messages and xmpp_messages[0].is_agent:
+            xmpp_messages.pop(0)
 
+        messages = [m.as_lc_message() for m in xmpp_messages]
         try:
-            for event in graph.stream(
-                {"messages": ("user", message_body)},
-                {
-                    "recursion_limit": camille_settings.RECURSION_LIMIT,
-                    "configurable": config,
-                },
-                stream_mode="values",
-            ):
-                for message in print_event(event, self.printed_messages):
-                    if message.type == "ai":
-                        msg.reply(message.content).send()
+            response = invoke_llm(
+                channel.llm_model,
+                messages,
+                optional_prompt=channel.prompt,
+                is_muc=is_muc,
+            )
         except Exception as e:
+            response = f"An error occurred: {e}"
             traceback.print_exc()
-            self.send_chat_message(channel, f"ERRO CRÍTICO: {e}")
-            return
+            msg.reply(str(e)).send()
+        else:
+            XMPPMessage.objects.create(
+                channel=channel,
+                sender=camille_settings.AGENT_NAME,
+                body=response.content,
+                is_agent=True,
+            )
+            msg.reply(response.content).send()
 
     @database_sync_to_async
     def on_message(self, msg):

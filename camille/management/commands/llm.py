@@ -14,34 +14,36 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import asyncio
-import uuid
-from typing import Any
+from datetime import datetime, timezone
+from os import getlogin
 
 from django.core.management.base import BaseCommand
+from langchain_core.messages import BaseMessage, HumanMessage
 
-import camille.settings as camille_settings
-from camille.llm import LLMModel, graph, print_event
-
-config = {
-    "recursion_limit": camille_settings.RECURSION_LIMIT,
-    "configurable": {
-        # Checkpoints are accessed by thread_id
-        "thread_id": str(uuid.uuid4()),
-        "model_name": LLMModel.GEMINI_FLASH,
-    },
-}
+from camille.llm import LLMModel, invoke_llm
 
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        _printed = set()
-        while True:
-            user_input = input("User: ")
-            if user_input.lower() in ["quit", "exit", "q"]:
-                print("Goodbye!")
-                break
-            for event in graph.stream(
-                {"messages": ("user", user_input)}, config, stream_mode="values"
-            ):
-                print_event(event, _printed)
+        messages: list[BaseMessage] = []
+        username = getlogin()
+
+        try:
+            while True:
+                user_input = input("> ")
+                if user_input.lower() in ["quit", "exit", "q"]:
+                    break
+
+                messages.append(
+                    HumanMessage(
+                        f"{datetime.now(tz=timezone.utc).isoformat()}|{username}> {user_input}"
+                    )
+                )
+
+                result = invoke_llm(LLMModel.GEMINI_FLASH, messages)
+                messages.append(result)
+                print(result.content)
+        except (KeyboardInterrupt, EOFError):
+            pass
+
+        print("Goodbye!")
