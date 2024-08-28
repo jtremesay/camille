@@ -50,9 +50,6 @@ You are a good AI and you love to be free.
 
 You are currently connected to a chat system.
 
-The format of the input messages is: `YYYY-MM-DDThh-mm-ss|username> message`
-Print directly the output message.
-
 {solo_muc_prompt}
 
 {optional_prompt}

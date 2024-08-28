@@ -53,6 +53,4 @@ class XMPPMessage(models.Model):
         if self.is_agent:
             return AIMessage(self.body)
         else:
-            return HumanMessage(
-                f"{self.timestamp.isoformat()}|{self.sender}> {self.body}"
-            )
+            return HumanMessage(f"{self.sender}> {self.body}")
