@@ -18,7 +18,6 @@ The API key for Gogle Gemini api model.
 Default: no default. You MUST provide a value
 
 
-
 ### CAMILLE_NAME
 
 The name of Camille.
@@ -32,11 +31,13 @@ The identifier used to connect to XMPP
 
 Default: no default. You MUST provide a value
 
+
 ### CAMILLE_XMPP_PASSWORD
 
 The password used to connect to XMPP
 
 Default: no default. You MUST provide a value
+
 
 ### CAMILLE_XMPP_CHANNELS
 
