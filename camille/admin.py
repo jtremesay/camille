@@ -15,14 +15,35 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from django.contrib import admin
 
-from camille.models import XMPPChannel, XMPPMessage
+from camille.models import (
+    LLMConversation,
+    LLMMessage,
+    MMChannel,
+    SHSession,
+    XMPPChannel,
+)
+
+
+@admin.register(LLMConversation)
+class LLMConversationAdmin(admin.ModelAdmin):
+    list_display = ("llm_model", "prompt")
+
+
+@admin.register(LLMMessage)
+class LLMMessageAdmin(admin.ModelAdmin):
+    list_display = ("conversation", "timestamp", "sender", "is_agent", "content")
+
+
+@admin.register(SHSession)
+class SHSessionAdmin(admin.ModelAdmin):
+    list_display = ("username",)
 
 
 @admin.register(XMPPChannel)
 class XMPPChannelAdmin(admin.ModelAdmin):
-    list_display = ("jid", "llm_model", "prompt")
+    list_display = ("jid",)
 
 
-@admin.register(XMPPMessage)
-class XMPPChannelAdmin(admin.ModelAdmin):
-    list_display = ("channel", "timestamp", "sender", "is_agent", "body")
+@admin.register(MMChannel)
+class MMChannelAdmin(admin.ModelAdmin):
+    list_display = ("mmid",)

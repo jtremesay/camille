@@ -72,26 +72,5 @@ def build_llm(llm_model: LLMModel):
 llms = {m: prompt | build_llm(m) for m in LLMModel.values}
 
 
-def invoke_llm(
-    llm_model: LLMModel,
-    messages: list[BaseMessage],
-    optional_prompt: str = "",
-    is_muc: bool = False,
-) -> str:
-    print(messages)
-    llm = llms[llm_model]
-
-    response = llm.invoke(
-        {
-            "messages": messages,
-            "optional_prompt": optional_prompt,
-            "current_time": datetime.now().strftime("%H:%M:%S, %a %d %B %Y"),
-            "solo_muc_prompt": (
-                "You are in a multi-users chat."
-                if is_muc
-                else "You are in a private conversation."
-            ),
-        }
-    )
-
-    return response
+def get_llm(llm_model: LLMModel):
+    return llms[llm_model]

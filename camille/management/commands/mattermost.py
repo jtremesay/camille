@@ -13,15 +13,25 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
+import asyncio
+
 from django.core.management.base import BaseCommand
 
 import camille.settings as camille_settings
-from camille.agent.shell import ShellAgent
+from camille.agent.mattermost import MattermostAgent
 
 
 class Command(BaseCommand):
-    def handle(self, *args, **options):
-        agent = ShellAgent(
-            name=camille_settings.AGENT_NAME, window_size=camille_settings.WINDOW_SIZE
+    help = "The Mattermost agent for Camille."
+
+    async def arun(self):
+        agent = MattermostAgent(
+            camille_settings.MATTERMOST_HOST,
+            camille_settings.MATTERMOST_API_TOKEN,
+            name=camille_settings.AGENT_NAME,
+            window_size=camille_settings.WINDOW_SIZE,
         )
-        agent.run()
+        await agent.arun()
+
+    def handle(self, *args, **options):
+        asyncio.run(self.arun())

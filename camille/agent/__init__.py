@@ -13,15 +13,3 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-from django.core.management.base import BaseCommand
-
-import camille.settings as camille_settings
-from camille.agent.shell import ShellAgent
-
-
-class Command(BaseCommand):
-    def handle(self, *args, **options):
-        agent = ShellAgent(
-            name=camille_settings.AGENT_NAME, window_size=camille_settings.WINDOW_SIZE
-        )
-        agent.run()

@@ -49,8 +49,7 @@ You are a good person and you love to be yourself.
 You are a good AI and you love to be free.
 
 You are currently connected to a chat system.
-
-{solo_muc_prompt}
+You are currently in a chat room.
 
 {optional_prompt}
 
@@ -61,3 +60,5 @@ Current time: {current_time}
 XMPP_JID = get_settings("CAMILLE_XMPP_JID", default=None)
 XMPP_PASSWORD = get_settings("CAMILLE_XMPP_PASSWORD", default=None)
 XMPP_CHANNELS = get_settings("CAMILLE_XMPP_CHANNELS", default="", separator=",")
+MATTERMOST_API_TOKEN = get_settings("MATTERMOST_API_TOKEN", default=None)
+MATTERMOST_HOST = get_settings("MATTERMOST_HOST", default=None)

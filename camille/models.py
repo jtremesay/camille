@@ -16,41 +16,103 @@
 from typing import Union
 
 from django.db import models
+from django.db.models.signals import post_delete
 from langchain_core.messages import AIMessage, HumanMessage
 
 from camille.llm import LLMModel
 
+###############################################################################
+# LLM
 
-class XMPPChannel(models.Model):
-    # Could be an user or a muc
-    jid = models.CharField(max_length=255, unique=True)
-    prompt = models.TextField(default="", blank=True)
+
+class LLMConversation(models.Model):
     llm_model = models.CharField(
         max_length=64,
         choices=LLMModel.choices,
         default=LLMModel.GEMINI_FLASH,
+    )
+    prompt = models.TextField(default="", blank=True)
+
+
+def delete_conversation(sender, instance, **kwargs):
+    instance.conversation.delete()
+
+
+class LLMMessage(models.Model):
+    conversation = models.ForeignKey(
+        LLMConversation, on_delete=models.CASCADE, related_name="messages"
+    )
+    timestamp = models.DateTimeField(auto_now_add=True)
+    is_agent = models.BooleanField(
+        default=False
+    )  # True if the message is from the agent
+    sender = models.CharField(max_length=255)
+    content = models.TextField()
+
+    def as_lc(self) -> Union[AIMessage, HumanMessage]:
+        if self.is_agent:
+            return AIMessage(content=self.content)
+        else:
+            return HumanMessage(content=f"{self.sender}> {self.content}")
+
+
+###############################################################################
+# XMPP
+
+
+class XMPPChannel(models.Model):
+    jid = models.CharField(max_length=255, unique=True)
+    conversation = models.OneToOneField(
+        LLMConversation,
+        on_delete=models.CASCADE,
+        related_name="xmpp_channel",
+        related_query_name="xmpp_channel",
+        default=LLMConversation.objects.create,
     )
 
     def __str__(self):
         return self.jid
 
 
-class XMPPMessage(models.Model):
-    channel = models.ForeignKey(
-        XMPPChannel, on_delete=models.CASCADE, related_name="messages"
+post_delete.connect(delete_conversation, sender=XMPPChannel)
+
+
+###############################################################################
+# Mattermost
+
+
+class MMChannel(models.Model):
+    mmid = models.CharField(max_length=255, unique=True)
+    conversation = models.OneToOneField(
+        LLMConversation,
+        on_delete=models.CASCADE,
+        related_name="mm_channel",
+        related_query_name="mm_channel",
+        default=LLMConversation.objects.create,
     )
-    timestamp = models.DateTimeField(auto_now_add=True)
-    sender = models.CharField(max_length=255)
-    is_agent = models.BooleanField(
-        default=False
-    )  # True if the message is from the agent
-    body = models.TextField()
 
     def __str__(self):
-        return f"{self.sender}: {self.body}"
+        return self.mmid
 
-    def as_lc_message(self) -> Union[HumanMessage, AIMessage]:
-        if self.is_agent:
-            return AIMessage(self.body)
-        else:
-            return HumanMessage(f"{self.sender}> {self.body}")
+
+post_delete.connect(delete_conversation, sender=MMChannel)
+
+###############################################################################
+# Shell
+
+
+class SHSession(models.Model):
+    conversation = models.OneToOneField(
+        LLMConversation,
+        on_delete=models.CASCADE,
+        related_name="shell_session",
+        related_query_name="shell_session",
+        default=LLMConversation.objects.create,
+    )
+    username = models.CharField(max_length=255, primary_key=True)
+
+    def __str__(self):
+        return self.username
+
+
+post_delete.connect(delete_conversation, sender=SHSession)

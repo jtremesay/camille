@@ -15,13 +15,19 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from django.core.management.base import BaseCommand
 
-from camille.xmpp import XMPPBot
+import camille.settings as camille_settings
+from camille.agent.xmpp import XmppAgent
 
 
 class Command(BaseCommand):
     help = "The XMPP agent for Camille."
 
     def handle(self, *args, **options):
-        bot = XMPPBot()
-        bot.connect()
-        bot.process(forever=False)
+        agent = XmppAgent(
+            jid=camille_settings.XMPP_JID,
+            password=camille_settings.XMPP_PASSWORD,
+            channels=camille_settings.XMPP_CHANNELS,
+            name=camille_settings.AGENT_NAME,
+            window_size=camille_settings.WINDOW_SIZE,
+        )
+        agent.run()

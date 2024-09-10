@@ -48,9 +48,6 @@ services:
       - "traefik.http.routers.camille.service=camille"
       - "traefik.http.routers.camille.tls.certresolver=leresolver"
       - "traefik.http.services.camille.loadbalancer.server.port=8000"
-    deploy:
-      labels:
-        - shepherd.autodeploy=false
 
   camille-xmpp:
     image: "killruana/camille:main"
@@ -73,9 +70,25 @@ services:
       - "camille_xmpp_password"
       - "camille_xmpp_channels"
       - "google_api_key"
-    deploy:
-      labels:
-        - shepherd.autodeploy=false
+
+  camille-mattermost:
+    image: "killruana/camille:main"
+    command: [ "python3", "manage.py", "mattermost" ]
+    environment:
+      - "DATABASE_URL=postgres://camille:camille@postgres:5432/camille"
+      - "ALLOWED_HOSTS=camille.jtremesay.org,camille.slaanesh.org"
+      - "SECRET_KEY_FILE=/run/secrets/camille_secret_key"
+      - "MATTERMOST_HOST=https://mattermost.jtremesay.org"
+      - "MATTERMOST_API_TOKEN_FILE=/run/secrets/camille_mattermost_api_token"
+      - "GOOGLE_API_KEY_FILE=/run/secrets/google_api_key"
+    volumes:
+      - "camille_data:/var/lib/camille"
+    networks:
+      - "database"
+    secrets:
+      - "camille_secret_key"
+      - "camille_mattermost_api_token"
+      - "google_api_key"
 
 volumes:
   openwebui_data:
@@ -92,6 +105,8 @@ networks:
 
 secrets:
   camille_secret_key:
+    external: true
+  camille_mattermost_api_token:
     external: true
   camille_xmpp_jid:
     external: true
