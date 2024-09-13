@@ -31,4 +31,4 @@ COPY entrypoint.sh ./
 COPY camille/ camille/
 
 ENTRYPOINT [ "/opt/camille/entrypoint.sh" ]
-CMD [ "python", "-m", "camille" ]
+CMD [ "python", "-m", "camille", "--log-level", "DEBUG" ]
