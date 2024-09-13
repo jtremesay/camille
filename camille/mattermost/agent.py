@@ -332,7 +332,7 @@ class MattermostAgent(MattermostClient):
             channel_instruction="",
             current_time=datetime.now(timezone.utc).isoformat(),
         )
-        logger.debug("system_instruction: %s", system_instruction)
+        # logger.debug("system_instruction: %s", system_instruction)
 
         # Get the response of the LLM
         try:
