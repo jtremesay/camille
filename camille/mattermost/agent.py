@@ -17,6 +17,7 @@ import json
 import logging
 from datetime import datetime, timezone
 from enum import StrEnum
+from pprint import pprint
 from string import Template
 
 import google.generativeai as genai
@@ -112,27 +113,27 @@ class MattermostAgent(MattermostClient):
         """
         self.me = await self.api.get_user("me")
 
-        # Say hello to all channels
-        for team in await self.api.get_teams():
-            team_id = team["id"]
-            for channel in await self.api.get_user_channels("me", team_id):
-                if channel["type"] not in ("O", "P"):
-                    continue
+        # # Say hello to all channels
+        # for team in await self.api.get_teams():
+        #     team_id = team["id"]
+        #     for channel in await self.api.get_user_channels("me", team_id):
+        #         if channel["type"] not in ("O", "P"):
+        #             continue
 
-                # Ignore the default channel
-                if channel["name"] == "town-square":
-                    continue
+        #         # Ignore the default channel
+        #         if channel["name"] == "town-square":
+        #             continue
 
-                channel_id, channel_name = channel["id"], channel["name"]
-                logger.info(
-                    "Connected to channel to %s.%s (%s)",
-                    team_id,
-                    channel_id,
-                    channel_name,
-                )
-                # await self.api.post_post(
-                #     channel_id, f"Hello from {self.me['first_name']}"
-                # )
+        #         channel_id, channel_name = channel["id"], channel["name"]
+        #         logger.info(
+        #             "Connected to channel to %s.%s (%s)",
+        #             team_id,
+        #             channel_id,
+        #             channel_name,
+        #         )
+        #         # await self.api.post_post(
+        #         #     channel_id, f"Hello from {self.me['first_name']}"
+        #         # )
 
     async def on_posted(self, data: dict, broadcast: dict, seq: int) -> None:
         """Handle the posted event
@@ -142,6 +143,7 @@ class MattermostAgent(MattermostClient):
             broadcast (dict): Broadcast data
             seq (int): Sequence number
         """
+        # pprint(data)
         post_data = json.loads(data["post"])
         user_id = post_data["user_id"]
         message = post_data["message"]
@@ -149,101 +151,78 @@ class MattermostAgent(MattermostClient):
         post_id = post_data["id"]
         channel_id = post_data["channel_id"]
         channel_name = data["channel_display_name"]
-        contents = None
-        if not root_id:
-            root_id = post_id
-            # This is a root message
-            # we should decide if we should track it or ignore it
-            if self.is_message_ignorable(user_id, message):
-                self.ignored_root_ids.add(root_id)
 
-                # Handle command
-                if message.startswith("\\"):
-                    await self.handle_command(message[1:], channel_id, root_id)
+        # Ignore our own messages
+        if user_id == self.me["id"]:
+            return
 
-                return
+        # Ignore messages that start with the ignore character
+        if message.startswith("."):
+            return
 
-            # If we are here, we should track this message
-            self.tracked_root_ids.add(root_id)
+        # Ignore threads for now
+        if root_id:
+            return
 
-            # TODO: Start a conversation between the bot and the user
-            # could be nice if the history if filled with the previous messages
-            # so personnality is "kind of persistent"
-
-            contents = [
-                {
-                    "role": "user",
-                    "parts": [message],
+        # Send writing notification
+        self.max_seq += 1
+        await self.ws.send_json(
+            {
+                "action": "user_typing",
+                "seq": self.max_seq,
+                "data": {
+                    "channel_id": channel_id,
                 },
-            ]
+            }
+        )
 
-        else:
-            # So this is a reply to a message
-            if root_id in self.ignored_root_ids:
-                # Ignore messages that are replies to ignored messages
-                return
+        # Get channel posts
+        r = await self.api.get_posts(channel_id, per_page=WINDOW_SIZE)
+        posts = []
+        for pid in reversed(r["order"]):
+            p = r["posts"][pid]
+            if p.get("deleted_at"):
+                continue
 
-            # Is the root message tracked?
-            if root_id not in self.tracked_root_ids:
-                # Schrodinger's message that is not ignored and not tracked
-                # it's a reply to a message that we haven't seen yet
-                # get the root message and decide if we should track it
-                root_post = await self.api.get_post(root_id)
-                root_user_id = root_post["user_id"]
-                root_message = root_post["message"]
-                if self.is_message_ignorable(root_user_id, root_message):
-                    self.ignored_root_ids.add(root_id)
-                    return
+            if p["root_id"]:
+                continue
 
-                self.tracked_root_ids.add(root_id)
+            if p["message"].startswith("\\"):
+                continue
 
-            # This is a reply to a tracked message
+            if p["message"].startswith("."):
+                continue
 
-            if self.is_message_ignorable(user_id, message):
-                # Ignore the message
-                return
+            posts.append(p)
 
-            thread = await self.api.get_thread(
-                root_id, direction="down", per_page=WINDOW_SIZE, from_post=post_id
-            )
+        # Gemini doesn't like when first message is from the bot
+        while posts and posts[0]["user_id"] == self.me["id"]:
+            posts.pop(0)
 
-            # TODO: Filter ignorable messages?
-            messages = sorted(
-                filter(lambda p: p.get("deleted_at", 0) == 0, thread["posts"].values()),
-                key=lambda p: p["create_at"],
-            )
-
-            # Gemini doesn't like when first message is from the bot
-            while messages and messages[0]["user_id"] == self.me["id"]:
-                messages.pop(0)
-
-            contents = []
-            for m in messages:
-                if m["user_id"] == self.me["id"]:
-                    contents.append(
-                        {
-                            "role": "model",
-                            "parts": [m["message"]],
-                        }
-                    )
-                else:
-                    contents.append(
-                        {
-                            "role": "user",
-                            "parts": [m["message"]],
-                        }
-                    )
+        # Build contents
+        contents = []
+        for p in posts:
+            if p["user_id"] == self.me["id"]:
+                contents.append(
+                    {
+                        "role": "model",
+                        "parts": [p["message"]],
+                    }
+                )
+            else:
+                contents.append(
+                    {
+                        "role": "user",
+                        "parts": [p["message"]],
+                    }
+                )
 
         if not contents:
             return
 
-        if len(contents) < WINDOW_SIZE * 0.75:
-            # TODO: Gather messages from the past to fill the window
-            # So the personnality will be more consistent
-            pass
+        pprint(contents)
 
-        # pprint(contents)
-
+        # Build channel info
         if data["channel_type"] == "P":
             channel_info = f"You are in the private channel {channel_name}."
         elif data["channel_type"] == "O":
@@ -253,6 +232,7 @@ class MattermostAgent(MattermostClient):
         else:
             channel_info = ""
 
+        # Build system instruction
         system_instruction = SYSTEM_INSTRUCTION_TPL.safe_substitute(
             name=self.me["first_name"],
             channel_info=channel_info,
@@ -261,17 +241,6 @@ class MattermostAgent(MattermostClient):
         )
         logger.debug("system_instruction: %s", system_instruction)
 
-        self.max_seq += 1
-        await self.ws.send_json(
-            {
-                "action": "user_typing",
-                "seq": self.max_seq,
-                "data": {
-                    "channel_id": channel_id,
-                    "parent_id": "",
-                },
-            }
-        )
         try:
             model = genai.GenerativeModel(
                 DEFAULT_MODEL,
@@ -288,11 +257,8 @@ class MattermostAgent(MattermostClient):
             except IndexError:
                 return
 
-            await self.api.post_post(
-                channel_id,
-                canditate.content.parts[0].text,
-                root_id=root_id,
-            )
+            content = canditate.content.parts[0].text
+            pprint(content)
         except Exception as e:
             logger.error("failed to generate content: %s", e)
             await self.api.post_post(
@@ -300,8 +266,15 @@ class MattermostAgent(MattermostClient):
                 f"Error: ```\n{e}\n```",
                 root_id=root_id,
             )
+            pprint(r)
 
             raise e
+
+        await self.api.post_post(
+            channel_id,
+            content,
+            root_id=root_id,
+        )
 
     def is_message_ignorable(self, user_id: str, message: str) -> bool:
         """Check if a message should be ignored
