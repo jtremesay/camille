@@ -15,104 +15,25 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 version: '3.8'
 services:
-  postgres:
-    image: "postgres:16"
-    environment:
-      - "POSTGRES_USER=camille"
-      - "POSTGRES_PASSWORD=camille"
-      - "POSTGRES_DB=camille"
-    networks:
-      - "database"
-    volumes:
-      - "postgres_data:/var/lib/postgresql/data"
-
-  camille-web:
+  camille:
     image: "killruana/camille:main"
     environment:
-      - "DATABASE_URL=postgres://camille:camille@postgres:5432/camille"
-      - "ALLOWED_HOSTS=camille.jtremesay.org,camille.slaanesh.org"
-      - "SECRET_KEY_FILE=/run/secrets/camille_secret_key"
-      - "GOOGLE_API_KEY_FILE=/run/secrets/google_api_key"
-    volumes:
-      - "camille_data:/var/lib/camille"
-    secrets:
-      - "camille_secret_key"
-      - "google_api_key"
-    networks:
-      - "database"
-      - "traefik_public"
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.camille.entrypoints=websecure"
-      - "traefik.http.routers.camille.rule=Host(`camille.jtremesay.org`) || Host(`camille.slaanesh.org`)"
-      - "traefik.http.routers.camille.service=camille"
-      - "traefik.http.routers.camille.tls.certresolver=leresolver"
-      - "traefik.http.services.camille.loadbalancer.server.port=8000"
-
-  # camille-xmpp:
-  #   image: "killruana/camille:main"
-  #   command: [ "python3", "manage.py", "xmpp" ]
-  #   environment:
-  #     - "DATABASE_URL=postgres://camille:camille@postgres:5432/camille"
-  #     - "ALLOWED_HOSTS=camille.jtremesay.org,camille.slaanesh.org"
-  #     - "SECRET_KEY_FILE=/run/secrets/camille_secret_key"
-  #     - "CAMILLE_XMPP_JID_FILE=/run/secrets/camille_xmpp_jid"
-  #     - "CAMILLE_XMPP_PASSWORD_FILE=/run/secrets/camille_xmpp_password"
-  #     - "CAMILLE_XMPP_CHANNELS_FILE=/run/secrets/camille_xmpp_channels"
-  #     - "GOOGLE_API_KEY_FILE=/run/secrets/google_api_key"
-  #   volumes:
-  #     - "camille_data:/var/lib/camille"
-  #   networks:
-  #     - "database"
-  #   secrets:
-  #     - "camille_secret_key"
-  #     - "camille_xmpp_jid"
-  #     - "camille_xmpp_password"
-  #     - "camille_xmpp_channels"
-  #     - "google_api_key"
-
-  camille-mattermost:
-    image: "killruana/camille:main"
-    command: [ "python3", "manage.py", "mattermost" ]
-    environment:
-      - "DATABASE_URL=postgres://camille:camille@postgres:5432/camille"
-      - "ALLOWED_HOSTS=camille.jtremesay.org,camille.slaanesh.org"
-      - "SECRET_KEY_FILE=/run/secrets/camille_secret_key"
       - "MATTERMOST_HOST=https://mattermost.jtremesay.org"
       - "MATTERMOST_API_TOKEN_FILE=/run/secrets/camille_mattermost_api_token"
       - "GOOGLE_API_KEY_FILE=/run/secrets/google_api_key"
     volumes:
       - "camille_data:/var/lib/camille"
-    networks:
-      - "database"
     secrets:
       - "camille_secret_key"
       - "camille_mattermost_api_token"
       - "google_api_key"
 
 volumes:
-  openwebui_data:
-  ollama_data:
-  mindsdb_data:
-  postgres_data:
   camille_data:
 
 
-networks:
-  database:
-  traefik_public:
-    external: true
-
 secrets:
-  camille_secret_key:
-    external: true
   camille_mattermost_api_token:
-    external: true
-  camille_xmpp_jid:
-    external: true
-  camille_xmpp_password:
-    external: true
-  camille_xmpp_channels:
     external: true
   google_api_key:
     external: true

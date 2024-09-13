@@ -26,17 +26,8 @@ WORKDIR /opt/laura
 COPY requirements.txt ./
 RUN pip install -Ur requirements.txt
 
-# Install other stuff
-COPY manage.py entrypoint.sh ./
-COPY proj/ proj/
+# Copy files
 COPY camille/ camille/
 
-# Theses variables need to exists before using manage.py
-ARG SECRET_KEY="build-key"
-ARG GOOGLE_API_KEY="build-key"
-
-# Collect static files
-RUN python3 manage.py collectstatic --noinput
-
 ENTRYPOINT [ "/opt/laura/entrypoint.sh" ]
-CMD [ "daphne", "-b", "0.0.0.0", "proj.asgi:application"]
+CMD [ "python", "-m", "camille" ]

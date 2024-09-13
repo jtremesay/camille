@@ -13,9 +13,8 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-from django.apps import AppConfig
+import asyncio
 
+from camille import main
 
-class CamilleConfig(AppConfig):
-    default_auto_field = "django.db.models.BigAutoField"
-    name = "camille"
+asyncio.run(main())
