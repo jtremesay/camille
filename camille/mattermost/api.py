@@ -301,3 +301,28 @@ class MattermostAPIClient:
                 },
                 data=await f.read(),
             )
+
+    async def get_channel_members(
+        self,
+        channel_id: str,
+        page: Optional[int] = None,
+        per_page: Optional[int] = None,
+    ) -> dict:
+        """Get channel members
+
+        Args:
+            channel_id (str): Channel ID
+            page (int): Page number
+            per_page (int): Number of members per page
+
+
+        Returns:
+            dict: Channel members
+        """
+        params = {}
+        if page is not None:
+            params["page"] = page
+        if per_page is not None:
+            params["per_page"] = per_page
+
+        return await self.get(f"channels/{channel_id}/members", params=params)

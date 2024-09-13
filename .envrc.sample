@@ -1,10 +1,5 @@
 layout python python3
 
-export CAMILLE_XMPP_JID=""
-export CAMILLE_XMPP_PASSWORD=""
-export CAMILLE_XMPP_CHANNELS=""
-export GOOGLE_API_KEY=""
-export TAVILY_API_KEY=""
-export OPENWEATHERMAP_API_KEY=""
+export GEMINI_API_KEY=""
 export MATTERMOST_API_TOKEN=""
 export MATTERMOST_HOST=""

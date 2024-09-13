@@ -20,17 +20,12 @@ services:
     environment:
       - "MATTERMOST_HOST=https://mattermost.jtremesay.org"
       - "MATTERMOST_API_TOKEN_FILE=/run/secrets/camille_mattermost_api_token"
-      - "GOOGLE_API_KEY_FILE=/run/secrets/google_api_key"
+      - "GEMINI_API_KEY_FILE=/run/secrets/google_api_key"
     volumes:
       - "camille_data:/var/lib/camille"
     secrets:
-      - "camille_secret_key"
       - "camille_mattermost_api_token"
       - "google_api_key"
-
-volumes:
-  camille_data:
-
 
 secrets:
   camille_mattermost_api_token:

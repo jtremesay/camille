@@ -95,8 +95,11 @@ class MattermostAgent(MattermostClient):
         """
         super().__init__(host, api_token)
         self.me: dict = None  # User informations related to the bot
-        self.tracked_root_ids = set()  # Root messages that we are tracking
-        self.ignored_root_ids = set()  # Root messages that we are ignoring
+        
+        self._users: dict[str, dict] = {}
+        self._channels: dict[str, dict] = {}
+        self._users_in_channels: dict[str, list[str]] = {}
+
         self.register_handler(MattermostEvent.hello, self.on_hello)
         self.register_handler(MattermostEvent.posted, self.on_posted)
 
@@ -111,29 +114,36 @@ class MattermostAgent(MattermostClient):
             broadcast (dict): Broadcast data
             seq (int): Sequence number
         """
+        # Get user informations
         self.me = await self.api.get_user("me")
 
-        # # Say hello to all channels
-        # for team in await self.api.get_teams():
-        #     team_id = team["id"]
-        #     for channel in await self.api.get_user_channels("me", team_id):
-        #         if channel["type"] not in ("O", "P"):
-        #             continue
+        # Fetch the list of channels we are in and the users in these channels
+        for team in await self.api.get_teams():
+            team_id = team["id"]
+            for channel in await self.api.get_user_channels("me", team_id):
+                # Ignore DM
+                if channel["type"] not in ("O", "P"):
+                    continue
 
-        #         # Ignore the default channel
-        #         if channel["name"] == "town-square":
-        #             continue
+                # Ignore the default channel
+                if channel["name"] == "town-square":
+                    continue
 
-        #         channel_id, channel_name = channel["id"], channel["name"]
-        #         logger.info(
-        #             "Connected to channel to %s.%s (%s)",
-        #             team_id,
-        #             channel_id,
-        #             channel_name,
-        #         )
-        #         # await self.api.post_post(
-        #         #     channel_id, f"Hello from {self.me['first_name']}"
-        #         # )
+                self._channels[channel["id"]] = channel
+
+                # Get users in the channel
+                channel_members = await self.api.get_channel_members(channel["id"])
+                for cm in channel_members:
+                    user_id = cm["user_id"]
+                    if user_id == self.me["id"]:
+                        continue
+
+                    self._users_in_channels.setdefault(channel["id"], []).append(
+                        user_id
+                    )
+
+                    if not self._users.get(user_id):
+                        self._users[user_id] = await self.api.get_user(user_id)
 
     async def on_posted(self, data: dict, broadcast: dict, seq: int) -> None:
         """Handle the posted event
@@ -151,17 +161,26 @@ class MattermostAgent(MattermostClient):
         post_id = post_data["id"]
         channel_id = post_data["channel_id"]
         channel_name = data["channel_display_name"]
+        channel_type = data["channel_type"]
+
+        # Ignore DM
+        if channel_type == "D":
+            logger.debug("Ignoring DM")
+            return
 
         # Ignore our own messages
         if user_id == self.me["id"]:
+            logger.debug("Ignoring our own message")
             return
 
         # Ignore messages that start with the ignore character
         if message.startswith("."):
+            logger.debug("Ignoring command")
             return
 
         # Ignore threads for now
         if root_id:
+            logger.debug("Ignoring threads")
             return
 
         # Send writing notification
@@ -210,23 +229,54 @@ class MattermostAgent(MattermostClient):
                     }
                 )
             else:
+                user = self._users.get(p["user_id"])
+                user_name = user.get("nickname")
+                if not user_name:
+                    user_name = user.get("first_name")
+                if not user_name:
+                    user_name = user["username"]
+                    if user_name.startswith("@"):
+                        user_name = user_name[1:]
+
                 contents.append(
                     {
                         "role": "user",
-                        "parts": [p["message"]],
+                        "parts": [f"{user_name}> {p["message"]}"],
                     }
                 )
 
         if not contents:
+            logger.debug("No contents")
             return
 
-        pprint(contents)
+        # pprint(contents)
+        logger.debug("contents: %s", contents)
 
         # Build channel info
-        if data["channel_type"] == "P":
-            channel_info = f"You are in the private channel {channel_name}."
-        elif data["channel_type"] == "O":
-            channel_info = f"You are in the public channel {channel_name}."
+        if data["channel_type"] in ("O", "P"):
+            if data["channel_type"] == "P":
+                channel_info = f"You are in the private channel {channel_name}."
+            elif data["channel_type"] == "O":
+                channel_info = f"You are in the public channel {channel_name}."
+
+            channel_info += f"\nUsers in the channel:"
+            for user_id in self._users_in_channels.get(channel_id, []):
+                user = self._users.get(user_id)
+                if user:
+                    channel_info += "\n- "
+
+                    name = user.get("nickname")
+                    if not name:
+                        name = user.get("first_name")
+
+                    username = user["username"]
+                    if username.startswith("@"):
+                        username = username[1:]
+
+                    if name:
+                        channel_info += name + " also known as "
+                    channel_info += username
+
         elif data["channel_type"] == "D":
             channel_info = f"You are in direct messages with {channel_name}."
         else:
@@ -241,6 +291,7 @@ class MattermostAgent(MattermostClient):
         )
         logger.debug("system_instruction: %s", system_instruction)
 
+        # Get the response of the LLM
         try:
             model = genai.GenerativeModel(
                 DEFAULT_MODEL,
@@ -258,7 +309,8 @@ class MattermostAgent(MattermostClient):
                 return
 
             content = canditate.content.parts[0].text
-            pprint(content)
+            logger.debug("content: %s", content)
+            # pprint(content)
         except Exception as e:
             logger.error("failed to generate content: %s", e)
             await self.api.post_post(
@@ -276,63 +328,46 @@ class MattermostAgent(MattermostClient):
             root_id=root_id,
         )
 
-    def is_message_ignorable(self, user_id: str, message: str) -> bool:
-        """Check if a message should be ignored
+#     async def handle_command(self, message: str, channel_id: str, post_id: str) -> None:
+#         """Handle a command
 
-        A message is ignored if it is from the bot itself, or if it is a command,
-        or if the message starts with the ignore character
+#         Args:
+#             message (str): Command message
+#         """
+#         command, *args = message.split(maxsplit=1)
+#         match command:
+#             # Show the source code
+#             # (AGPL license, you can use it but you must share your modifications)
+#             case "source":
+#                 r = await self.api.upload_file(channel_id, __file__)
+#                 files_ids = [fi["id"] for fi in r["file_infos"]]
+#                 await self.api.post_post(
+#                     channel_id,
+#                     "Here my source code!",
+#                     file_ids=files_ids,
+#                     root_id=post_id,
+#                 )
 
-        Args:
-            user_id (str): User ID
-            message (str): Message
-        """
-        return (
-            user_id == self.me["id"]
-            or message.startswith(".")
-            or message.startswith("\\")
-            or message.startswith("/")
-        )
+#             # Show the help message
+#             case "help":
+#                 await self.api.post_post(
+#                     channel_id,
+#                     """\
+# Camille - An AI assistant
+# Copyright (C) 2024 Jonathan Tremesaygues <jonathan.tremesaygues@slaanesh.org>
 
-    async def handle_command(self, message: str, channel_id: str, post_id: str) -> None:
-        """Handle a command
+# Available commands:
 
-        Args:
-            message (str): Command message
-        """
-        command, *args = message.split(maxsplit=1)
-        match command:
-            # Show the source code
-            # (AGPL license, you can use it but you must share your modifications)
-            case "source":
-                r = await self.api.upload_file(channel_id, __file__)
-                files_ids = [fi["id"] for fi in r["file_infos"]]
-                await self.api.post_post(
-                    channel_id,
-                    "Here my source code!",
-                    file_ids=files_ids,
-                    root_id=post_id,
-                )
+# - `help`: Show this help message
+# - `source`: Get the source code of Camille
+# """,
+#                     root_id=post_id,
+#                 )
 
-            # Show the help message
-            case "help":
-                await self.api.post_post(
-                    channel_id,
-                    """\
-Camille - An AI assistant
-Copyright (C) 2024 Jonathan Tremesaygues <jonathan.tremesaygues@slaanesh.org>
-
-Available commands:
-
-- `help`: Show this help message
-- `source`: Get the source code of Camille
-""",
-                    root_id=post_id,
-                )
-
-            # Unknown command
-            case _:
-                await self.api.post_post(
-                    channel_id,
-                    f"Unknown command: {command}. Try `\\help`",
-                    root_id=post_id,
-                )
+#             # Unknown command
+#             case _:
+#                 await self.api.post_post(
+#                     channel_id,
+#                     f"Unknown command: {command}. Try `\\help`",
+#                     root_id=post_id,
+#                 )

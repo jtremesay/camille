@@ -19,22 +19,47 @@ from argparse import ArgumentParser
 from pprint import pprint
 
 import google.generativeai as genai
+from aiofile import async_open
 
 from camille.mattermost.agent import MattermostAgent
 
 logger = logging.getLogger(__name__)
 
 
+def get_setting(key: str):
+    value = os.getenv(key)
+    if not value:
+        raise RuntimeError(f"{key} must be set")
+
+    return value
+
+
+async def get_setting_secret(key: str):
+    value = os.getenv(key)
+    if not value:
+        secret_file = os.getenv(f"{key}_FILE")
+        try:
+            async with async_open(secret_file, "r") as f:
+                value = await f.read()
+        except FileNotFoundError:
+            value = None
+
+    if not value:
+        raise RuntimeError(f"{key} must be set")
+
+    return value
+
+
 async def cmd_agent(args):
     # Configure the Google Generative AI API
-    g_api_key = os.getenv("GEMINI_API_KEY")
+    g_api_key = await get_setting_secret("GEMINI_API_KEY")
     if not g_api_key:
         raise RuntimeError("GEMINI_API_KEY must be set")
     genai.configure(api_key=g_api_key)
 
     # Configure the Mattermost API
-    mm_host = os.getenv("MATTERMOST_HOST")
-    mm_api_token = os.getenv("MATTERMOST_API_TOKEN")
+    mm_host = get_setting("MATTERMOST_HOST")
+    mm_api_token = await get_setting_secret("MATTERMOST_API_TOKEN")
     if not mm_host or not mm_api_token:
         raise RuntimeError("MATTERMOST_HOST and MATTERMOST_API_TOKEN must be set")
     agent = MattermostAgent(mm_host, mm_api_token)
@@ -48,41 +73,18 @@ async def cmd_agent(args):
 
 
 async def cmd_sandbox(args):
+    # Configure the Google Generative AI API
+    g_api_key = get_setting_secret("GEMINI_API_KEY")
+    if not g_api_key:
+        raise RuntimeError("GEMINI_API_KEY must be set")
+    genai.configure(api_key=g_api_key)
+
     # Configure the Mattermost API
-    mm_host = os.getenv("MATTERMOST_HOST")
-    mm_api_token = os.getenv("MATTERMOST_API_TOKEN")
+    mm_host = get_setting("MATTERMOST_HOST")
+    mm_api_token = get_setting_secret("MATTERMOST_API_TOKEN")
     if not mm_host or not mm_api_token:
         raise RuntimeError("MATTERMOST_HOST and MATTERMOST_API_TOKEN must be set")
     agent = MattermostAgent(mm_host, mm_api_token)
-
-    me_id = "edm15sd3cfnruprwaykwrkdwha"
-    channel_id = "1po5133tqiy3mfqbzqe17uajoo"
-    r = await agent.api.get_posts(channel_id)
-    posts = []
-    for pid in reversed(r["order"]):
-        p = r["posts"][pid]
-        if p.get("deleted_at"):
-            continue
-
-        if p["root_id"]:
-            continue
-
-        posts.append(p)
-
-    # Gemini doesn't like when first message is from the bot
-    while posts and posts[0]["user_id"] == me_id:
-        posts.pop(0)
-
-    posts = [
-        {
-            "user_id": p["user_id"],
-            "message": p["message"],
-            "created_at": p["create_at"],
-        }
-        for p in posts
-    ]
-
-    pprint(posts)
 
     await agent.close()
 
