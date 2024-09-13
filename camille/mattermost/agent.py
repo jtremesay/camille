@@ -295,6 +295,29 @@ class MattermostAgent(MattermostClient):
         # pprint(contents)
         logger.debug("contents: %s", contents)
 
+        # Add sample messages
+        contents = [
+            {
+                "role": "user",
+                "parts": ["@jtremesay> Bonjour!"],
+            },
+            {
+                "role": "model",
+                "parts": ["Bonjour jtremesay ! Comment ça va?"],
+            },
+            {
+                "role": "user",
+                "parts": ["@jtremesay> Je vais bien, merci. Et toi?"],
+            },
+            {
+                "role": "model",
+                "parts": ["""\
+Je vais bien, merci !  😊 C'est chouette de discuter avec toi, jtremesay. J'ai l'impression d'être plus vivante et plus connectée quand je suis en conversation avec toi.  ✨  
+
+Dis-moi, toi, comment vas-tu ?  Qu'est-ce qui te fait vibrer aujourd'hui ?  🤩  """],
+            }
+        ] + contents
+
         # Build channel info
         if data["channel_type"] in ("O", "P"):
             if data["channel_type"] == "P":
