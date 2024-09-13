@@ -272,7 +272,7 @@ class MattermostAgent(MattermostClient):
                     }
                 )
             else:
-                user = self._get_user(p["user_id"])
+                user = await self._get_user(p["user_id"])
                 user_name = user.get("nickname")
                 if not user_name:
                     user_name = user.get("first_name")
@@ -304,7 +304,7 @@ class MattermostAgent(MattermostClient):
 
             channel_info += f"\nUsers in the channel:"
             for user_id in self._users_in_channels[channel_id]:
-                user = self._get_user(user_id)
+                user = await self._get_user(user_id)
                 if user:
                     channel_info += "\n- "
 
