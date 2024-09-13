@@ -112,6 +112,7 @@ class MattermostAgent(MattermostClient):
         # Ignore some events
         # (not handled events generate a warning)
         self.register_handler(MattermostEvent.status_change, self.noop)
+        self.register_handler(MattermostEvent.typing, self.noop)
 
     async def noop(self, *args, **kwargs) -> None:
         """No operation"""
