@@ -170,7 +170,9 @@ class MattermostClient:
         try:
             handlers = self.events_handlers[event]
         except KeyError:
-            # logger.warning("no handler for event: %s", event)
+            logger.warning(
+                "no handler for event: %s %s %s %i", event, data, broadcast, seq
+            )
             return
 
         for handler in handlers:

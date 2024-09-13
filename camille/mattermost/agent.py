@@ -15,6 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import json
 import logging
+from collections import defaultdict
 from datetime import datetime, timezone
 from enum import StrEnum
 from pprint import pprint
@@ -98,10 +99,63 @@ class MattermostAgent(MattermostClient):
         
         self._users: dict[str, dict] = {}
         self._channels: dict[str, dict] = {}
-        self._users_in_channels: dict[str, list[str]] = {}
+        self._users_in_channels: defaultdict[str, set[str]] = defaultdict(default_factory=set)
 
         self.register_handler(MattermostEvent.hello, self.on_hello)
         self.register_handler(MattermostEvent.posted, self.on_posted)
+        self.register_handler(MattermostEvent.user_added, self.on_user_added)
+        self.register_handler(MattermostEvent.user_removed, self.on_user_removed)
+
+    async def _get_user(self, user_id: str) -> dict:
+        """Get a user
+
+        Args:
+            user_id (str): User ID
+
+        Returns:
+            dict: User informations
+        """
+        user = self._users.get(user_id)
+        if not user:
+            user = await self.api.get_user(user_id)
+            if not user:
+                return None
+            self._users[user_id] = user
+
+        return user
+    
+    async def _get_channel(self, channel_id: str) -> dict:
+        """Get a channel
+
+        Args:
+            channel_id (str): Channel ID
+
+        Returns:
+            dict: Channel informations
+        """
+        channel = self._channels.get(channel_id)
+        if not channel:
+            channel = await self.api.get_channel(channel_id)
+            if not channel:
+                return None
+            
+            self._channels[channel_id] = channel
+
+            # Get users in the channel
+            channel_members = await self.api.get_channel_members(channel_id)
+            for cm in channel_members:
+                user_id = cm["user_id"]
+                if user_id == self.me["id"]:
+                    continue
+
+                # Ensure we have the user in cache
+                await self._get_user(user_id)
+                
+                try:
+                    self._users_in_channels[channel_id].add(user_id)
+                except KeyError:
+                    self._users_in_channels[channel_id] = {user_id}
+        return channel
 
     async def on_hello(self, data: dict, broadcast: dict, seq: int) -> None:
         """Handle the hello event
@@ -129,21 +183,10 @@ class MattermostAgent(MattermostClient):
                 if channel["name"] == "town-square":
                     continue
 
-                self._channels[channel["id"]] = channel
+                channel_id = channel["id"]
 
-                # Get users in the channel
-                channel_members = await self.api.get_channel_members(channel["id"])
-                for cm in channel_members:
-                    user_id = cm["user_id"]
-                    if user_id == self.me["id"]:
-                        continue
-
-                    self._users_in_channels.setdefault(channel["id"], []).append(
-                        user_id
-                    )
-
-                    if not self._users.get(user_id):
-                        self._users[user_id] = await self.api.get_user(user_id)
+                # Store the channel and its members in the cache
+                await self._get_channel(channel_id)
 
     async def on_posted(self, data: dict, broadcast: dict, seq: int) -> None:
         """Handle the posted event
@@ -260,7 +303,7 @@ class MattermostAgent(MattermostClient):
                 channel_info = f"You are in the public channel {channel_name}."
 
             channel_info += f"\nUsers in the channel:"
-            for user_id in self._users_in_channels.get(channel_id, []):
+            for user_id in self._users_in_channels[channel_id]:
                 user = self._users.get(user_id)
                 if user:
                     channel_info += "\n- "
@@ -327,6 +370,42 @@ class MattermostAgent(MattermostClient):
             content,
             root_id=root_id,
         )
+
+    async def on_user_added(self, data: dict, broadcast: dict, seq: int) -> None:
+        """Handle the user added event
+
+        Args:
+            data (dict): Event data
+            broadcast (dict): Broadcast data
+            seq (int): Sequence number
+        """
+        user_id = data["user_id"]
+        channel_id = broadcast["channel_id"]
+        if user_id == self.me["id"]:
+            # We are added to a channel
+            await self._get_channel(channel_id)
+        else:
+            # A user is added to a channel
+            await self._get_user(user_id)
+            self._users_in_channels[channel_id].add(user_id)
+
+    async def on_user_removed(self, data: dict, broadcast: dict, seq: int) -> None:
+        """Handle the user removed event
+
+        Args:
+            data (dict): Event data
+            broadcast (dict): Broadcast data
+            seq (int): Sequence number
+        """
+        if channel_id := data.get("channel_id"):
+            # We are removed from a channel
+            del self._channels[channel_id]
+            del self._users_in_channels[channel_id]
+        elif user_id := data.get("user_id"):
+            # A user is removed from a channel
+            channel_id = broadcast["channel_id"]
+            self._users_in_channels[channel_id].discard(user_id)
+            
 
 #     async def handle_command(self, message: str, channel_id: str, post_id: str) -> None:
 #         """Handle a command

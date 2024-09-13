@@ -155,6 +155,17 @@ class MattermostAPIClient:
         """
         return await self.get("teams")
 
+    async def get_channel(self, channel_id: str) -> dict:
+        """Get channel
+
+        Args:
+            channel_id (str): Channel ID
+
+        Returns:
+            dict: Channel
+        """
+        return await self.get(f"channels/{channel_id}")
+
     async def get_channels(self, team_id: int) -> list[dict]:
         """Get channels
 
