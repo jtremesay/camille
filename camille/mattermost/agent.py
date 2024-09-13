@@ -77,10 +77,13 @@ WINDOW_SIZE = 64
 
 class GeminiModel(StrEnum):
     flash = "gemini-1.5-flash"
+    flash_exp = "gemini-1.5-flash-exp-0827"
     pro = "gemini-1.5-pro"
+    pro_exp = "gemini-1.5-pro-exp-0827"
 
 
-DEFAULT_MODEL = GeminiModel.flash
+#DEFAULT_MODEL = GeminiModel.flash
+DEFAULT_MODEL = GeminiModel.pro_exp
 
 
 class MattermostAgent(MattermostClient):
@@ -106,6 +109,14 @@ class MattermostAgent(MattermostClient):
         self.register_handler(MattermostEvent.user_added, self.on_user_added)
         self.register_handler(MattermostEvent.user_removed, self.on_user_removed)
 
+        # Ignore some events
+        # (not handled events generate a warning)
+        self.register_handler(MattermostEvent.status_change, self.noop)
+
+    async def noop(self, *args, **kwargs) -> None:
+        """No operation"""
+        pass
+    
     async def _get_user(self, user_id: str) -> dict:
         """Get a user
 
