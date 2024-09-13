@@ -20,14 +20,15 @@ ENV VIRTUAL_ENV=/opt/venv
 RUN python3 -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
-WORKDIR /opt/laura
+WORKDIR /opt/camille
 
 # Install python & node deps
 COPY requirements.txt ./
 RUN pip install -Ur requirements.txt
 
 # Copy files
+COPY entrypoint.sh ./
 COPY camille/ camille/
 
-ENTRYPOINT [ "/opt/laura/entrypoint.sh" ]
+ENTRYPOINT [ "/opt/camille/entrypoint.sh" ]
 CMD [ "python", "-m", "camille" ]
