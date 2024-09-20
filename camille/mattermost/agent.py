@@ -83,7 +83,8 @@ class GeminiModel(StrEnum):
 
 
 #DEFAULT_MODEL = GeminiModel.flash
-DEFAULT_MODEL = GeminiModel.pro_exp
+#DEFAULT_MODEL = GeminiModel.pro_exp
+DEFAULT_MODEL = GeminiModel.pro
 
 
 class MattermostAgent(MattermostClient):
