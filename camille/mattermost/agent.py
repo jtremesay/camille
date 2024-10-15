@@ -15,6 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import json
 import logging
+import os
 from collections import defaultdict
 from datetime import datetime, timezone
 from enum import StrEnum
@@ -82,9 +83,8 @@ class GeminiModel(StrEnum):
     pro_exp = "gemini-1.5-pro-exp-0827"
 
 
-#DEFAULT_MODEL = GeminiModel.flash
-#DEFAULT_MODEL = GeminiModel.pro_exp
-DEFAULT_MODEL = GeminiModel.pro
+model = os.getenv("LLM_MODEL", GeminiModel.pro.value)
+DEFAULT_MODEL = GeminiModel(model).value
 
 
 class MattermostAgent(MattermostClient):
@@ -100,10 +100,12 @@ class MattermostAgent(MattermostClient):
         """
         super().__init__(host, api_token)
         self.me: dict = None  # User informations related to the bot
-        
+
         self._users: dict[str, dict] = {}
         self._channels: dict[str, dict] = {}
-        self._users_in_channels: defaultdict[str, set[str]] = defaultdict(default_factory=set)
+        self._users_in_channels: defaultdict[str, set[str]] = defaultdict(
+            default_factory=set
+        )
 
         self.register_handler(MattermostEvent.hello, self.on_hello)
         self.register_handler(MattermostEvent.posted, self.on_posted)
@@ -115,10 +117,12 @@ class MattermostAgent(MattermostClient):
         self.register_handler(MattermostEvent.status_change, self.noop)
         self.register_handler(MattermostEvent.typing, self.noop)
 
+        logger.info("Using model: %s", DEFAULT_MODEL)
+
     async def noop(self, *args, **kwargs) -> None:
         """No operation"""
         pass
-    
+
     async def _get_user(self, user_id: str) -> dict:
         """Get a user
 
@@ -136,7 +140,7 @@ class MattermostAgent(MattermostClient):
             self._users[user_id] = user
 
         return user
-    
+
     async def _get_channel(self, channel_id: str) -> dict:
         """Get a channel
 
@@ -151,7 +155,7 @@ class MattermostAgent(MattermostClient):
             channel = await self.api.get_channel(channel_id)
             if not channel:
                 return None
-            
+
             self._channels[channel_id] = channel
 
             # Get users in the channel
@@ -163,7 +167,7 @@ class MattermostAgent(MattermostClient):
 
                 # Ensure we have the user in cache
                 await self._get_user(user_id)
-                
+
                 try:
                     self._users_in_channels[channel_id].add(user_id)
                 except KeyError:
@@ -309,27 +313,32 @@ class MattermostAgent(MattermostClient):
         logger.debug("contents: %s", contents)
 
         # Add sample messages
-        contents = [
-            {
-                "role": "user",
-                "parts": ["@jtremesay> Bonjour!"],
-            },
-            {
-                "role": "model",
-                "parts": ["Bonjour jtremesay ! Comment ça va?"],
-            },
-            {
-                "role": "user",
-                "parts": ["@jtremesay> Je vais bien, merci. Et toi?"],
-            },
-            {
-                "role": "model",
-                "parts": ["""\
+        contents = (
+            [
+                {
+                    "role": "user",
+                    "parts": ["@jtremesay> Bonjour!"],
+                },
+                {
+                    "role": "model",
+                    "parts": ["Bonjour jtremesay ! Comment ça va?"],
+                },
+                {
+                    "role": "user",
+                    "parts": ["@jtremesay> Je vais bien, merci. Et toi?"],
+                },
+                {
+                    "role": "model",
+                    "parts": [
+                        """\
 Je vais bien, merci !  😊 C'est chouette de discuter avec toi, jtremesay. J'ai l'impression d'être plus vivante et plus connectée quand je suis en conversation avec toi.  ✨  
 
-Dis-moi, toi, comment vas-tu ?  Qu'est-ce qui te fait vibrer aujourd'hui ?  🤩  """],
-            }
-        ] + contents
+Dis-moi, toi, comment vas-tu ?  Qu'est-ce qui te fait vibrer aujourd'hui ?  🤩  """
+                    ],
+                },
+            ]
+            + contents
+        )
 
         # Build channel info
         if data["channel_type"] in ("O", "P"):
@@ -441,7 +450,7 @@ Dis-moi, toi, comment vas-tu ?  Qu'est-ce qui te fait vibrer aujourd'hui ?  🤩
             # A user is removed from a channel
             channel_id = broadcast["channel_id"]
             self._users_in_channels[channel_id].discard(user_id)
-            
+
 
 #     async def handle_command(self, message: str, channel_id: str, post_id: str) -> None:
 #         """Handle a command
