@@ -21,8 +21,8 @@ services:
       - "MATTERMOST_HOST=https://mattermost.jtremesay.org"
       - "MATTERMOST_API_TOKEN_FILE=/run/secrets/camille_mattermost_api_token"
       - "GEMINI_API_KEY_FILE=/run/secrets/google_api_key"
-      - "LLM_MODEL=gemini-1.5-pro"
-      #- "LLM_MODEL=gemini-1.5-flash"
+      #- "LLM_MODEL=gemini-1.5-pro"
+      - "LLM_MODEL=gemini-1.5-flash"
     secrets:
       - "camille_mattermost_api_token"
       - "google_api_key"
