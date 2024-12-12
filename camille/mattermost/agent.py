@@ -78,9 +78,8 @@ WINDOW_SIZE = 64
 
 class GeminiModel(StrEnum):
     flash = "gemini-1.5-flash"
-    flash_exp = "gemini-1.5-flash-exp-0827"
+    flash_exp = "gemini-2.0-flash-exp"
     pro = "gemini-1.5-pro"
-    pro_exp = "gemini-1.5-pro-exp-0827"
 
 
 model = os.getenv("LLM_MODEL", GeminiModel.pro.value)
