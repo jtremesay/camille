@@ -391,19 +391,11 @@ Dis-moi, toi, comment vas-tu ?  Qu'est-ce qui te fait vibrer aujourd'hui ?"""
                 ),
             )
 
-            parts = r.candidates[0].content.parts
-            parts_count = len(parts)
-            for i, part in enumerate(parts):
-                content = ""
-                if i < parts_count - 1:
-                    content += "."
-                content += part.text
-
-                await self.api.post_post(
-                    channel_id,
-                    content,
-                    root_id=root_id,
-                )
+            await self.api.post_post(
+                channel_id,
+                r.text,
+                root_id=root_id,
+            )
         except Exception as e:
             logger.error("failed to generate content: %s", e)
             await self.api.post_post(
