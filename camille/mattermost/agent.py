@@ -75,7 +75,10 @@ SAFETY_SETTINGS = [
         "HARM_CATEGORY_CIVIC_INTEGRITY",
     )
 ]
-
+TOOLS = [
+    types.Tool(google_search=types.GoogleSearchRetrieval),
+    types.Tool(code_execution=types.ToolCodeExecution),
+]
 WINDOW_SIZE = 64
 
 
@@ -386,10 +389,7 @@ Dis-moi, toi, comment vas-tu ?  Qu'est-ce qui te fait vibrer aujourd'hui ?"""
                 contents=contents,
                 config=types.GenerateContentConfig(
                     system_instruction=system_instruction,
-                    tools=[
-                        types.Tool(google_search=types.GoogleSearchRetrieval),
-                        types.Tool(code_execution=types.ToolCodeExecution),
-                    ],
+                    tools=TOOLS,
                     safety_settings=SAFETY_SETTINGS,
                 ),
             )
