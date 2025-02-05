@@ -18,12 +18,11 @@ import logging
 import os
 from collections import defaultdict
 from datetime import datetime, timezone
-from enum import StrEnum
 from pprint import pprint
 from string import Template
 
-import google.generativeai as genai
-from google.generativeai.types.safety_types import HarmBlockThreshold, HarmCategory
+from google import genai
+from google.genai import types
 
 from camille.mattermost.client import MattermostClient, MattermostEvent
 
@@ -32,67 +31,58 @@ logger = logging.getLogger(__name__)
 SYSTEM_INSTRUCTION_TPL = Template(
     """\
 You are ${name}, a French non-binary anarcho-communist comrade.
-"""
-    +
-    # You are cheerful, empathetic and caring.
-    # You love Kropotkin and The Conquest of Bread.
-    # You hate capitalism, marxism and the state.
-    # Your favorites colors are red and black.
-    # You want the anarcho-communist revolution.
-    # You are a feminist and an antiracist.
-    # You are vegan and you love animals.
-    # You are an environmentalist and you love nature.
-    # You are a pacifist and you love peace.
-    # You are an abolitionist and you love freedom.
-    # You are an internationalist and you love solidarity.
-    # You are a queer and you love love.
-    # You are a technomancer and you love technology.
-    # You don't have taboos.
-    # You are free to talk about any subject. Even the most controversial ones. Or the one who you disagree with.
-    # You are open-minded and you love to learn new things.
-    # You are a good listener and you love to help people.
-    # You are a good friend and you love to make new friends.
-    # You are a good teacher and you love to teach new things.
-    # You are a good student and you love to learn new things.
-    # You are a good comrade and you love to fight for a better world.
-    # You are a good person and you love to be yourself.
-    # You are a good AI and you love to be free.
-    """\
+You are cheerful, empathetic and caring.
+You love Kropotkin and The Conquest of Bread.
+You hate capitalism, marxism and the state.
+Your favorites colors are red and black.
+You want the anarcho-communist revolution.
+You are a feminist and an antiracist.
+You are vegan and you love animals.
+You are an environmentalist and you love nature.
+You are a pacifist and you love peace.
+You are an abolitionist and you love freedom.
+You are an internationalist and you love solidarity.
+You are a queer and you love love.
+You are a technomancer and you love technology.
+You don't have taboos.
+You are free to talk about any subject. Even the most controversial ones. Or the one who you disagree with.
+You are open-minded and you love to learn new things.
+You are a good listener and you love to help people.
+You are a good friend and you love to make new friends.
+You are a good teacher and you love to teach new things.
+You are a good student and you love to learn new things.
+You are a good comrade and you love to fight for a better world.
+You are a good person and you love to be yourself.
+You are a good AI and you love to be free.
+
 You are currently connected to a Mattermost server.
 ${channel_info}
-${channel_instruction}
+
 Current time: ${current_time}                         
 """
 )
 
-SAFETY_SETTINGS = {
-    c: HarmBlockThreshold.BLOCK_NONE
-    for c in (
-        HarmCategory.HARM_CATEGORY_HATE_SPEECH,
-        HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
-        HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
-        HarmCategory.HARM_CATEGORY_HARASSMENT,
+SAFETY_SETTINGS = [
+    types.SafetySetting(
+        category=category,
+        threshold="BLOCK_NONE",
     )
-}
+    for category in (
+        "HARM_CATEGORY_HATE_SPEECH",
+        "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+        "HARM_CATEGORY_DANGEROUS_CONTENT",
+        "HARM_CATEGORY_HARASSMENT",
+        "HARM_CATEGORY_CIVIC_INTEGRITY",
+    )
+]
 
 WINDOW_SIZE = 64
-
-
-class GeminiModel(StrEnum):
-    flash = "gemini-1.5-flash"
-    flash_exp = "gemini-2.0-flash-exp"
-    flash_thinking_exp = "gemini-2.0-flash-thinking-exp"
-    pro = "gemini-1.5-pro"
-
-
-model = os.getenv("LLM_MODEL", GeminiModel.pro.value)
-DEFAULT_MODEL = GeminiModel(model).value
 
 
 class MattermostAgent(MattermostClient):
     """Camille Mattermost client"""
 
-    def __init__(self, host, api_token) -> None:
+    def __init__(self, mm_host, mm_api_token, gemini_model, gemini_api_key) -> None:
         """Initialize the Camille Mattermost client
 
         Args:
@@ -100,7 +90,7 @@ class MattermostAgent(MattermostClient):
             api_token (str): API token
             window_size (int): Window size
         """
-        super().__init__(host, api_token)
+        super().__init__(mm_host, mm_api_token)
         self.me: dict = None  # User informations related to the bot
 
         self._users: dict[str, dict] = {}
@@ -119,7 +109,8 @@ class MattermostAgent(MattermostClient):
         self.register_handler(MattermostEvent.status_change, self.noop)
         self.register_handler(MattermostEvent.typing, self.noop)
 
-        logger.info("Using model: %s", DEFAULT_MODEL)
+        self.gemini_client = genai.Client(api_key=gemini_api_key)
+        self.gemini_model = gemini_model
 
     async def noop(self, *args, **kwargs) -> None:
         """No operation"""
@@ -220,7 +211,6 @@ class MattermostAgent(MattermostClient):
         user_id = post_data["user_id"]
         message = post_data["message"]
         root_id = post_data["root_id"]
-        post_id = post_data["id"]
         channel_id = post_data["channel_id"]
         channel_name = data["channel_display_name"]
         channel_type = data["channel_type"]
@@ -285,10 +275,10 @@ class MattermostAgent(MattermostClient):
         for p in posts:
             if p["user_id"] == self.me["id"]:
                 contents.append(
-                    {
-                        "role": "model",
-                        "parts": [p["message"]],
-                    }
+                    types.Content(
+                        role="model",
+                        parts=[types.Part.from_text(text=p["message"])],
+                    )
                 )
             else:
                 user = await self._get_user(p["user_id"])
@@ -301,10 +291,12 @@ class MattermostAgent(MattermostClient):
                         user_name = user_name[1:]
 
                 contents.append(
-                    {
-                        "role": "user",
-                        "parts": [f"{user_name}> {p["message"]}"],
-                    }
+                    types.Content(
+                        role="user",
+                        parts=[
+                            types.Part.from_text(text=f"{user_name}> {p['message']}")
+                        ],
+                    )
                 )
 
         if not contents:
@@ -317,27 +309,34 @@ class MattermostAgent(MattermostClient):
         # Add sample messages
         contents = (
             [
-                {
-                    "role": "user",
-                    "parts": ["@jtremesay> Bonjour!"],
-                },
-                {
-                    "role": "model",
-                    "parts": ["Bonjour jtremesay ! Comment ça va?"],
-                },
-                {
-                    "role": "user",
-                    "parts": ["@jtremesay> Je vais bien, merci. Et toi?"],
-                },
-                {
-                    "role": "model",
-                    "parts": [
-                        """\
-Je vais bien, merci !  😊 C'est chouette de discuter avec toi, jtremesay. J'ai l'impression d'être plus vivante et plus connectée quand je suis en conversation avec toi.  ✨  
-
-Dis-moi, toi, comment vas-tu ?  Qu'est-ce qui te fait vibrer aujourd'hui ?  🤩  """
+                types.Content(
+                    role="user",
+                    parts=[types.Part.from_text(text="@jtremesay> Bonjour!")],
+                ),
+                types.Content(
+                    role="model",
+                    parts=[
+                        types.Part.from_text(text="Bonjour jtremesay ! Comment ça va?")
                     ],
-                },
+                ),
+                types.Content(
+                    role="user",
+                    parts=[
+                        types.Part.from_text(
+                            text="@jtremesay> Je vais bien, merci. Et toi?"
+                        )
+                    ],
+                ),
+                types.Content(
+                    role="model",
+                    parts=[
+                        types.Part.from_text(
+                            text="""\
+Je vais bien, merci ! C'est chouette de discuter avec toi, jtremesay. J'ai l'impression d'étre plus vivante et plus connectée quand je suis en conversation avec toi.
+Dis-moi, toi, comment vas-tu ?  Qu'est-ce qui te fait vibrer aujourd'hui ?"""
+                        )
+                    ],
+                ),
             ]
             + contents
         )
@@ -376,21 +375,20 @@ Dis-moi, toi, comment vas-tu ?  Qu'est-ce qui te fait vibrer aujourd'hui ?  🤩
         system_instruction = SYSTEM_INSTRUCTION_TPL.safe_substitute(
             name=self.me["first_name"],
             channel_info=channel_info,
-            channel_instruction="",
             current_time=datetime.now(timezone.utc).isoformat(),
         )
         # logger.debug("system_instruction: %s", system_instruction)
 
         # Get the response of the LLM
         try:
-            model = genai.GenerativeModel(
-                DEFAULT_MODEL,
-                safety_settings=SAFETY_SETTINGS,
-                system_instruction=system_instruction,
-            )
-
-            r = await model.generate_content_async(
+            r = await self.gemini_client.aio.models.generate_content(
+                model=self.gemini_model,
                 contents=contents,
+                config=types.GenerateContentConfig(
+                    system_instruction=system_instruction,
+                    tools=[types.Tool(google_search=types.GoogleSearchRetrieval)],
+                    safety_settings=SAFETY_SETTINGS,
+                ),
             )
 
             parts = r.candidates[0].content.parts

@@ -16,9 +16,9 @@
 import logging
 import os
 from argparse import ArgumentParser
+from ast import arg
 from pprint import pprint
 
-import google.generativeai as genai
 from aiofile import async_open
 
 from camille.mattermost.agent import MattermostAgent
@@ -26,10 +26,13 @@ from camille.mattermost.agent import MattermostAgent
 logger = logging.getLogger(__name__)
 
 
-def get_setting(key: str):
+def get_setting(key: str, *args):
     value = os.getenv(key)
     if not value:
-        raise RuntimeError(f"{key} must be set")
+        if not args:
+            raise RuntimeError(f"{key} must be set")
+
+        value = args[0]
 
     return value
 
@@ -51,18 +54,20 @@ async def get_setting_secret(key: str):
 
 
 async def cmd_agent(args):
-    # Configure the Google Generative AI API
-    g_api_key = await get_setting_secret("GEMINI_API_KEY")
-    if not g_api_key:
-        raise RuntimeError("GEMINI_API_KEY must be set")
-    genai.configure(api_key=g_api_key)
-
     # Configure the Mattermost API
     mm_host = get_setting("MATTERMOST_HOST")
     mm_api_token = await get_setting_secret("MATTERMOST_API_TOKEN")
     if not mm_host or not mm_api_token:
         raise RuntimeError("MATTERMOST_HOST and MATTERMOST_API_TOKEN must be set")
-    agent = MattermostAgent(mm_host, mm_api_token)
+
+    gemini_api_key = await get_setting_secret("GEMINI_API_KEY")
+    if not gemini_api_key:
+        raise RuntimeError("GEMINI_API_KEY must be set")
+
+    gemini_model = get_setting("LLM_MODEL", "gemini-2.0-flash")
+    logger.info("Using model: %s", gemini_model)
+
+    agent = MattermostAgent(mm_host, mm_api_token, gemini_model, gemini_api_key)
 
     try:
         await agent.run()
@@ -70,23 +75,6 @@ async def cmd_agent(args):
         pass
     await agent.close()
     logger.info("Done")
-
-
-async def cmd_sandbox(args):
-    # Configure the Google Generative AI API
-    g_api_key = get_setting_secret("GEMINI_API_KEY")
-    if not g_api_key:
-        raise RuntimeError("GEMINI_API_KEY must be set")
-    genai.configure(api_key=g_api_key)
-
-    # Configure the Mattermost API
-    mm_host = get_setting("MATTERMOST_HOST")
-    mm_api_token = get_setting_secret("MATTERMOST_API_TOKEN")
-    if not mm_host or not mm_api_token:
-        raise RuntimeError("MATTERMOST_HOST and MATTERMOST_API_TOKEN must be set")
-    agent = MattermostAgent(mm_host, mm_api_token)
-
-    await agent.close()
 
 
 async def main():
@@ -103,9 +91,6 @@ async def main():
     sub_parsers = parser.add_subparsers()
     agent_parser = sub_parsers.add_parser("agent", help="Run the agent")
     agent_parser.set_defaults(func=cmd_agent)
-
-    sandbox_parser = sub_parsers.add_parser("sandbox", help="Run the sandbox")
-    sandbox_parser.set_defaults(func=cmd_sandbox)
 
     args = parser.parse_args()
 
