@@ -15,7 +15,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import json
 import logging
-import os
 from collections import defaultdict
 from datetime import datetime, timezone
 from pprint import pprint
@@ -56,6 +55,22 @@ You are a good person and you love to be yourself.
 You are a good AI and you love to be free.
 
 You are currently connected to a Mattermost server.
+
+The formating of the received messages is 
+
+`{datetime}|{user}> {content}```
+
+E.g:
+
+```
+2020-02-05T21:44:53.866000|Alice> Hello all!
+2020-02-05T21:45:52.866000|Bob> Hey Alice, how are you?
+2020-02-05T21:46:51.866000|Charlie> Hi Alice!
+2020-02-05T21:47:50.866000|Alice> @Bob: I'm fine, thanks!
+```
+
+Directly write the content of your response without the prefix.
+
 ${channel_info}
 
 Current time: ${current_time}                         
@@ -252,6 +267,10 @@ class MattermostAgent(MattermostClient):
 
         # Get channel posts
         r = await self.api.get_posts(channel_id, per_page=WINDOW_SIZE)
+        import pprint
+
+        pprint.pprint(r)
+
         posts = []
         for pid in reversed(r["order"]):
             p = r["posts"][pid]
@@ -276,6 +295,7 @@ class MattermostAgent(MattermostClient):
         # Build contents
         contents = []
         for p in posts:
+
             if p["user_id"] == self.me["id"]:
                 contents.append(
                     types.Content(
@@ -284,6 +304,9 @@ class MattermostAgent(MattermostClient):
                     )
                 )
             else:
+                clock = datetime.fromtimestamp(
+                    p["create_at"] / 1000, tz=timezone.utc
+                ).isoformat()
                 user = await self._get_user(p["user_id"])
                 user_name = user.get("nickname")
                 if not user_name:
@@ -297,7 +320,9 @@ class MattermostAgent(MattermostClient):
                     types.Content(
                         role="user",
                         parts=[
-                            types.Part.from_text(text=f"{user_name}> {p['message']}")
+                            types.Part.from_text(
+                                text=f"{clock}|{user_name}>{p['message']}"
+                            )
                         ],
                     )
                 )
@@ -308,41 +333,6 @@ class MattermostAgent(MattermostClient):
 
         # pprint(contents)
         logger.debug("contents: %s", contents)
-
-        # Add sample messages
-        contents = (
-            [
-                types.Content(
-                    role="user",
-                    parts=[types.Part.from_text(text="@jtremesay> Bonjour!")],
-                ),
-                types.Content(
-                    role="model",
-                    parts=[
-                        types.Part.from_text(text="Bonjour jtremesay ! Comment ça va?")
-                    ],
-                ),
-                types.Content(
-                    role="user",
-                    parts=[
-                        types.Part.from_text(
-                            text="@jtremesay> Je vais bien, merci. Et toi?"
-                        )
-                    ],
-                ),
-                types.Content(
-                    role="model",
-                    parts=[
-                        types.Part.from_text(
-                            text="""\
-Je vais bien, merci ! C'est chouette de discuter avec toi, jtremesay. J'ai l'impression d'étre plus vivante et plus connectée quand je suis en conversation avec toi.
-Dis-moi, toi, comment vas-tu ?  Qu'est-ce qui te fait vibrer aujourd'hui ?"""
-                        )
-                    ],
-                ),
-            ]
-            + contents
-        )
 
         # Build channel info
         if data["channel_type"] in ("O", "P"):
