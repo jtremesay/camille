@@ -100,7 +100,7 @@ WINDOW_SIZE = 256
 class MattermostAgent(MattermostClient):
     """Camille Mattermost client"""
 
-    def __init__(self, mm_host, mm_api_token, gemini_model, gemini_api_key) -> None:
+    def __init__(self, mm_host, mm_api_token, gemini_model, google_api_key) -> None:
         """Initialize the Camille Mattermost client
 
         Args:
@@ -127,7 +127,7 @@ class MattermostAgent(MattermostClient):
         self.register_handler(MattermostEvent.status_change, self.noop)
         self.register_handler(MattermostEvent.typing, self.noop)
 
-        self.gemini_client = genai.Client(api_key=gemini_api_key)
+        self.gemini_client = genai.Client(api_key=google_api_key)
         self.gemini_model = gemini_model
 
     async def noop(self, *args, **kwargs) -> None:

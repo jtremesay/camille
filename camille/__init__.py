@@ -60,14 +60,14 @@ async def cmd_agent(args):
     if not mm_host or not mm_api_token:
         raise RuntimeError("MATTERMOST_HOST and MATTERMOST_API_TOKEN must be set")
 
-    gemini_api_key = await get_setting_secret("GEMINI_API_KEY")
-    if not gemini_api_key:
-        raise RuntimeError("GEMINI_API_KEY must be set")
+    google_api_key = await get_setting_secret("GOOGLE_API_KEY")
+    if not google_api_key:
+        raise RuntimeError("GOOGLE_API_KEY must be set")
 
     gemini_model = get_setting("LLM_MODEL", "gemini-2.0-flash")
     logger.info("Using model: %s", gemini_model)
 
-    agent = MattermostAgent(mm_host, mm_api_token, gemini_model, gemini_api_key)
+    agent = MattermostAgent(mm_host, mm_api_token, gemini_model, google_api_key)
 
     try:
         await agent.run()

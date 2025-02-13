@@ -1,5 +1,5 @@
 layout python python3
 
-export GEMINI_API_KEY=""
+export GOOGLE_API_KEY=""
 export MATTERMOST_API_TOKEN=""
 export MATTERMOST_HOST=""
