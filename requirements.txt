@@ -1,4 +1,4 @@
 aiofiles==24.1.0
 aiohttp[speedups]==3.11.13 
 logfire[aiohttp,httpx]==v3.7.1
-pydantic-ai==0.0.36
+pydantic-ai-slim[tavily,gemini]==0.0.36

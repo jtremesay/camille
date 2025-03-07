@@ -5,11 +5,16 @@ from datetime import datetime, timezone
 from json import dumps as json_dumps
 from json import loads as json_loads
 from os import environ
+from typing import Optional
 
 import logfire
+import pydantic
 from aiofiles import open as aopen
 from aiohttp import ClientSession, WSMsgType
 from pydantic_ai import Agent, RunContext
+from pydantic_ai.common_tools.tavily import tavily_search_tool
+from pydantic_ai.messages import ModelMessage, ModelMessagesTypeAdapter
+from pydantic_core import to_jsonable_python
 
 ##############################################################################
 # Settings
@@ -208,6 +213,48 @@ class MattermostCache:
 
 
 ##############################################################################
+# CouchDB
+##############################################################################
+
+
+async def cdb_get_history(
+    cdb_client: ClientSession, channel_id: ChannelId
+) -> tuple[Optional[str], Optional[list[ModelMessage]]]:
+    r = await cdb_client.get(f"/camille/channel_{channel_id}")
+    if r.status == 404:
+        return None, None
+    r.raise_for_status()
+
+    rev = r.headers["etag"][1:-1]
+    history = (await r.json()).get("history")
+    if not history:
+        return rev, None
+
+    history = ModelMessagesTypeAdapter.validate_python(history)
+
+    return rev, history
+
+
+async def cdb_put_history(
+    cdb_client: ClientSession,
+    channel_id: ChannelId,
+    revision: Optional[str],
+    history: list[ModelMessage],
+) -> None:
+    params = {}
+    if revision is not None:
+        params["rev"] = revision
+    json = {"history": to_jsonable_python(history)}
+
+    r = await cdb_client.put(
+        f"/camille/channel_{channel_id}",
+        params=params,
+        json=json,
+    )
+    r.raise_for_status()
+
+
+##############################################################################
 # Agent
 ##############################################################################
 
@@ -226,7 +273,7 @@ agent = Agent(
 )
 
 
-@agent.system_prompt
+@agent.system_prompt(dynamic=True)
 async def system_prompt_base(ctx: RunContext[Dependency]) -> str:
     return f"""\
 You are {ctx.deps.me.first_name}, a French non-binary anarcho-communist comrade.
@@ -256,7 +303,7 @@ You are a good person and you love to be yourself.
 """
 
 
-@agent.system_prompt
+@agent.system_prompt(dynamic=True)
 async def system_prompt_mattermost(ctx: RunContext[Dependency]) -> str:
     return """\
 You are connected to a Mattermost server. 
@@ -310,93 +357,104 @@ async def amain() -> None:
     logfire.instrument_httpx(capture_all=True)
     logfire.instrument_aiohttp_client()
 
-    async with await mm_get_client() as session:
-        mm_cache = MattermostCache(session)
-        me = await mm_cache.get_me()
+    agent._register_tool(tavily_search_tool(await get_setting_secret("TAVILY_API_KEY")))
 
-        async with session.ws_connect("/api/v4/websocket") as ws:
-            histories = {}
-            async for ws_message in ws:
-                # Ignore non-text WS messages
-                if ws_message.type != WSMsgType.TEXT:
-                    continue
+    async with ClientSession(base_url=get_setting("COUCHDB_URL")) as cd_client:
+        async with await mm_get_client() as mm_client:
+            mm_cache = MattermostCache(mm_client)
+            me = await mm_cache.get_me()
 
-                ws_data = ws_message.json()
-                mm_event = ws_data["event"]
-                mm_event_data = ws_data["data"]
+            async with mm_client.ws_connect("/api/v4/websocket") as ws:
+                async for ws_message in ws:
+                    # Ignore non-text WS messages
+                    if ws_message.type != WSMsgType.TEXT:
+                        continue
 
-                logfire.info("event received {event=}", event=mm_event, data=ws_data)
+                    ws_data = ws_message.json()
+                    mm_event = ws_data["event"]
+                    mm_event_data = ws_data["data"]
 
-                # Ignore non-post MM events
-                if mm_event != "posted":
-                    match mm_event:
-                        case "user_updated":
-                            user = User.from_dict(mm_event_data["user"])
-                            mm_cache.users[user.id] = user
-                        case "channel_updated":
-                            channel = Channel.from_json(mm_event_data["channel"])
-                            mm_cache.channels[channel.id] = channel
-                        case "user_added":
-                            user_id = mm_event_data["user_id"]
-                            channel_id = ws_data["broadcast"]["channel_id"]
-                            await mm_cache.add_channel_member(channel_id, user_id)
-                        case "user_removed":
-                            user_id = mm_event_data["user_id"]
-                            channel_id = ws_data["broadcast"]["channel_id"]
-                            await mm_cache.remove_channel_member(channel_id, user_id)
+                    # logfire.info(
+                    #     "event received {event=}", event=mm_event, data=ws_data
+                    # )
 
-                    continue
+                    # Ignore non-post MM events
+                    if mm_event != "posted":
+                        match mm_event:
+                            case "user_updated":
+                                user = User.from_dict(mm_event_data["user"])
+                                mm_cache.users[user.id] = user
+                            case "channel_updated":
+                                channel = Channel.from_json(mm_event_data["channel"])
+                                mm_cache.channels[channel.id] = channel
+                            case "user_added":
+                                user_id = mm_event_data["user_id"]
+                                channel_id = ws_data["broadcast"]["channel_id"]
+                                await mm_cache.add_channel_member(channel_id, user_id)
+                            case "user_removed":
+                                user_id = mm_event_data["user_id"]
+                                channel_id = ws_data["broadcast"]["channel_id"]
+                                await mm_cache.remove_channel_member(
+                                    channel_id, user_id
+                                )
 
-                post_data = json_loads(mm_event_data["post"])
+                        continue
 
-                # Ignore self messages
-                if post_data["user_id"] == me.id:
-                    continue
+                    post_data = json_loads(mm_event_data["post"])
 
-                # Ignore thread replies
-                if post_data["root_id"]:
-                    continue
+                    # Ignore self messages
+                    if post_data["user_id"] == me.id:
+                        continue
 
-                logfire.info("post received", data=post_data)
-                channel_id = post_data["channel_id"]
-                history = histories.get(channel_id)
-                try:
-                    deps = Dependency(
-                        mm_cache=mm_cache,
-                        me=me,
-                        channel_id=channel_id,
-                    )
+                    # Ignore thread replies
+                    if post_data["root_id"]:
+                        continue
 
-                    message = {
-                        "user_id": post_data["user_id"],
-                        "content": post_data["message"],
-                        "timestamp": datetime.fromtimestamp(
-                            post_data["create_at"] / 1000, tz=timezone.utc
-                        ).isoformat(),
-                    }
+                    logfire.info("post received", data=post_data)
+                    channel_id = post_data["channel_id"]
 
-                    async with agent.iter(
-                        json_dumps(message),
-                        deps=deps,
-                        message_history=history,
-                    ) as r:
-                        async for node in r:
-                            if agent.is_call_tools_node(node):
-                                for part in node.model_response.parts:
-                                    if part.part_kind == "text":
-                                        await mm_post_message(
-                                            session,
-                                            channel_id,
-                                            part.content,
-                                        )
-                        histories[channel_id] = r.result.all_messages()
-                except Exception as e:
-                    logfire.exception("error")
-                    await mm_post_message(
-                        session,
-                        post_data["channel_id"],
-                        f"Error: {e}",
-                    )
+                    try:
+                        deps = Dependency(
+                            mm_cache=mm_cache,
+                            me=me,
+                            channel_id=channel_id,
+                        )
+
+                        message = {
+                            "user_id": post_data["user_id"],
+                            "content": post_data["message"],
+                            "timestamp": datetime.fromtimestamp(
+                                post_data["create_at"] / 1000, tz=timezone.utc
+                            ).isoformat(),
+                        }
+
+                        rev, history = await cdb_get_history(cd_client, channel_id)
+                        async with agent.iter(
+                            json_dumps(message),
+                            deps=deps,
+                            message_history=history,
+                        ) as r:
+                            async for node in r:
+                                if agent.is_call_tools_node(node):
+                                    for part in node.model_response.parts:
+                                        if part.part_kind == "text":
+                                            await mm_post_message(
+                                                mm_client,
+                                                channel_id,
+                                                part.content,
+                                            )
+
+                            # history = r.result.all_messages()
+                            await cdb_put_history(
+                                cd_client, channel_id, rev, r.result.all_messages()
+                            )
+                    except Exception as e:
+                        logfire.exception("error")
+                        await mm_post_message(
+                            mm_client,
+                            post_data["channel_id"],
+                            f"Error: {e}",
+                        )
 
 
 if __name__ == "__main__":
