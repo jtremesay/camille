@@ -1,0 +1,8 @@
+layout python python3
+
+export GEMINI_API_KEY=""
+export MATTERMOST_API_TOKEN=""
+export MATTERMOST_HOST=""
+export LOGFIRE_TOKEN=""
+export AGENT_MODEL="google-gla:gemini-2.0-flash"
+export ENVIRONMENT="dev"
