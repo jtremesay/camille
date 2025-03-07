@@ -94,7 +94,7 @@ TOOLS = [
     types.Tool(google_search=types.GoogleSearchRetrieval),
     types.Tool(code_execution=types.ToolCodeExecution),
 ]
-WINDOW_SIZE = 256
+WINDOW_SIZE = 1024
 
 
 class MattermostAgent(MattermostClient):
