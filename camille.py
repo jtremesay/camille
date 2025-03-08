@@ -8,12 +8,11 @@ from os import environ
 from typing import Optional
 
 import logfire
-import pydantic
 from aiofiles import open as aopen
 from aiohttp import ClientSession, WSMsgType
 from pydantic_ai import Agent, RunContext
 from pydantic_ai.common_tools.tavily import tavily_search_tool
-from pydantic_ai.messages import ModelMessage, ModelMessagesTypeAdapter
+from pydantic_ai.messages import ModelMessage, ModelMessagesTypeAdapter, ModelRequest
 from pydantic_core import to_jsonable_python
 
 ##############################################################################
@@ -217,6 +216,10 @@ class MattermostCache:
 ##############################################################################
 
 
+async def cdb_get_client() -> ClientSession:
+    return ClientSession(get_setting("COUCHDB_URL"))
+
+
 async def cdb_get_history(
     cdb_client: ClientSession, channel_id: ChannelId
 ) -> tuple[Optional[str], Optional[list[ModelMessage]]]:
@@ -257,6 +260,36 @@ async def cdb_put_history(
 ##############################################################################
 # Agent
 ##############################################################################
+
+
+def window_history(history: list[ModelMessage], max_size: int) -> list[ModelMessage]:
+    messages_count = len(history)
+    if messages_count == 0 or messages_count <= max_size:
+        return history
+
+    # Extract system prompts.
+    system_parts = []
+    for message in history:
+        if message.kind == "request":
+            for part in message.parts:
+                if part.part_kind == "system-prompt":
+                    system_parts.append(part)
+
+    # pprint(system_parts)
+
+    # Remove heads messages
+    to_skip = messages_count - max_size
+    history = history[to_skip:]
+
+    # Ensure first message is a request
+    while history and history[0].kind != "request":
+        history.pop(0)
+
+    # Add system prompts
+    if system_parts:
+        history.insert(0, ModelRequest(parts=system_parts))
+
+    return history
 
 
 @dataclass
@@ -359,7 +392,9 @@ async def amain() -> None:
 
     agent._register_tool(tavily_search_tool(await get_setting_secret("TAVILY_API_KEY")))
 
-    async with ClientSession(base_url=get_setting("COUCHDB_URL")) as cd_client:
+    window_size = int(get_setting("WINDOW_SIZE", 1024))
+
+    async with await cdb_get_client() as cdb_client:
         async with await mm_get_client() as mm_client:
             mm_cache = MattermostCache(mm_client)
             me = await mm_cache.get_me()
@@ -428,7 +463,8 @@ async def amain() -> None:
                             ).isoformat(),
                         }
 
-                        rev, history = await cdb_get_history(cd_client, channel_id)
+                        rev, history = await cdb_get_history(cdb_client, channel_id)
+                        history = window_history(history, window_size)
                         async with agent.iter(
                             json_dumps(message),
                             deps=deps,
@@ -446,7 +482,7 @@ async def amain() -> None:
 
                             # history = r.result.all_messages()
                             await cdb_put_history(
-                                cd_client, channel_id, rev, r.result.all_messages()
+                                cdb_client, channel_id, rev, r.result.all_messages()
                             )
                     except Exception as e:
                         logfire.exception("error")
