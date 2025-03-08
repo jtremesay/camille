@@ -411,7 +411,7 @@ async def amain() -> None:
                 threshold="BLOCK_NONE",
             )
             for category in [
-                "HARM_CATEGORY_UNSPECIFIED",
+                # "HARM_CATEGORY_UNSPECIFIED",
                 "HARM_CATEGORY_HARASSMENT",
                 "HARM_CATEGORY_HATE_SPEECH",
                 "HARM_CATEGORY_SEXUALLY_EXPLICIT",
@@ -512,6 +512,7 @@ async def amain() -> None:
                             json_dumps(message),
                             deps=deps,
                             message_history=history,
+                            model_settings=settings,
                         ) as r:
                             async for node in r:
                                 if agent.is_call_tools_node(node):
