@@ -308,7 +308,7 @@ class Dependency:
 
 agent = Agent(
     GeminiModel(
-        get_setting("AGENT_MODEL"),
+        get_setting("AGENT_MODEL", "gemini-2.0-flash"),
         provider=GoogleGLAProvider(
             api_key=get_setting_secret("GEMINI_API_KEY"),
         ),
