@@ -263,8 +263,11 @@ async def cdb_put_history(
 
 
 def window_history(history: list[ModelMessage], max_size: int) -> list[ModelMessage]:
+    if not history:
+        return history
+
     messages_count = len(history)
-    if messages_count == 0 or messages_count <= max_size:
+    if messages_count <= max_size:
         return history
 
     # Extract system prompts.
@@ -399,6 +402,7 @@ async def amain() -> None:
             mm_cache = MattermostCache(mm_client)
             me = await mm_cache.get_me()
 
+            seq = 0
             async with mm_client.ws_connect("/api/v4/websocket") as ws:
                 async for ws_message in ws:
                     # Ignore non-text WS messages
@@ -406,12 +410,15 @@ async def amain() -> None:
                         continue
 
                     ws_data = ws_message.json()
-                    mm_event = ws_data["event"]
-                    mm_event_data = ws_data["data"]
+                    mm_event = ws_data.get("event")
+                    if not mm_event:
+                        continue
+                    logfire.info(
+                        "event received {event=}", event=mm_event, data=ws_data
+                    )
 
-                    # logfire.info(
-                    #     "event received {event=}", event=mm_event, data=ws_data
-                    # )
+                    mm_event_data = ws_data["data"]
+                    seq = max(seq, ws_data["seq"])
 
                     # Ignore non-post MM events
                     if mm_event != "posted":
@@ -427,11 +434,12 @@ async def amain() -> None:
                                 channel_id = ws_data["broadcast"]["channel_id"]
                                 await mm_cache.add_channel_member(channel_id, user_id)
                             case "user_removed":
-                                user_id = mm_event_data["user_id"]
-                                channel_id = ws_data["broadcast"]["channel_id"]
-                                await mm_cache.remove_channel_member(
-                                    channel_id, user_id
-                                )
+                                user_id = mm_event_data.get("user_id")
+                                if user_id:
+                                    channel_id = ws_data["broadcast"]["channel_id"]
+                                    await mm_cache.remove_channel_member(
+                                        channel_id, user_id
+                                    )
 
                         continue
 
@@ -449,6 +457,17 @@ async def amain() -> None:
                     channel_id = post_data["channel_id"]
 
                     try:
+                        seq += 1
+                        await ws.send_json(
+                            {
+                                "action": "user_typing",
+                                "seq": seq,
+                                "data": {
+                                    "channel_id": channel_id,
+                                },
+                            }
+                        )
+
                         deps = Dependency(
                             mm_cache=mm_cache,
                             me=me,
