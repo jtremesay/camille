@@ -217,7 +217,7 @@ class MattermostCache:
 
 
 async def cdb_get_client() -> ClientSession:
-    return ClientSession(get_setting("COUCHDB_URL"))
+    return ClientSession(await get_setting_secret("COUCHDB_URL"))
 
 
 async def cdb_get_history(
