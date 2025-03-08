@@ -5,4 +5,4 @@ COPY pyproject.toml uv.lock ./
 RUN uv sync --no-install-project
 COPY camille.py ./
 RUN uv sync
-CMD [ "uv", "run", "camille" ]
+CMD [ ".venv/bin/camille" ]
