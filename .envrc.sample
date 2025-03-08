@@ -6,7 +6,7 @@ export MATTERMOST_API_TOKEN=""
 export MATTERMOST_HOST=""
 
 # LLM
-export AGENT_MODEL="google-gla:gemini-2.0-flash"
+export AGENT_MODEL="gemini-2.0-flash"
 export GEMINI_API_KEY=""
 
 # Database

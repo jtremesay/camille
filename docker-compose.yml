@@ -23,7 +23,7 @@ services:
     environment:
       - "MATTERMOST_HOST=https://mattermost.jtremesay.org"
       - "MATTERMOST_API_TOKEN_FILE=/run/secrets/camille_mattermost_api_token"
-      - "AGENT_MODEL=google-gla:gemini-2.0-flash"
+      - "AGENT_MODEL=gemini-2.0-flash"
       - "GEMINI_API_KEY_FILE=/run/secrets/google_api_key"
       - "LOGFIRE_TOKEN_FILE=/run/secrets/camille_logfire_token"
       - "TAVILY_API_KEY_FILE=/run/secrets/tavily_api_key"

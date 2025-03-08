@@ -8,11 +8,16 @@ from os import environ
 from typing import Optional
 
 import logfire
-from aiofiles import open as aopen
 from aiohttp import ClientSession, WSMsgType
 from pydantic_ai import Agent, RunContext
 from pydantic_ai.common_tools.tavily import tavily_search_tool
 from pydantic_ai.messages import ModelMessage, ModelMessagesTypeAdapter, ModelRequest
+from pydantic_ai.models.gemini import (
+    GeminiModel,
+    GeminiModelSettings,
+    GeminiSafetySettings,
+)
+from pydantic_ai.providers.google_gla import GoogleGLAProvider
 from pydantic_core import to_jsonable_python
 
 ##############################################################################
@@ -30,14 +35,14 @@ def get_setting(key: str, *args):
             raise KeyError(f"{key} must be set")
 
 
-async def get_setting_secret(key: str, *args):
+def get_setting_secret(key: str, *args):
     try:
         secret_file = environ[key + "_FILE"]
     except KeyError:
         return get_setting(key, *args)
     else:
-        async with aopen(secret_file) as f:
-            return await f.read().strip()
+        with open(secret_file) as f:
+            return f.read().strip()
 
 
 ###############################################################################
@@ -120,12 +125,11 @@ class User:
         return json_dumps(self.to_dict())
 
 
-async def mm_get_client() -> ClientSession:
+def mm_get_client() -> ClientSession:
     return ClientSession(
         get_setting("MATTERMOST_HOST"),
         headers={
-            "Authorization": "Bearer "
-            + await get_setting_secret("MATTERMOST_API_TOKEN")
+            "Authorization": "Bearer " + get_setting_secret("MATTERMOST_API_TOKEN")
         },
     )
 
@@ -216,8 +220,8 @@ class MattermostCache:
 ##############################################################################
 
 
-async def cdb_get_client() -> ClientSession:
-    return ClientSession(await get_setting_secret("COUCHDB_URL"))
+def cdb_get_client() -> ClientSession:
+    return ClientSession(get_setting_secret("COUCHDB_URL"))
 
 
 async def cdb_get_history(
@@ -303,9 +307,15 @@ class Dependency:
 
 
 agent = Agent(
-    get_setting("AGENT_MODEL"),
+    GeminiModel(
+        get_setting("AGENT_MODEL"),
+        provider=GoogleGLAProvider(
+            api_key=get_setting_secret("GEMINI_API_KEY"),
+        ),
+    ),
     deps_type=Dependency,
     instrument=True,
+    tools=[tavily_search_tool(get_setting_secret("TAVILY_API_KEY"))],
 )
 
 
@@ -385,7 +395,7 @@ Channel infos:"
 
 async def amain() -> None:
     logfire.configure(
-        token=await get_setting_secret("LOGFIRE_TOKEN", None),
+        token=get_setting_secret("LOGFIRE_TOKEN", None),
         send_to_logfire="if-token-present",
         environment=get_setting("ENVIRONMENT"),
         service_name="camille",
@@ -393,12 +403,26 @@ async def amain() -> None:
     logfire.instrument_httpx(capture_all=True)
     logfire.instrument_aiohttp_client()
 
-    agent._register_tool(tavily_search_tool(await get_setting_secret("TAVILY_API_KEY")))
-
     window_size = int(get_setting("WINDOW_SIZE", 1024))
+    settings = GeminiModelSettings(
+        gemini_safety_settings=[
+            GeminiSafetySettings(
+                category=category,
+                threshold="BLOCK_NONE",
+            )
+            for category in [
+                "HARM_CATEGORY_UNSPECIFIED",
+                "HARM_CATEGORY_HARASSMENT",
+                "HARM_CATEGORY_HATE_SPEECH",
+                "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+                "HARM_CATEGORY_DANGEROUS_CONTENT",
+                "HARM_CATEGORY_CIVIC_INTEGRITY",
+            ]
+        ]
+    )
 
-    async with await cdb_get_client() as cdb_client:
-        async with await mm_get_client() as mm_client:
+    async with cdb_get_client() as cdb_client:
+        async with mm_get_client() as mm_client:
             mm_cache = MattermostCache(mm_client)
             me = await mm_cache.get_me()
 
