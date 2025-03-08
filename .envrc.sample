@@ -1,10 +1,20 @@
 layout python python3
+export UV_PROJECT_ENVIRONMENT=$VIRTUAL_ENV
 
-export GEMINI_API_KEY=""
+# Mattermost
 export MATTERMOST_API_TOKEN=""
 export MATTERMOST_HOST=""
-export LOGFIRE_TOKEN=""
+
+# LLM
 export AGENT_MODEL="google-gla:gemini-2.0-flash"
-export ENVIRONMENT="dev"
+export GEMINI_API_KEY=""
+
+# Database
 export COUCHDB_URL=""
+
+# Logfire, optional
+export ENVIRONMENT="dev"
+export LOGFIRE_TOKEN=""
+
+# Tavily, optional
 export TAVILY_API_KEY=""

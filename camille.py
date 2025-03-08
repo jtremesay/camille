@@ -493,5 +493,9 @@ async def amain() -> None:
                         )
 
 
-if __name__ == "__main__":
+def main():
     run(amain())
+
+
+if __name__ == "__main__":
+    main()

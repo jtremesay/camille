@@ -1,0 +1,23 @@
+[project]
+name = "camille"
+version = "0.1.0"
+description = "An AI assistant for Mattermost"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "aiofiles==24.1.0",
+    "aiohttp[speedups]==3.11.13",
+    "logfire[aiohttp,httpx]==3.7.1",
+    "pydantic-ai-slim[gemini,tavily]==0.0.36",
+]
+
+[dependency-groups]
+dev = [
+    "ipython>=9.0.2",
+]
+
+[project.scripts]
+camille = "camille:main"
+
+[build-system]
+requires = ["setuptools"]

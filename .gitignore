@@ -1,3 +1,4 @@
 /.direnv/
 /.envrc
 *.pyc
+/*.egg-info/
