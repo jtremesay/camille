@@ -1,0 +1,45 @@
+version: '3.8'
+services:
+  couchdb:
+    image: couchdb
+    volumes:
+      - couchdb_etc:/opt/couchdb/etc/local.d/
+      - couchdb_data:/opt/couchdb/data/
+    networks:
+      - camille
+      - traefik_public
+
+  camille:
+    image: killruana/camille:latest
+    networks:
+      - camille
+    environment:
+      - "MATTERMOST_HOST=https://mattermost.jtremesay.org"
+      - "MATTERMOST_API_TOKEN_FILE=/run/secrets/camille_mattermost_api_token"
+      # - "AGENT_MODEL=google-gla:gemini-2.0-flash"
+      - "GEMINI_API_KEY_FILE=/run/secrets/google_api_key"
+      - "LOGFIRE_TOKEN_FILE=/run/secrets/camille_logfire_token"
+      - "TAVILY_API_KEY_FILE=/run/secrets/tavily_api_key"
+      - "ENVIRONMENT=prod"
+      - COUCHDB_URL_FILE=/run/secrets/camille_couchdb_url
+
+volumes:
+  couchdb_etc:
+  couchdb_data:
+
+networks:
+  camille:
+  traefik_public:
+    external: true
+
+secrets:
+  camille_mattermost_api_token:
+    external: true
+  google_api_key:
+    external: true
+  camille_logfire_token:
+    external: true
+  tavily_api_key:
+    external: true
+  camille_couchdb_url:
+    external: true
