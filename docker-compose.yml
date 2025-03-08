@@ -17,7 +17,7 @@ services:
       - "traefik.http.services.camille-couchdb.loadbalancer.server.port=5984"
 
   camille:
-    image: killruana/camille:latest
+    image: killruana/camille:main
     networks:
       - camille
     environment:
