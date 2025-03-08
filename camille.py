@@ -437,9 +437,9 @@ async def amain() -> None:
                     mm_event = ws_data.get("event")
                     if not mm_event:
                         continue
-                    logfire.info(
-                        "event received {event=}", event=mm_event, data=ws_data
-                    )
+                    # logfire.info(
+                    #     "event received {event=}", event=mm_event, data=ws_data
+                    # )
 
                     mm_event_data = ws_data["data"]
                     seq = max(seq, ws_data["seq"])
