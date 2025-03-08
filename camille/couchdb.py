@@ -47,3 +47,32 @@ async def cdb_put_history(
         json=json,
     )
     r.raise_for_status()
+
+
+async def cdb_get_channel_scratchpad(
+    cdb_client: ClientSession, channel_id: ChannelId
+) -> str:
+    r = await cdb_client.get(f"channel_{channel_id}_scratchpad")
+    if r.status == 404:
+        return ""
+    r.raise_for_status()
+
+    return (await r.json())["scratchpad"]
+
+
+async def cdb_put_channel_scratchpad(
+    cdb_client: ClientSession, channel_id: ChannelId, scratchpad: str
+) -> None:
+    scratchpad_id = f"channel_{channel_id}_scratchpad"
+    r = await cdb_client.head(scratchpad_id)
+    if r.status == 404:
+        params = {}
+    else:
+        params = {"rev": r.headers["etag"][1:-1]}
+
+    r = await cdb_client.put(
+        f"channel_{channel_id}_scratchpad",
+        params=params,
+        json={"scratchpad": scratchpad},
+    )
+    r.raise_for_status()

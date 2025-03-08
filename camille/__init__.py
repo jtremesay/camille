@@ -122,6 +122,7 @@ async def amain() -> None:
                             mm_cache=mm_cache,
                             me=me,
                             channel_id=channel_id,
+                            cdb_client=cdb_client,
                         )
 
                         message = {

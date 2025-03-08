@@ -1,12 +1,14 @@
 from dataclasses import dataclass
 from json import dumps as json_dumps
 
+from aiohttp import ClientSession
 from pydantic_ai import Agent, RunContext
 from pydantic_ai.common_tools.tavily import tavily_search_tool
 from pydantic_ai.messages import ModelMessage, ModelRequest
 from pydantic_ai.models.gemini import GeminiModel
 from pydantic_ai.providers.google_gla import GoogleGLAProvider
 
+from camille.couchdb import cdb_get_channel_scratchpad, cdb_put_channel_scratchpad
 from camille.mattermost import MattermostCache, User
 from camille.utils import get_setting, get_setting_secret
 
@@ -49,6 +51,7 @@ class Dependency:
     me: User
     mm_cache: MattermostCache
     channel_id: str
+    cdb_client: ClientSession
 
 
 agent = Agent(
@@ -131,3 +134,25 @@ Channel infos:"
 {json_dumps(channel_info, indent=4)}
 ```
 """
+
+
+@agent.system_prompt(dynamic=True)
+async def system_prompt_mattermost_scratchpad(
+    ctx: RunContext[Dependency],
+) -> str:
+    scratchpad = await cdb_get_channel_scratchpad(
+        ctx.deps.cdb_client, ctx.deps.channel_id
+    )
+
+    return f"""\
+You can use the scratchpad to store persistent information.
+Content of the scratchpad:
+
+{scratchpad}
+"""
+
+
+@agent.tool
+async def scratchpad_replace(ctx: RunContext[Dependency], content: str) -> str:
+    """Replace the content of the scratchpad."""
+    await cdb_put_channel_scratchpad(ctx.deps.cdb_client, ctx.deps.channel_id, content)
