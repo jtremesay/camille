@@ -227,7 +227,7 @@ def cdb_get_client() -> ClientSession:
 async def cdb_get_history(
     cdb_client: ClientSession, channel_id: ChannelId
 ) -> tuple[Optional[str], Optional[list[ModelMessage]]]:
-    r = await cdb_client.get(f"/channel_{channel_id}")
+    r = await cdb_client.get(f"channel_{channel_id}")
     if r.status == 404:
         return None, None
     r.raise_for_status()
@@ -254,7 +254,7 @@ async def cdb_put_history(
     json = {"history": to_jsonable_python(history)}
 
     r = await cdb_client.put(
-        f"/channel_{channel_id}",
+        f"channel_{channel_id}",
         params=params,
         json=json,
     )
