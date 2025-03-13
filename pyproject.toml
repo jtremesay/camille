@@ -7,7 +7,7 @@ requires-python = ">=3.13"
 dependencies = [
     "aiohttp[speedups]==3.11.13",
     "logfire[aiohttp,httpx]==3.8.0",
-    "pydantic-ai-slim[gemini,tavily]==0.0.36",
+    "pydantic-ai-slim[gemini,tavily]==0.0.37",
 ]
 
 [dependency-groups]
