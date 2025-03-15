@@ -145,7 +145,7 @@ async def system_prompt_mattermost_scratchpad(
     )
 
     return f"""\
-You can use the scratchpad to store persistent information.
+Use the scratchpad to store persistent information about the people, the channel and the conversation.
 Content of the scratchpad:
 
 {scratchpad}
@@ -153,6 +153,10 @@ Content of the scratchpad:
 
 
 @agent.tool
-async def scratchpad_replace(ctx: RunContext[Dependency], content: str) -> str:
+async def scratchpad_replace_content(
+    ctx: RunContext[Dependency], new_content: str
+) -> str:
     """Replace the content of the scratchpad."""
-    await cdb_put_channel_scratchpad(ctx.deps.cdb_client, ctx.deps.channel_id, content)
+    await cdb_put_channel_scratchpad(
+        ctx.deps.cdb_client, ctx.deps.channel_id, new_content
+    )
