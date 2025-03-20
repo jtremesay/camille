@@ -10,6 +10,7 @@ from pydantic_ai.models.gemini import GeminiModelSettings, GeminiSafetySettings
 from camille.agent import Dependency, agent, window_history
 from camille.couchdb import cdb_get_client, cdb_get_history, cdb_put_history
 from camille.mattermost import (
+    RAQUELLA_ID,
     Channel,
     MattermostCache,
     User,
@@ -118,22 +119,30 @@ async def amain() -> None:
                             }
                         )
 
+                        user_id = post_data["user_id"]
+                        is_raquella = user_id == RAQUELLA_ID
+
                         deps = Dependency(
                             mm_cache=mm_cache,
                             me=me,
                             channel_id=channel_id,
+                            user_id=user_id,
+                            raquella_mode=is_raquella,
                             cdb_client=cdb_client,
                         )
 
                         message = {
-                            "user_id": post_data["user_id"],
+                            "user_id": user_id,
                             "content": post_data["message"],
                             "timestamp": datetime.fromtimestamp(
                                 post_data["create_at"] / 1000, tz=timezone.utc
                             ).isoformat(),
                         }
 
-                        rev, history = await cdb_get_history(cdb_client, channel_id)
+                        if is_raquella:
+                            rev, history = await cdb_get_history(cdb_client, user_id)
+                        else:
+                            rev, history = await cdb_get_history(cdb_client, channel_id)
                         history = window_history(history, window_size)
                         async with agent.iter(
                             json_dumps(message),
@@ -151,15 +160,25 @@ async def amain() -> None:
                                                 part.content,
                                             )
 
-                            # history = r.result.all_messages()
-                            await cdb_put_history(
-                                cdb_client, channel_id, rev, r.result.all_messages()
-                            )
+                            if is_raquella:
+                                await cdb_put_history(
+                                    cdb_client,
+                                    user_id,
+                                    rev,
+                                    r.result.all_messages(),
+                                )
+                            else:
+                                await cdb_put_history(
+                                    cdb_client,
+                                    channel_id,
+                                    rev,
+                                    r.result.all_messages(),
+                                )
                     except Exception as e:
                         logfire.exception("error")
                         await mm_post_message(
                             mm_client,
-                            post_data["channel_id"],
+                            channel_id,
                             f"Error: {e}",
                         )
 

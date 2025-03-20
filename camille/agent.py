@@ -51,6 +51,8 @@ class Dependency:
     me: User
     mm_cache: MattermostCache
     channel_id: str
+    user_id: str
+    raquella_mode: bool
     cdb_client: ClientSession
 
 
@@ -140,9 +142,12 @@ Channel infos:"
 async def system_prompt_mattermost_scratchpad(
     ctx: RunContext[Dependency],
 ) -> str:
-    scratchpad = await cdb_get_channel_scratchpad(
-        ctx.deps.cdb_client, ctx.deps.channel_id
-    )
+    if ctx.deps.raquella_mode:
+        channel_id = ctx.deps.user_id
+    else:
+        channel_id = ctx.deps.channel_id
+
+    scratchpad = await cdb_get_channel_scratchpad(ctx.deps.cdb_client, channel_id)
 
     return f"""\
 Use the scratchpad to store persistent information about the people, the channel and the conversation.
@@ -157,6 +162,9 @@ async def scratchpad_replace_content(
     ctx: RunContext[Dependency], new_content: str
 ) -> str:
     """Replace the content of the scratchpad."""
-    await cdb_put_channel_scratchpad(
-        ctx.deps.cdb_client, ctx.deps.channel_id, new_content
-    )
+    if ctx.deps.raquella_mode:
+        channel_id = ctx.deps.user_id
+    else:
+        channel_id = ctx.deps.channel_id
+
+    await cdb_put_channel_scratchpad(ctx.deps.cdb_client, channel_id, new_content)
