@@ -9,7 +9,7 @@ from pydantic_ai.models.gemini import GeminiModel
 from pydantic_ai.providers.google_gla import GoogleGLAProvider
 
 from camille.couchdb import cdb_get_channel_scratchpad, cdb_put_channel_scratchpad
-from camille.mattermost import MattermostCache, User
+from camille.mattermost import RAQUELLA_ID, MattermostCache, User
 from camille.utils import get_setting, get_setting_secret
 
 
@@ -143,7 +143,7 @@ async def system_prompt_mattermost_scratchpad(
     ctx: RunContext[Dependency],
 ) -> str:
     if ctx.deps.raquella_mode:
-        channel_id = ctx.deps.user_id
+        channel_id = RAQUELLA_ID
     else:
         channel_id = ctx.deps.channel_id
 
@@ -163,7 +163,7 @@ async def scratchpad_replace_content(
 ) -> str:
     """Replace the content of the scratchpad."""
     if ctx.deps.raquella_mode:
-        channel_id = ctx.deps.user_id
+        channel_id = RAQUELLA_ID
     else:
         channel_id = ctx.deps.channel_id
 

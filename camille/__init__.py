@@ -143,7 +143,9 @@ async def amain() -> None:
                         }
 
                         if is_raquella:
-                            rev, history = await cdb_get_history(cdb_client, user_id)
+                            rev, history = await cdb_get_history(
+                                cdb_client, RAQUELLA_ID
+                            )
                         else:
                             rev, history = await cdb_get_history(cdb_client, channel_id)
                         history = window_history(history, window_size)
@@ -166,7 +168,7 @@ async def amain() -> None:
                             if is_raquella:
                                 await cdb_put_history(
                                     cdb_client,
-                                    user_id,
+                                    RAQUELLA_ID,
                                     rev,
                                     r.result.all_messages(),
                                 )
