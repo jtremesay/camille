@@ -10,6 +10,7 @@ from pydantic_ai.models.gemini import GeminiModelSettings, GeminiSafetySettings
 from camille.agent import Dependency, agent, window_history
 from camille.couchdb import cdb_get_client, cdb_get_history, cdb_put_history
 from camille.mattermost import (
+    KAKAIMOULOX_ID,
     RAQUELLA_ID,
     Channel,
     MattermostCache,
@@ -121,8 +122,8 @@ async def amain() -> None:
                         message = post_data["message"]
 
                         user_id = post_data["user_id"]
-                        is_raquella = user_id == RAQUELLA_ID or message.startswith(
-                            "⬆️⬆️⬇️⬇️⬅️➡️⬅️➡️🅱️🅰️"
+                        raquella_mode = channel_id == KAKAIMOULOX_ID and (
+                            user_id == RAQUELLA_ID or message.startswith("⬆️⬆️⬇️⬇️⬅️➡️⬅️➡️🅱️🅰️")
                         )
 
                         deps = Dependency(
@@ -130,7 +131,7 @@ async def amain() -> None:
                             me=me,
                             channel_id=channel_id,
                             user_id=user_id,
-                            raquella_mode=is_raquella,
+                            raquella_mode=raquella_mode,
                             cdb_client=cdb_client,
                         )
 
@@ -142,7 +143,7 @@ async def amain() -> None:
                             ).isoformat(),
                         }
 
-                        if is_raquella:
+                        if raquella_mode:
                             rev, history = await cdb_get_history(
                                 cdb_client, RAQUELLA_ID
                             )
@@ -165,7 +166,7 @@ async def amain() -> None:
                                                 part.content,
                                             )
 
-                            if is_raquella:
+                            if raquella_mode:
                                 await cdb_put_history(
                                     cdb_client,
                                     RAQUELLA_ID,

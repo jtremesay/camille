@@ -8,6 +8,7 @@ from camille.utils import get_setting, get_setting_secret
 
 type ChannelId = str
 
+KAKAIMOULOX_ID = "4cum8jkhzff57na6mgrq37syuh"
 RAQUELLA_ID = "nhdhr7hb43gkxq9pzy5hzbq4cw"
 
 
