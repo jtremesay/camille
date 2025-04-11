@@ -170,7 +170,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "aiohttp", extras = ["speedups"], specifier = "==3.11.16" },
-    { name = "logfire", extras = ["aiohttp", "httpx"], specifier = "==3.12.0" },
+    { name = "logfire", extras = ["aiohttp", "httpx"], specifier = "==3.13.1" },
     { name = "pydantic-ai-slim", extras = ["tavily"], specifier = "==0.0.55" },
 ]
 
@@ -431,7 +431,7 @@ wheels = [
 
 [[package]]
 name = "logfire"
-version = "3.12.0"
+version = "3.13.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "executing" },
@@ -442,9 +442,9 @@ dependencies = [
     { name = "rich" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/b6/13/3f8efed24ac44c86831917f06c3f03af156b3dc816dd049c4f9344db3040/logfire-3.12.0.tar.gz", hash = "sha256:1c8c21f33e94a63106c38bdf51c0bad554430d0581f1cfbb0e8bb1741a5bd43b", size = 470112 }
+sdist = { url = "https://files.pythonhosted.org/packages/f8/60/8bffe248b2261cd22808e49a882de70e93b2fc7548582daa1009a0ecf9a5/logfire-3.13.1.tar.gz", hash = "sha256:56cd1133bf93d25d2cd44c004df131183997d479a163290e9aab81d58118889a", size = 471902 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/08/04/a46bb34107dbe3ceea5562b0ba1720eeb25c19a10277cbc9c9f9b39d4cc7/logfire-3.12.0-py3-none-any.whl", hash = "sha256:d1812d96e5a88d3aa364947075af7a8bc2791e6e2474893fe02ce57b2a417a69", size = 191451 },
+    { url = "https://files.pythonhosted.org/packages/ea/5f/8a05978d8a4ddb13cf04acf7f510b461b76db8d5547cfefe50e42e8a16e8/logfire-3.13.1-py3-none-any.whl", hash = "sha256:b1c662dcb88fbdcfa1b6561f20ed0e758778e5542b21618cca71fee3c45c27eb", size = 191891 },
 ]
 
 [package.optional-dependencies]
