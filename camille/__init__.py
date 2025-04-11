@@ -118,9 +118,12 @@ async def amain() -> None:
                                 },
                             }
                         )
+                        message = post_data["message"]
 
                         user_id = post_data["user_id"]
-                        is_raquella = user_id == RAQUELLA_ID
+                        is_raquella = user_id == RAQUELLA_ID or message.startswith(
+                            "⬆️⬆️⬇️⬇️⬅️➡️⬅️➡️🅱️🅰️"
+                        )
 
                         deps = Dependency(
                             mm_cache=mm_cache,
