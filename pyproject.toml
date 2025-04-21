@@ -5,7 +5,7 @@ description = "An AI assistant for Mattermost"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "aiohttp[speedups]==3.11.16",
+    "aiohttp[speedups]==3.11.17",
     "logfire[aiohttp,httpx]==3.13.1",
     "pydantic-ai-slim[tavily]==0.0.55",
 ]
