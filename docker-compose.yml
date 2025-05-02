@@ -27,7 +27,7 @@ services:
       - "TAVILY_API_KEY_FILE=/run/secrets/tavily_api_key"
       - "ENVIRONMENT=prod"
       - COUCHDB_URL_FILE=/run/secrets/camille_couchdb_url
-      - WINDOW_SIZE=768
+      - WINDOW_SIZE=256
     secrets:
       - camille_mattermost_api_token
       - google_api_key
