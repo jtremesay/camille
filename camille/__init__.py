@@ -10,8 +10,6 @@ from pydantic_ai.models.gemini import GeminiModelSettings, GeminiSafetySettings
 from camille.agent import Dependency, agent, window_history
 from camille.couchdb import cdb_get_client, cdb_get_history, cdb_put_history
 from camille.mattermost import (
-    KAKAIMOULOX_ID,
-    RAQUELLA_ID,
     Channel,
     MattermostCache,
     User,
@@ -122,16 +120,11 @@ async def amain() -> None:
                         message = post_data["message"]
 
                         user_id = post_data["user_id"]
-                        raquella_mode = channel_id == KAKAIMOULOX_ID and (
-                            user_id == RAQUELLA_ID or message.startswith("⬆️⬆️⬇️⬇️⬅️➡️⬅️➡️🅱️🅰️")
-                        )
-
                         deps = Dependency(
                             mm_cache=mm_cache,
                             me=me,
                             channel_id=channel_id,
                             user_id=user_id,
-                            raquella_mode=raquella_mode,
                             cdb_client=cdb_client,
                         )
 
@@ -142,13 +135,7 @@ async def amain() -> None:
                                 post_data["create_at"] / 1000, tz=timezone.utc
                             ).isoformat(),
                         }
-
-                        if raquella_mode:
-                            rev, history = await cdb_get_history(
-                                cdb_client, RAQUELLA_ID
-                            )
-                        else:
-                            rev, history = await cdb_get_history(cdb_client, channel_id)
+                        rev, history = await cdb_get_history(cdb_client, channel_id)
                         history = window_history(history, window_size)
                         async with agent.iter(
                             json_dumps(message),
@@ -166,20 +153,12 @@ async def amain() -> None:
                                                 part.content,
                                             )
 
-                            if raquella_mode:
-                                await cdb_put_history(
-                                    cdb_client,
-                                    RAQUELLA_ID,
-                                    rev,
-                                    r.result.all_messages(),
-                                )
-                            else:
-                                await cdb_put_history(
-                                    cdb_client,
-                                    channel_id,
-                                    rev,
-                                    r.result.all_messages(),
-                                )
+                            await cdb_put_history(
+                                cdb_client,
+                                channel_id,
+                                rev,
+                                r.result.all_messages(),
+                            )
                     except Exception as e:
                         logfire.exception("error")
                         await mm_post_message(

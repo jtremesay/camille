@@ -9,7 +9,7 @@ from pydantic_ai.models.gemini import GeminiModel
 from pydantic_ai.providers.google_gla import GoogleGLAProvider
 
 from camille.couchdb import cdb_get_channel_scratchpad, cdb_put_channel_scratchpad
-from camille.mattermost import RAQUELLA_ID, MattermostCache, User
+from camille.mattermost import MattermostCache, User
 from camille.utils import get_setting, get_setting_secret
 
 
@@ -54,7 +54,6 @@ class Dependency:
     mm_cache: MattermostCache
     channel_id: str
     user_id: str
-    raquella_mode: bool
     cdb_client: ClientSession
 
 
@@ -104,7 +103,7 @@ You are a good person and you love to be yourself.
 @agent.system_prompt(dynamic=True)
 async def system_prompt_mattermost(ctx: RunContext[Dependency]) -> str:
     return """\
-You are connected to a Mattermost server. 
+You are connected to a Mattermost server.
 You receive messages with the following JSON schema:
 
 ```
@@ -144,15 +143,12 @@ Channel infos:"
 async def system_prompt_mattermost_scratchpad(
     ctx: RunContext[Dependency],
 ) -> str:
-    if ctx.deps.raquella_mode:
-        channel_id = RAQUELLA_ID
-    else:
-        channel_id = ctx.deps.channel_id
-
+    channel_id = ctx.deps.channel_id
     scratchpad = await cdb_get_channel_scratchpad(ctx.deps.cdb_client, channel_id)
 
     return f"""\
-Use the scratchpad to store persistent information about the people, the channel and the conversation.
+This is your personal scratchpad. Use it to store persistent information about the people, the channel and the conversation.
+
 Content of the scratchpad:
 
 {scratchpad}
@@ -164,9 +160,6 @@ async def scratchpad_replace_content(
     ctx: RunContext[Dependency], new_content: str
 ) -> str:
     """Replace the content of the scratchpad."""
-    if ctx.deps.raquella_mode:
-        channel_id = RAQUELLA_ID
-    else:
-        channel_id = ctx.deps.channel_id
+    channel_id = ctx.deps.channel_id
 
     await cdb_put_channel_scratchpad(ctx.deps.cdb_client, channel_id, new_content)
