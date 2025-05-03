@@ -35,8 +35,10 @@ def window_history(history: list[ModelMessage], max_size: int) -> list[ModelMess
     to_skip = messages_count - max_size
     history = history[to_skip:]
 
-    # Ensure first message is a request
-    while history and history[0].kind != "request":
+    # Ensure first message is a user request
+    while history and (
+        history[0].kind != "request" or history[0].parts[0].part_kind == "tool-return"
+    ):
         history.pop(0)
 
     # Add system prompts
