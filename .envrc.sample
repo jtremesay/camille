@@ -12,9 +12,5 @@ export GEMINI_API_KEY=""
 # Database
 export COUCHDB_URL=""
 
-# Logfire, optional
-export ENVIRONMENT="dev"
-export LOGFIRE_TOKEN=""
-
 # Tavily, optional
 export TAVILY_API_KEY=""

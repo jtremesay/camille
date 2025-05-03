@@ -3,7 +3,6 @@ from datetime import datetime, timezone
 from json import dumps as json_dumps
 from json import loads as json_loads
 
-import logfire
 from aiohttp import WSMsgType
 from pydantic_ai.models.gemini import GeminiModelSettings, GeminiSafetySettings
 
@@ -20,15 +19,6 @@ from camille.utils import get_setting, get_setting_secret
 
 
 async def amain() -> None:
-    logfire.configure(
-        token=get_setting_secret("LOGFIRE_TOKEN", None),
-        send_to_logfire="if-token-present",
-        environment=get_setting("ENVIRONMENT"),
-        service_name="camille",
-    )
-    logfire.instrument_httpx(capture_all=True)
-    logfire.instrument_aiohttp_client()
-
     window_size = int(get_setting("WINDOW_SIZE", 1024))
     settings = GeminiModelSettings(
         gemini_safety_settings=[
@@ -63,9 +53,6 @@ async def amain() -> None:
                     mm_event = ws_data.get("event")
                     if not mm_event:
                         continue
-                    # logfire.info(
-                    #     "event received {event=}", event=mm_event, data=ws_data
-                    # )
 
                     mm_event_data = ws_data["data"]
                     seq = max(seq, ws_data["seq"])
@@ -103,7 +90,6 @@ async def amain() -> None:
                     if post_data["root_id"]:
                         continue
 
-                    logfire.info("post received", data=post_data)
                     channel_id = post_data["channel_id"]
 
                     try:
@@ -160,7 +146,6 @@ async def amain() -> None:
                                 r.result.all_messages(),
                             )
                     except Exception as e:
-                        logfire.exception("error")
                         await mm_post_message(
                             mm_client,
                             channel_id,
