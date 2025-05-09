@@ -10,7 +10,27 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+from os import environ
 from pathlib import Path
+
+from dotenv import load_dotenv
+
+
+def load_docker_secrets() -> None:
+    secrets_keys = [key for key in environ.keys() if key.endswith("_FILE")]
+    for secret_key in secrets_keys:
+        secret_path = Path(environ[secret_key])
+        secret = secret_path.read_text()
+        key = secret_key[:-5]
+        environ[key] = secret
+
+
+def load_env():
+    load_docker_secrets()
+    load_dotenv()
+
+
+load_env()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -121,3 +141,8 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+
+# Mattermost settings
+MATTERMOST_HOST = environ["MATTERMOST_HOST"]
+MATTERMOST_API_TOKEN = environ["MATTERMOST_API_TOKEN"]
