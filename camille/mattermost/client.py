@@ -78,7 +78,9 @@ class Mattermost:
             self._ws_client = ws
             while True:
                 event = await self._ws_client.receive_json()
-                kind = event["event"]
+                kind = event.get("event")
+                if not kind:
+                    continue
                 data = event["data"]
                 broadcast = event.get("broadcast")
                 seq = event["seq"]
