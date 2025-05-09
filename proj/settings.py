@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from os import environ
 from pathlib import Path
 
+import dj_database_url
 from dotenv import load_dotenv
 
 
@@ -93,12 +94,8 @@ WSGI_APPLICATION = "proj.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
-}
+DATABASES = {}
+DATABASES["default"] = dj_database_url.config(default="sqlite:///db.sqlite3")
 
 
 # Password validation
