@@ -101,7 +101,7 @@ Users present in the channel:
 
 You can only see the messages of the current thread.
 The notes store information about the channel and the users that are shared between the threads.
-Update the notes of the channel and the users with the information you have.
+Update the notes of the channel and the users with the information you have so you can use them in the future.
 """
 
     async def update_channel_notes(self, ctx: RunContext[Dependency], notes: str):
