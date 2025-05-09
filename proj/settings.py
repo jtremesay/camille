@@ -20,7 +20,7 @@ from dotenv import load_dotenv
 def load_docker_secrets() -> None:
     secrets_keys = [key for key in environ.keys() if key.endswith("_FILE")]
     for secret_key in secrets_keys:
-        secret_path = Path("/run/secrets") / environ[secret_key]
+        secret_path = Path(environ[secret_key])
         secret = secret_path.read_text()
         key = secret_key[:-5]
         environ[key] = secret
