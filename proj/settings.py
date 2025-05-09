@@ -182,4 +182,5 @@ logfire.configure(
     service_name=service,
     send_to_logfire="if-token-present",
 )
+logfire.instrument_httpx(capture_all=True)
 logfire.instrument_pydantic_ai()

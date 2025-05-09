@@ -81,6 +81,10 @@ class Mattermost:
                 kind = event.get("event")
                 if not kind:
                     continue
+
+                if kind in {"status_change", "typing"}:
+                    continue
+
                 data = event["data"]
                 broadcast = event.get("broadcast")
                 seq = event["seq"]
