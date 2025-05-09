@@ -1,0 +1,65 @@
+services:
+  pg17:
+    image: "postgres:17"
+    environment:
+      POSTGRES_DB: "camille"
+      POSTGRES_USER: "camille"
+      POSTGRES_PASSWORD: "camille"
+
+    volumes:
+      - "pg17_data:/var/lib/postgresql/data"
+
+    networks:
+      - "camille"
+
+  backend:
+    image: "killruana/camille:main"
+    environment:
+      - "ALLOWED_HOSTS=camille.jtremesay.org"
+      - "DATABASE_URL=postgres://camille:camille@pg17:5432/camille"
+      - "SECRET_KEY_FILE=camille_secret_key"
+    secrets:
+      - "camille_secret_key"
+
+    networks:
+      - "camille"
+      - "traefik_public"
+
+  mattermost:
+    image: "killruana/camille:main"
+    environment:
+      - "MATTERMOST_HOST=https://mattermost.jtremesay.org"
+      - "MATTERMOST_API_TOKEN_FILE=/run/secrets/camille_mattermost_api_token"
+      #- "AGENT_MODEL=gemini-2.0-flash"
+      - "GEMINI_API_KEY_FILE=/run/secrets/google_api_key"
+      - "TAVILY_API_KEY_FILE=/run/secrets/tavily_api_key"
+      - "ALLOWED_HOSTS=camille.jtremesay.org"
+      - "DATABASE_URL=postgres://camille:camille@pg17:5432/camille"
+      - "SECRET_KEY_FILE=camille_secret_key"
+    secrets:
+      - "camille_mattermost_api_token"
+      - "google_api_key"
+      - "tavily_api_key"
+      - "camille_secret_key"
+
+    networks:
+      - "camille"
+
+
+volumes:
+  pg17_data:
+
+networks:
+  camille:
+  traefik_public:
+    external: true
+
+secrets:
+  camille_mattermost_api_token:
+    external: true
+  camille_secret_key:
+    external: true
+  google_api_key:
+    external: true
+  tavily_api_key:
+    external: true
