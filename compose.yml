@@ -35,7 +35,7 @@ services:
       - "TAVILY_API_KEY_FILE=/run/secrets/tavily_api_key"
       - "ALLOWED_HOSTS=camille.jtremesay.org"
       - "DATABASE_URL=postgres://camille:camille@pg17/camille"
-      - "SECRET_KEY_FILE=camille_secret_key"
+      - "SECRET_KEY_FILE=/run/secrets/camille_secret_key"
     secrets:
       - "camille_mattermost_api_token"
       - "google_api_key"
