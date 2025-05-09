@@ -8,6 +8,7 @@ from typing import Optional
 from channels.db import aclose_old_connections
 from django.conf import settings
 from pydantic_ai.agent import Agent
+from pydantic_ai.messages import BinaryContent
 from pydantic_ai.tools import RunContext
 
 from camille.mattermost.client import Mattermost
@@ -31,6 +32,7 @@ class MattermostAgent(Mattermost):
         self.agent.system_prompt(dynamic=True)(self.mm_system_prompt)
         self.agent.tool()(self.update_channel_notes)
         self.agent.tool()(self.update_user_notes)
+        self.agent.tool_plain()(self.get_url_content)
 
     async def base_system_prompt(self, ctx: RunContext[Dependency]) -> str:
         return f"""\
@@ -121,6 +123,19 @@ Update the notes of the channel and the users with the information you have.
         user.notes = notes
         await user.asave()
 
+    async def get_url_content(self, url: str) -> Optional[BinaryContent]:
+        """Get the content of a URL.
+
+        Args:
+            url: The URL to get the content of.
+
+        Returns:
+            The content of the URL.
+        """
+        r = await self._http_client.get(url)
+        r.raise_for_status()
+        return r.content
+
     async def connect(self):
         me_data = await self.get_me()
         self.me = (
@@ -207,16 +222,28 @@ Update the notes of the channel and the users with the information you have.
             )[0]
 
             history = await thread.get_history()
-            user_input = json_dumps(
-                dict(
-                    user_id=sender_id,
-                    timestamp=datetime.fromtimestamp(
-                        post["create_at"] / 1000, timezone.utc
-                    ).isoformat(),
-                    message=post["message"],
-                ),
-                indent=2,
+            user_input = []
+            for file in post["metadata"].get("files", []):
+                content = await self.get_file(file["id"])
+                user_input.extend(
+                    (
+                        f"The file {file['name']} is attached.",
+                        BinaryContent(content, file["mime_type"]),
+                    )
+                )
+            user_input.append(
+                json_dumps(
+                    dict(
+                        user_id=sender_id,
+                        timestamp=datetime.fromtimestamp(
+                            post["create_at"] / 1000, timezone.utc
+                        ).isoformat(),
+                        message=post["message"],
+                    ),
+                    indent=2,
+                )
             )
+
             deps = Dependency(
                 channel=channel,
                 users={

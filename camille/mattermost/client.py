@@ -136,6 +136,11 @@ class Mattermost:
         )
         response.raise_for_status()
 
+    async def get_file(self, file_id: str) -> bytes:
+        response = await self._http_client.get(f"files/{file_id}")
+        response.raise_for_status()
+        return response.content
+
     async def ws_send(self, action: str, data: dict) -> None:
         self.current_seq += 1
         await self._ws_client.send_json(
