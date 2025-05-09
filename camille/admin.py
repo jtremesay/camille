@@ -1,6 +1,13 @@
 from django.contrib import admin
 
-from camille.models import MMChannel, MMMembership, MMTeam, MMUser
+from camille.models import (
+    MMChannel,
+    MMInteraction,
+    MMMembership,
+    MMTeam,
+    MMThread,
+    MMUser,
+)
 
 
 @admin.register(MMTeam)
@@ -23,3 +30,16 @@ class MMChannelAdmin(admin.ModelAdmin):
 class MMUserAdmin(admin.ModelAdmin):
     list_display = ("id", "username", "nickname", "first_name", "last_name")
     inlines = [MembershipInline]
+
+
+class InteractionInline(admin.TabularInline):
+    model = MMInteraction
+    extra = 0
+
+
+@admin.register(MMThread)
+class MMThreadAdmin(admin.ModelAdmin):
+    list_display = ("id", "channel__name", "created_at")
+    list_filter = ("channel__team__name", "channel__name")
+    ordering = ("-created_at",)
+    inlines = [InteractionInline]

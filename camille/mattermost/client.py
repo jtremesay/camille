@@ -88,6 +88,9 @@ class Mattermost:
 
     async def on_event(self, kind: str, data, broadcast, seq):
         if event_handler := getattr(self, f"on_{kind}", None):
+            print(
+                f"Handling event: {kind}, Data: {data}, Broadcast: {broadcast}, Seq: {seq}"
+            )
             await event_handler(data, broadcast, seq)
         else:
             print(
@@ -123,3 +126,10 @@ class Mattermost:
         response = await self._http_client.get(f"channels/{channel_id}/members")
         response.raise_for_status()
         return ChannelMemberList.validate_json(response.content)
+
+    async def post_message(self, channel_id: str, root_id: str, message: str):
+        response = await self._http_client.post(
+            f"posts",
+            json={"channel_id": channel_id, "root_id": root_id, "message": message},
+        )
+        response.raise_for_status()
