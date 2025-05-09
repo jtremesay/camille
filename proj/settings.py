@@ -148,4 +148,4 @@ MATTERMOST_HOST = environ["MATTERMOST_HOST"]
 MATTERMOST_API_TOKEN = environ["MATTERMOST_API_TOKEN"]
 
 # Agent settings
-AGENT_MODEL = environ.get("AGENT_MODEL", "gemini-2.5-flash-preview-04-17")
+AGENT_MODEL = environ.get("AGENT_MODEL", "gemini-2.0-flash")
