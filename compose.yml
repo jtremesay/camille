@@ -5,10 +5,8 @@ services:
       POSTGRES_DB: "camille"
       POSTGRES_USER: "camille"
       POSTGRES_PASSWORD: "camille"
-
     volumes:
       - "pg17_data:/var/lib/postgresql/data"
-
     networks:
       - "camille"
 
@@ -20,10 +18,15 @@ services:
       - "SECRET_KEY_FILE=camille_secret_key"
     secrets:
       - "camille_secret_key"
-
     networks:
       - "camille"
       - "traefik_public"
+    deploy:
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.camille.rule=Host(`camille.jtremesay.org`) || Host(`camille.slaanesh.org`)"
+        - "traefik.http.services.camille.loadbalancer.server.port=8000"
+        - "traefik.http.routers.camille.tls.certresolver=leresolver"
 
   mattermost:
     image: "killruana/camille:main"
@@ -42,7 +45,6 @@ services:
       - "google_api_key"
       - "tavily_api_key"
       - "camille_secret_key"
-
     networks:
       - "camille"
 
