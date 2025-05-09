@@ -208,6 +208,9 @@ Update the notes of the channel and the users with the information you have.
         channel_id = post["channel_id"]
         post_id = post["id"]
         root_id = post.get("root_id") or post_id
+        message = post["message"]
+        if message.startswith("."):
+            return
 
         try:
             await self.user_typing(channel_id)
@@ -238,7 +241,7 @@ Update the notes of the channel and the users with the information you have.
                         timestamp=datetime.fromtimestamp(
                             post["create_at"] / 1000, timezone.utc
                         ).isoformat(),
-                        message=post["message"],
+                        message=message,
                     ),
                     indent=2,
                 )
