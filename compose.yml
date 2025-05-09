@@ -17,7 +17,7 @@ services:
     environment:
       - "ALLOWED_HOSTS=camille.jtremesay.org"
       - "DATABASE_URL=postgres://camille:camille@pg17/camille"
-      - "SECRET_KEY_FILE=camille_secret_key"
+      - "SECRET_KEY_FILE=/run/secrets/camille_secret_key"
     secrets:
       - "camille_secret_key"
 
