@@ -124,6 +124,11 @@ class Mattermost:
         response.raise_for_status()
         return ChannelList.validate_json(response.content)
 
+    async def get_channel(self, channel_id: str) -> Channel:
+        response = await self._http_client.get(f"channels/{channel_id}")
+        response.raise_for_status()
+        return Channel.model_validate_json(response.content)
+
     async def get_channel_members(self, channel_id: str) -> list[ChannelMember]:
         response = await self._http_client.get(f"channels/{channel_id}/members")
         response.raise_for_status()

@@ -208,6 +208,9 @@ Update the notes of the channel and the users with the information you have.
         if sender_id == self.me.id:
             return
 
+        if post["type"]:
+            return
+
         channel_id = post["channel_id"]
         post_id = post["id"]
         root_id = post.get("root_id") or post_id
@@ -275,3 +278,68 @@ Update the notes of the channel and the users with the information you have.
         except Exception as e:
             print_exc()
             await self.post_message(channel_id, root_id, "Error: " + str(e))
+
+    async def on_user_added(self, data, broadcast, seq):
+        user_id = data["user_id"]
+        channel_id = broadcast["channel_id"]
+
+        try:
+            await MMUser.objects.aget(id=user_id)
+        except MMUser.DoesNotExist:
+            user_data = await self.get_user(user_id)
+            await MMUser.objects.create(
+                id=user_id,
+                defaults={
+                    "username": user_data.username,
+                    "nickname": user_data.nickname,
+                    "first_name": user_data.first_name,
+                    "last_name": user_data.last_name,
+                },
+            )
+
+        try:
+            await MMChannel.objects.aget(id=channel_id)
+        except MMChannel.DoesNotExist:
+            channel_data = await self.get_channel(channel_id)
+            await MMChannel.objects.create(
+                id=channel_id,
+                defaults={
+                    "team_id": channel_data.team_id,
+                    "type": channel_data.type,
+                    "name": channel_data.name,
+                    "display_name": channel_data.display_name,
+                    "header": channel_data.header,
+                    "purpose": channel_data.purpose,
+                },
+            )
+
+        await MMMembership.objects.aupdate_or_create(
+            channel_id=channel_id,
+            user=user_id,
+        )
+
+    async def on_user_updated(self, data, broadcast, seq):
+        user_data = data["user"]
+        await MMUser.objects.aupdate_or_create(
+            id=user_data["id"],
+            defaults={
+                "username": user_data["username"],
+                "nickname": user_data["nickname"],
+                "first_name": user_data["first_name"],
+                "last_name": user_data["last_name"],
+            },
+        )
+
+    async def on_channel_updated(self, data, broadcast, seq):
+        channel_data = json_loads(data["channel"])
+        await MMChannel.objects.aupdate_or_create(
+            id=channel_data["id"],
+            defaults={
+                "team_id": channel_data["team_id"],
+                "type": channel_data["type"],
+                "name": channel_data["name"],
+                "display_name": channel_data["display_name"],
+                "header": channel_data["header"],
+                "purpose": channel_data["purpose"],
+            },
+        )
