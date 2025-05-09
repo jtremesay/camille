@@ -47,6 +47,10 @@ SECRET_KEY = environ["SECRET_KEY"]
 DEBUG = environ.get("DEBUG", "false").lower() in ["true", "true", "1", "on"]
 
 ALLOWED_HOSTS = environ.get("ALLOWED_HOSTS", "localhost").split(",")
+CSRF_TRUSTED_ORIGINS = [
+    f"https://{host}" if host != "localhost" else f"http://{host}"
+    for host in ALLOWED_HOSTS
+]
 
 
 # Application definition
