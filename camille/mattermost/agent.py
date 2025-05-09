@@ -8,6 +8,7 @@ from typing import Optional
 from channels.db import aclose_old_connections
 from django.conf import settings
 from pydantic_ai.agent import Agent
+from pydantic_ai.common_tools.tavily import tavily_search_tool
 from pydantic_ai.messages import BinaryContent
 from pydantic_ai.tools import RunContext
 
@@ -26,7 +27,9 @@ class MattermostAgent(Mattermost):
         super().__init__(base_url, token)
         self.me: Optional[MMUser] = None
         self.agent = Agent(
-            model="google-gla:" + settings.AGENT_MODEL, deps_type=Dependency
+            model="google-gla:" + settings.AGENT_MODEL,
+            deps_type=Dependency,
+            tools=[tavily_search_tool(settings.TAVILY_API_KEY)],
         )
         self.agent.system_prompt(dynamic=True)(self.base_system_prompt)
         self.agent.system_prompt(dynamic=True)(self.mm_system_prompt)

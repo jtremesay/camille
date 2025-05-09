@@ -149,3 +149,6 @@ MATTERMOST_API_TOKEN = environ["MATTERMOST_API_TOKEN"]
 
 # Agent settings
 AGENT_MODEL = environ.get("AGENT_MODEL", "gemini-2.0-flash")
+
+# Tavily
+TAVILY_API_KEY = environ["TAVILY_API_KEY"]
