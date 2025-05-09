@@ -94,7 +94,6 @@ class MMThread(models.Model):
         await self.interactions.acreate(
             id=post_id,
             messages_json=result.new_messages_json().decode(),
-            tokens_count=result.usage().total_tokens,
         )
 
 
@@ -108,4 +107,3 @@ class MMInteraction(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
     messages_json = models.TextField()
-    tokens_count = models.PositiveIntegerField()
