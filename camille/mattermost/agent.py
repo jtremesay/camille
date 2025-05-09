@@ -195,6 +195,7 @@ Update the notes of the channel and the users with the information you have.
         root_id = post.get("root_id") or post_id
 
         try:
+            await self.user_typing(channel_id)
             channel = await MMChannel.objects.aget(id=channel_id)
             thread = (
                 await MMThread.objects.aget_or_create(

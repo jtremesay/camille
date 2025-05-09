@@ -133,3 +133,16 @@ class Mattermost:
             json={"channel_id": channel_id, "root_id": root_id, "message": message},
         )
         response.raise_for_status()
+
+    async def ws_send(self, action: str, data: dict) -> None:
+        self.current_seq += 1
+        await self._ws_client.send_json(
+            {
+                "action": action,
+                "data": data,
+                "seq": self.current_seq,
+            }
+        )
+
+    async def user_typing(self, channel_id: str) -> None:
+        await self.ws_send("user_typing", {"channel_id": channel_id})
