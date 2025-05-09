@@ -1,8 +1,8 @@
-FROM python:3.13
+FROM python:3.13-alpine
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 WORKDIR /app
 COPY pyproject.toml uv.lock ./
-RUN uv sync
+RUN uv sync --no-dev
 COPY entrypoint.sh manage.py ./
 COPY proj/ proj/
 COPY camille/ camille/
