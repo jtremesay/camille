@@ -93,7 +93,7 @@ class MMThread(models.Model):
     async def append_interaction(self, post_id: str, result: AgentRunResult) -> None:
         await self.interactions.acreate(
             id=post_id,
-            messages_json=result.new_messages_json(),
+            messages_json=result.new_messages_json().decode(),
             tokens_count=result.usage().total_tokens,
         )
 
@@ -107,5 +107,5 @@ class MMInteraction(models.Model):
         related_query_name="interaction",
     )
     created_at = models.DateTimeField(auto_now_add=True)
-    messages_json = models.BinaryField()
+    messages_json = models.TextField()
     tokens_count = models.PositiveIntegerField()

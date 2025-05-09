@@ -43,3 +43,10 @@ class MMThreadAdmin(admin.ModelAdmin):
     list_filter = ("channel__team__name", "channel__name")
     ordering = ("-created_at",)
     inlines = [InteractionInline]
+
+
+@admin.register(MMInteraction)
+class MMInteractionAdmin(admin.ModelAdmin):
+    list_display = ("id", "thread__channel__name", "thread__created_at", "created_at")
+    list_filter = ("thread__channel__team__name", "thread__channel__name")
+    ordering = ("-created_at",)
