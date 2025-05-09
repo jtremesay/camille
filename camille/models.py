@@ -8,7 +8,7 @@ from pydantic_ai.messages import ModelMessage, ModelMessagesTypeAdapter
 class MMTeam(models.Model):
     id = models.CharField(primary_key=True, max_length=26)
     name = models.CharField(max_length=255)
-    display_name = models.CharField(max_length=255)
+    display_name = models.CharField(max_length=255, blank=True)
 
     def __str__(self):
         return self.name or "Unnamed Team"
@@ -30,9 +30,9 @@ class MMChannel(models.Model):
     )
     type = models.CharField(max_length=1, choices=Type.choices)
     name = models.CharField(max_length=255)
-    display_name = models.CharField(max_length=255)
-    header = models.TextField(null=True)
-    purpose = models.TextField(null=True)
+    display_name = models.CharField(max_length=255, blank=True)
+    header = models.TextField(null=True, blank=True)
+    purpose = models.TextField(null=True, blank=True)
 
     notes = models.TextField()
 
@@ -43,9 +43,9 @@ class MMChannel(models.Model):
 class MMUser(models.Model):
     id = models.CharField(primary_key=True, max_length=26)
     username = models.CharField(max_length=255)
-    nickname = models.CharField(max_length=255)
-    first_name = models.CharField(max_length=255)
-    last_name = models.CharField(max_length=255)
+    nickname = models.CharField(max_length=255, blank=True)
+    first_name = models.CharField(max_length=255, blank=True)
+    last_name = models.CharField(max_length=255, blank=True)
 
     notes = models.TextField()
 
