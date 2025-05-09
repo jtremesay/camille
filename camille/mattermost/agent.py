@@ -5,6 +5,7 @@ from json import loads as json_loads
 from traceback import print_exc
 from typing import Optional
 
+import logfire
 from channels.db import aclose_old_connections
 from django.conf import settings
 from pydantic_ai.agent import Agent
@@ -195,6 +196,7 @@ Update the notes of the channel and the users with the information you have.
                         user_id=member_data.user_id,
                     )
 
+    @logfire.instrument("event {kind=}")
     async def on_event(self, kind: str, data, broadcast, seq):
         await aclose_old_connections()
         await super().on_event(kind, data, broadcast, seq)

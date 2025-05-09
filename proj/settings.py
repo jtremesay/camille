@@ -12,8 +12,10 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from os import environ
 from pathlib import Path
+from sys import argv
 
 import dj_database_url
+import logfire
 from dotenv import load_dotenv
 
 
@@ -44,7 +46,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = environ["SECRET_KEY"]
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = environ.get("DEBUG", "false").lower() in ["true", "true", "1", "on"]
+DEBUG = environ.get("DEBUG", "false").lower() in ["true", "1", "on"]
 
 ALLOWED_HOSTS = environ.get("ALLOWED_HOSTS", "localhost").split(",")
 CSRF_TRUSTED_ORIGINS = [
@@ -167,3 +169,17 @@ AGENT_MODEL = environ.get("AGENT_MODEL", "gemini-2.0-flash")
 
 # Tavily
 TAVILY_API_KEY = environ.get("TAVILY_API_KEY")
+
+
+if "manage.py" in argv[0]:
+    service = argv[1]
+else:
+    service = argv[0].split("/")[-1]
+
+logfire.configure(
+    token=environ.get("LOGFIRE_TOKEN"),
+    environment=environ.get("LOGFIRE_ENV", "production"),
+    service_name=service,
+    send_to_logfire="if-token-present",
+)
+logfire.instrument_pydantic_ai()

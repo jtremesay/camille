@@ -16,8 +16,10 @@ services:
       - "ALLOWED_HOSTS=camille.jtremesay.org"
       - "DATABASE_URL=postgres://camille:camille@pg17/camille"
       - "SECRET_KEY_FILE=camille_secret_key"
+      - "LOGFIRE_TOKEN_FILE=camille_logfire_token"
     secrets:
       - "camille_secret_key"
+      - "camille_logfire_token"
     networks:
       - "camille"
       - "traefik_public"
@@ -40,11 +42,13 @@ services:
       - "ALLOWED_HOSTS=camille.jtremesay.org"
       - "DATABASE_URL=postgres://camille:camille@pg17/camille"
       - "SECRET_KEY_FILE=camille_secret_key"
+      - "LOGFIRE_TOKEN_FILE=camille_logfire_token"
     secrets:
       - "camille_mattermost_api_token"
       - "google_api_key"
       - "tavily_api_key"
       - "camille_secret_key"
+      - "camille_logfire_token"
     networks:
       - "camille"
 
@@ -65,4 +69,6 @@ secrets:
   google_api_key:
     external: true
   tavily_api_key:
+    external: true
+  camille_logfire_token:
     external: true
