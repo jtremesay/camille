@@ -75,7 +75,7 @@ You are connected to a Mattermost server.
 Details of the current channel:
 ```json
 {json_dumps(dict(
-    d=ctx.deps.channel.id,
+    id=ctx.deps.channel.id,
     type=MMChannel.Type(ctx.deps.channel.type).label,
     name=ctx.deps.channel.name,
     display_name=ctx.deps.channel.display_name,
