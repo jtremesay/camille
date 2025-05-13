@@ -34,7 +34,7 @@ class MMChannel(models.Model):
     header = models.TextField(null=True, blank=True)
     purpose = models.TextField(null=True, blank=True)
 
-    notes = models.TextField()
+    notes = models.TextField(blank=True)
 
     def __str__(self):
         return self.name or "Unnamed Channel"
@@ -47,7 +47,7 @@ class MMUser(models.Model):
     first_name = models.CharField(max_length=255, blank=True)
     last_name = models.CharField(max_length=255, blank=True)
 
-    notes = models.TextField()
+    notes = models.TextField(blank=True)
 
     def __str__(self):
         return self.username or "Unnamed User"
