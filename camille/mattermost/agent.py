@@ -17,6 +17,8 @@ from pydantic_ai.tools import RunContext
 from camille.mattermost.client import Mattermost
 from camille.models import MMChannel, MMMembership, MMTeam, MMThread, MMUser
 
+RAQUELLA_ID = "nhdhr7hb43gkxq9pzy5hzbq4cw"
+
 
 @dataclass
 class Dependency:
@@ -239,6 +241,9 @@ Update the notes of the channel and the users with the information you have so y
             return
 
         try:
+            if sender_id == RAQUELLA_ID:
+                raise RuntimeError("🖕")
+
             await self.user_typing(channel_id)
             channel = await MMChannel.objects.aget(id=channel_id)
             thread = (
