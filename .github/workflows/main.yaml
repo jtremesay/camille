@@ -43,11 +43,6 @@ jobs:
     needs: build
     if: github.ref == 'refs/heads/main'
     steps:
-      # -
-      #   name: Deploy
-      #   uses: distributhor/workflow-webhook@v3
-      #   with:
-      #     webhook_url: ${{ secrets.WEBHOOK_URL }}
       -
         name: Deploy
         uses: jtremesay/docker-swarm-deploy@main
