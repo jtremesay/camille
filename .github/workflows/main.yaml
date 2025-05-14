@@ -43,8 +43,19 @@ jobs:
     needs: build
     if: github.ref == 'refs/heads/main'
     steps:
+      # -
+      #   name: Deploy
+      #   uses: distributhor/workflow-webhook@v3
+      #   with:
+      #     webhook_url: ${{ secrets.WEBHOOK_URL }}
       -
         name: Deploy
-        uses: distributhor/workflow-webhook@v3
+        uses: jtremesay/docker-swarm-deploy@main
         with:
-          webhook_url: ${{ secrets.WEBHOOK_URL }}
+          docker_username: killruana
+          docker_password: ${{ secrets.DOCKERHUB_TOKEN }}
+          remote_host: jtremesay.org
+          remote_user: github-ci
+          ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
+          stack_name: camille
+
