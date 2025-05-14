@@ -20,15 +20,20 @@ class MembershipInline(admin.TabularInline):
     extra = 0
 
 
+class ThreadInline(admin.TabularInline):
+    model = MMThread
+    extra = 0
+
+
 @admin.register(MMChannel)
 class MMChannelAdmin(admin.ModelAdmin):
-    list_display = ("id", "team__name", "type", "name", "display_name")
-    inlines = [MembershipInline]
+    list_display = ("id", "team__name", "type", "name", "display_name", "notes")
+    inlines = [MembershipInline, ThreadInline]
 
 
 @admin.register(MMUser)
 class MMUserAdmin(admin.ModelAdmin):
-    list_display = ("id", "username", "nickname", "first_name", "last_name")
+    list_display = ("id", "username", "nickname", "first_name", "last_name", "notes")
     inlines = [MembershipInline]
 
 
