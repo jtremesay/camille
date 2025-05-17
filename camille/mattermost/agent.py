@@ -37,7 +37,6 @@ class MattermostAgent(Mattermost):
                     threshold="BLOCK_NONE",
                 )
                 for category in [
-                    # "HARM_CATEGORY_UNSPECIFIED",
                     "HARM_CATEGORY_HARASSMENT",
                     "HARM_CATEGORY_HATE_SPEECH",
                     "HARM_CATEGORY_SEXUALLY_EXPLICIT",
@@ -57,6 +56,14 @@ class MattermostAgent(Mattermost):
         self.agent.tool()(self.update_channel_notes)
         self.agent.tool()(self.update_user_notes)
         self.agent.tool_plain()(self.get_url_content)
+
+        self.agent_raquella = Agent(
+            model="google-gla:gemini-2.0-flash-lite",
+            deps_type=Dependency,
+            model_settings=model_settings,
+        )
+        self.agent_raquella.system_prompt(dynamic=True)(self.base_system_prompt)
+        self.agent_raquella.system_prompt(dynamic=True)(self.mm_system_prompt)
 
     async def base_system_prompt(self, ctx: RunContext[Dependency]) -> str:
         return f"""\
@@ -241,9 +248,6 @@ Update the notes of the channel and the users with the information you have so y
             return
 
         try:
-            if sender_id == RAQUELLA_ID:
-                raise RuntimeError("🖕")
-
             await self.user_typing(channel_id)
             channel = await MMChannel.objects.aget(id=channel_id)
             thread = (
@@ -286,11 +290,14 @@ Update the notes of the channel and the users with the information you have so y
                 },
             )
 
-            async with self.agent.iter(
-                user_input, message_history=history, deps=deps
-            ) as r:
+            if sender_id == RAQUELLA_ID:
+                agent = self.agent_raquella
+            else:
+                agent = self.agent
+
+            async with agent.iter(user_input, message_history=history, deps=deps) as r:
                 async for node in r:
-                    if self.agent.is_call_tools_node(node):
+                    if agent.is_call_tools_node(node):
                         for part in node.model_response.parts:
                             if part.part_kind == "text":
                                 await self.post_message(
