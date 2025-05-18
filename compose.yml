@@ -9,6 +9,8 @@ services:
       - "pg17_data:/var/lib/postgresql/data"
     networks:
       - "camille"
+    deploy:
+      replicas: 0
 
   backend:
     image: "killruana/camille:main"
@@ -24,6 +26,7 @@ services:
       - "camille"
       - "traefik_public"
     deploy:
+      replicas: 0
       labels:
         - "traefik.enable=true"
         - "traefik.http.routers.camille.rule=Host(`camille.jtremesay.org`) || Host(`camille.slaanesh.org`)"
@@ -52,6 +55,8 @@ services:
       - "camille_logfire_token"
     networks:
       - "camille"
+    deploy:
+      replicas: 0
 
 
 volumes:
