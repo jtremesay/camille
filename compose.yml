@@ -8,7 +8,7 @@ services:
     volumes:
       - "pg17_data:/var/lib/postgresql/data"
     networks:
-      - "camille"
+      - "network"
     deploy:
       replicas: 0
 
@@ -23,7 +23,7 @@ services:
       - "camille_secret_key"
       - "camille_logfire_token"
     networks:
-      - "camille"
+      - "network"
       - "traefik_public"
     deploy:
       replicas: 0
@@ -54,7 +54,7 @@ services:
       - "camille_secret_key"
       - "camille_logfire_token"
     networks:
-      - "camille"
+      - "network"
     deploy:
       replicas: 0
 
@@ -63,7 +63,7 @@ volumes:
   pg17_data:
 
 networks:
-  camille:
+  network:
   traefik_public:
     external: true
 
