@@ -21,8 +21,10 @@ from dotenv import load_dotenv
 
 def load_docker_secrets() -> None:
     secrets_keys = [key for key in environ.keys() if key.endswith("_FILE")]
+
+    base_path = Path("/") / "run" / "secrets"
     for secret_key in secrets_keys:
-        secret_path = Path("/") / "run" / "secrets" / environ[secret_key]
+        secret_path = base_path / environ[secret_key]
         secret = secret_path.read_text()
         key = secret_key[:-5]
         environ[key] = secret
@@ -169,7 +171,6 @@ AGENT_MODEL = environ.get("AGENT_MODEL", "gemini-2.5-flash")
 
 # Tavily
 TAVILY_API_KEY = environ.get("TAVILY_API_KEY")
-
 
 if "manage.py" in argv[0]:
     service = argv[1]
