@@ -17,8 +17,6 @@ from pydantic_ai.tools import RunContext
 from camille.mattermost.client import Mattermost
 from camille.models import MMChannel, MMMembership, MMTeam, MMThread, MMUser
 
-RAQUELLA_ID = "nhdhr7hb43gkxq9pzy5hzbq4cw"
-
 
 @dataclass
 class Dependency:
@@ -56,14 +54,6 @@ class MattermostAgent(Mattermost):
         self.agent.tool()(self.update_channel_notes)
         self.agent.tool()(self.update_user_notes)
         self.agent.tool_plain()(self.get_url_content)
-
-        self.agent_raquella = Agent(
-            model="google-gla:gemini-2.5-flash",
-            deps_type=Dependency,
-            model_settings=model_settings,
-        )
-        self.agent_raquella.system_prompt(dynamic=True)(self.base_system_prompt)
-        self.agent_raquella.system_prompt(dynamic=True)(self.mm_system_prompt)
 
     async def base_system_prompt(self, ctx: RunContext[Dependency]) -> str:
         return f"""\
@@ -165,7 +155,7 @@ Update the notes of the channel and the users with the information you have so y
         user.notes = notes
         await user.asave()
 
-    async def get_url_content(self, url: str) -> Optional[BinaryContent]:
+    async def get_url_content(self, url: str) -> bytes:
         """Get the content of a URL.
 
         Args:
@@ -243,11 +233,22 @@ Update the notes of the channel and the users with the information you have so y
         await self.sync_db()
 
     async def on_posted(self, data, broadcast, seq):
+        # Ignore posts that not mention the bot
+        if mentions_data := data.get("mentions", None):
+            mentions = set(json_loads(mentions_data))
+            if self.me.id not in mentions:
+                return
+        else:
+            return
+
         post = json_loads(data["post"])
+
+        # Ignore posts sent by the bot itself
         sender_id = post["user_id"]
         if sender_id == self.me.id:
             return
 
+        # Ignore messages that are not simple text posts
         if post["type"]:
             return
 
@@ -255,8 +256,6 @@ Update the notes of the channel and the users with the information you have so y
         post_id = post["id"]
         root_id = post.get("root_id") or post_id
         message = post["message"]
-        if message.startswith("."):
-            return
 
         try:
             await self.user_typing(channel_id)
@@ -301,14 +300,11 @@ Update the notes of the channel and the users with the information you have so y
                 },
             )
 
-            if sender_id == RAQUELLA_ID:
-                agent = self.agent_raquella
-            else:
-                agent = self.agent
-
-            async with agent.iter(user_input, message_history=history, deps=deps) as r:
+            async with self.agent.iter(
+                user_input, message_history=history, deps=deps
+            ) as r:
                 async for node in r:
-                    if agent.is_call_tools_node(node):
+                    if self.agent.is_call_tools_node(node):
                         for part in node.model_response.parts:
                             if part.part_kind == "text":
                                 await self.post_message(
@@ -330,7 +326,7 @@ Update the notes of the channel and the users with the information you have so y
             await MMUser.objects.aget(id=user_id)
         except MMUser.DoesNotExist:
             user_data = await self.get_user(user_id)
-            await MMUser.objects.create(
+            await MMUser.objects.acreate(
                 id=user_id,
                 defaults={
                     "username": user_data.username,
@@ -344,7 +340,7 @@ Update the notes of the channel and the users with the information you have so y
             await MMChannel.objects.aget(id=channel_id)
         except MMChannel.DoesNotExist:
             channel_data = await self.get_channel(channel_id)
-            await MMChannel.objects.create(
+            await MMChannel.objects.acreate(
                 id=channel_id,
                 defaults={
                     "team_id": channel_data.team_id,
