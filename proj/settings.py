@@ -25,7 +25,7 @@ def load_docker_secrets() -> None:
     base_path = Path("/") / "run" / "secrets"
     for secret_key in secrets_keys:
         secret_path = base_path / environ[secret_key]
-        secret = secret_path.read_text()
+        secret = secret_path.read_text().strip()
         key = secret_key[:-5]
         environ[key] = secret
 
