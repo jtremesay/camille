@@ -58,7 +58,7 @@ class MattermostAgent(Mattermost):
         self.agent.tool_plain()(self.get_url_content)
 
         self.agent_raquella = Agent(
-            model="google-gla:gemini-2.0-flash-lite",
+            model="google-gla:gemini-2.5-flash",
             deps_type=Dependency,
             model_settings=model_settings,
         )
@@ -101,29 +101,40 @@ You are connected to a Mattermost server.
 
 Details of the current channel:
 ```json
-{json_dumps(dict(
-    id=ctx.deps.channel.id,
-    type=MMChannel.Type(ctx.deps.channel.type).label,
-    name=ctx.deps.channel.name,
-    display_name=ctx.deps.channel.display_name,
-    header=ctx.deps.channel.header,
-    purpose=ctx.deps.channel.purpose,
-    notes=ctx.deps.channel.notes,
-), indent=2)}
+{
+            json_dumps(
+                dict(
+                    id=ctx.deps.channel.id,
+                    type=MMChannel.Type(ctx.deps.channel.type).label,
+                    name=ctx.deps.channel.name,
+                    display_name=ctx.deps.channel.display_name,
+                    header=ctx.deps.channel.header,
+                    purpose=ctx.deps.channel.purpose,
+                    notes=ctx.deps.channel.notes,
+                ),
+                indent=2,
+            )
+        }
 ```
 
 Users present in the channel:
 ```json
-{json_dumps([
-    dict(
-        id=user.id,
-        username=user.username,
-        nickname=user.nickname,
-        first_name=user.first_name,
-        last_name=user.last_name,
-        notes=user.notes,
-    ) for user in ctx.deps.users.values()
-], indent=2)}
+{
+            json_dumps(
+                [
+                    dict(
+                        id=user.id,
+                        username=user.username,
+                        nickname=user.nickname,
+                        first_name=user.first_name,
+                        last_name=user.last_name,
+                        notes=user.notes,
+                    )
+                    for user in ctx.deps.users.values()
+                ],
+                indent=2,
+            )
+        }
 ```
 
 You can only see the messages of the current thread.
