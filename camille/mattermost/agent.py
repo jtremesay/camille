@@ -328,12 +328,10 @@ Update the notes of the channel and the users with the information you have so y
             user_data = await self.get_user(user_id)
             await MMUser.objects.acreate(
                 id=user_id,
-                defaults={
-                    "username": user_data.username,
-                    "nickname": user_data.nickname,
-                    "first_name": user_data.first_name,
-                    "last_name": user_data.last_name,
-                },
+                userrane=user_data.username,
+                nickname=user_data.nickname,
+                first_name=user_data.first_name,
+                last_name=user_data.last_name,
             )
 
         try:
@@ -342,14 +340,12 @@ Update the notes of the channel and the users with the information you have so y
             channel_data = await self.get_channel(channel_id)
             await MMChannel.objects.acreate(
                 id=channel_id,
-                defaults={
-                    "team_id": channel_data.team_id,
-                    "type": channel_data.type,
-                    "name": channel_data.name,
-                    "display_name": channel_data.display_name,
-                    "header": channel_data.header,
-                    "purpose": channel_data.purpose,
-                },
+                tean_id=channel_data.team_id,
+                type=channel_data.type,
+                name=channel_data.name,
+                display_name=channel_data.display_name,
+                header=channel_data.header,
+                purpose=channel_data.purpose,
             )
 
         await MMMembership.objects.aupdate_or_create(
