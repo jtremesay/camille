@@ -18,6 +18,7 @@ TeamList = TypeAdapter(list[Team])
 
 class Channel(BaseModel):
     id: str
+    team_id: str
     type: str
     name: str
     display_name: str
