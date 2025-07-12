@@ -165,7 +165,7 @@ MATTERMOST_HOST = environ.get("MATTERMOST_HOST")
 MATTERMOST_API_TOKEN = environ.get("MATTERMOST_API_TOKEN")
 
 # Agent settings
-AGENT_MODEL = environ.get("AGENT_MODEL", "gemini-2.0-flash")
+AGENT_MODEL = environ.get("AGENT_MODEL", "gemini-2.5-flash")
 
 # Tavily
 TAVILY_API_KEY = environ.get("TAVILY_API_KEY")
