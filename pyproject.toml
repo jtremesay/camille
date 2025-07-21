@@ -14,7 +14,7 @@ dependencies = [
     "logfire[httpx]==3.24.2",
     "psycopg[binary]==3.2.9",
     "pydantic==2.11.7",
-    "pydantic-ai-slim[google,tavily]==0.4.3",
+    "pydantic-ai-slim[google,tavily]==0.4.4",
     "python-dotenv==1.1.1",
     "whitenoise[brotli]==6.9.0",
 ]
