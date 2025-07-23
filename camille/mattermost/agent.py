@@ -340,7 +340,7 @@ Update the notes of the channel and the users with the information you have so y
             channel_data = await self.get_channel(channel_id)
             await MMChannel.objects.acreate(
                 id=channel_id,
-                tean_id=channel_data.team_id,
+                team_id=channel_data.team_id,
                 type=channel_data.type,
                 name=channel_data.name,
                 display_name=channel_data.display_name,
