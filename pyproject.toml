@@ -11,7 +11,7 @@ dependencies = [
     "django==5.2.5",
     "httpx-ws==0.7.2",
     "httpx[brotli,http2,zstd]==0.28.1",
-    "logfire[httpx]==4.1.0",
+    "logfire[httpx]==4.2.0",
     "psycopg[binary]==3.2.9",
     "pydantic==2.11.7",
     "pydantic-ai-slim[google,tavily]==0.6.0",
