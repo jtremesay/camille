@@ -153,7 +153,7 @@ requires-dist = [
     { name = "django", specifier = "==5.2.5" },
     { name = "httpx", extras = ["brotli", "http2", "zstd"], specifier = "==0.28.1" },
     { name = "httpx-ws", specifier = "==0.7.2" },
-    { name = "logfire", extras = ["httpx"], specifier = "==4.2.0" },
+    { name = "logfire", extras = ["httpx"], specifier = "==4.3.1" },
     { name = "psycopg", extras = ["binary"], specifier = "==3.2.9" },
     { name = "pydantic", specifier = "==2.11.7" },
     { name = "pydantic-ai-slim", extras = ["google", "tavily"], specifier = "==0.6.2" },
@@ -599,7 +599,7 @@ wheels = [
 
 [[package]]
 name = "logfire"
-version = "4.2.0"
+version = "4.3.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "executing" },
@@ -610,9 +610,9 @@ dependencies = [
     { name = "rich" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/e9/1d/6646ff0bbd2793d960facc05c29a599619e1a4f265d333f294f7292a6488/logfire-4.2.0.tar.gz", hash = "sha256:72ffe5b68dd97f386f691143a48cfe4e8e5aae261e111a5d5a852b4e23c1e1a8", size = 514414, upload-time = "2025-08-06T11:53:59.302Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/ec/f3/66f656cf4d482c290c4b847963a137bbb9ede97dd7f1cde1cda53878f5eb/logfire-4.3.1.tar.gz", hash = "sha256:8b8788bb044e14259ac54ae0c027341ba884a362f0cba7dd858f1378ecc6f043", size = 515669, upload-time = "2025-08-12T12:49:40.713Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/a3/86/4260e8d62775e9ab4b81b289479a7a9a7b6644ae8e73e8b1cb5d9da381d0/logfire-4.2.0-py3-none-any.whl", hash = "sha256:aaa6fe49c2835b8ca303090c0720604cddaafb16db064d671d7240095b1b395e", size = 212457, upload-time = "2025-08-06T11:53:55.496Z" },
+    { url = "https://files.pythonhosted.org/packages/de/59/c0978a21e8757f1559648dcd00c77215221c50ee2c59da6aa831b74130c6/logfire-4.3.1-py3-none-any.whl", hash = "sha256:1bd48c782cc71bf1c19751338b9229062c037c2644ae13137dfc00a474476762", size = 213490, upload-time = "2025-08-12T12:49:37.666Z" },
 ]
 
 [package.optional-dependencies]
