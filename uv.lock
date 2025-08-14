@@ -153,7 +153,7 @@ requires-dist = [
     { name = "django", specifier = "==5.2.5" },
     { name = "httpx", extras = ["brotli", "http2", "zstd"], specifier = "==0.28.1" },
     { name = "httpx-ws", specifier = "==0.7.2" },
-    { name = "logfire", extras = ["httpx"], specifier = "==4.3.1" },
+    { name = "logfire", extras = ["httpx"], specifier = "==4.3.3" },
     { name = "psycopg", extras = ["binary"], specifier = "==3.2.9" },
     { name = "pydantic", specifier = "==2.11.7" },
     { name = "pydantic-ai-slim", extras = ["google", "tavily"], specifier = "==0.7.0" },
@@ -599,7 +599,7 @@ wheels = [
 
 [[package]]
 name = "logfire"
-version = "4.3.1"
+version = "4.3.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "executing" },
@@ -610,9 +610,9 @@ dependencies = [
     { name = "rich" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/ec/f3/66f656cf4d482c290c4b847963a137bbb9ede97dd7f1cde1cda53878f5eb/logfire-4.3.1.tar.gz", hash = "sha256:8b8788bb044e14259ac54ae0c027341ba884a362f0cba7dd858f1378ecc6f043", size = 515669, upload-time = "2025-08-12T12:49:40.713Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/ca/9c/1a575014f5da17a13b5dc5fe457f4734a7810be5a4cd4d0c9ef441b235a3/logfire-4.3.3.tar.gz", hash = "sha256:ca11650480793f5d0760f614684bff027e5c0e08379d8b4d236acc6f6dc5ae17", size = 515840, upload-time = "2025-08-13T11:23:08.451Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/de/59/c0978a21e8757f1559648dcd00c77215221c50ee2c59da6aa831b74130c6/logfire-4.3.1-py3-none-any.whl", hash = "sha256:1bd48c782cc71bf1c19751338b9229062c037c2644ae13137dfc00a474476762", size = 213490, upload-time = "2025-08-12T12:49:37.666Z" },
+    { url = "https://files.pythonhosted.org/packages/1b/db/f4b3bd0b99b0c6ff6c988e8a30a01743b0435b5f5fd555f5db356486a5cc/logfire-4.3.3-py3-none-any.whl", hash = "sha256:61fac5508ee2cef49c42cc2598b109634f7b7ea2c81dddd2e3ec7f3a5a2742ee", size = 213523, upload-time = "2025-08-13T11:23:05.376Z" },
 ]
 
 [package.optional-dependencies]
