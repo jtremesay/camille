@@ -153,7 +153,7 @@ requires-dist = [
     { name = "django", specifier = "==5.2.5" },
     { name = "httpx", extras = ["brotli", "http2", "zstd"], specifier = "==0.28.1" },
     { name = "httpx-ws", specifier = "==0.7.2" },
-    { name = "logfire", extras = ["httpx"], specifier = "==4.3.1" },
+    { name = "logfire", extras = ["httpx"], specifier = "==4.3.5" },
     { name = "psycopg", extras = ["binary"], specifier = "==3.2.9" },
     { name = "pydantic", specifier = "==2.11.7" },
     { name = "pydantic-ai-slim", extras = ["google", "tavily"], specifier = "==0.7.0" },
@@ -599,7 +599,7 @@ wheels = [
 
 [[package]]
 name = "logfire"
-version = "4.3.1"
+version = "4.3.5"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "executing" },
@@ -610,9 +610,9 @@ dependencies = [
     { name = "rich" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/ec/f3/66f656cf4d482c290c4b847963a137bbb9ede97dd7f1cde1cda53878f5eb/logfire-4.3.1.tar.gz", hash = "sha256:8b8788bb044e14259ac54ae0c027341ba884a362f0cba7dd858f1378ecc6f043", size = 515669, upload-time = "2025-08-12T12:49:40.713Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/fb/a2/538f8944ad5464ef12b11644c45d27a592fbfa2c6620bb87e9651fd112bf/logfire-4.3.5.tar.gz", hash = "sha256:faaefc1de102fa81ad68b0f4a7465d72c254300b64614a25b71739915af1a273", size = 518639, upload-time = "2025-08-22T16:37:15.453Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/de/59/c0978a21e8757f1559648dcd00c77215221c50ee2c59da6aa831b74130c6/logfire-4.3.1-py3-none-any.whl", hash = "sha256:1bd48c782cc71bf1c19751338b9229062c037c2644ae13137dfc00a474476762", size = 213490, upload-time = "2025-08-12T12:49:37.666Z" },
+    { url = "https://files.pythonhosted.org/packages/f1/57/40e65e9de0c01aa603d36f117d4979bb4e33289a6fc628669904b18a908f/logfire-4.3.5-py3-none-any.whl", hash = "sha256:977631dc98a09ebba4e07ee893375e640dc0681777add6074a0854285f3b9413", size = 213883, upload-time = "2025-08-22T16:37:11.436Z" },
 ]
 
 [package.optional-dependencies]
