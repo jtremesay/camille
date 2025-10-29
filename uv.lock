@@ -542,7 +542,7 @@ zstd = [
 
 [[package]]
 name = "httpx-ws"
-version = "0.8.0"
+version = "0.8.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "anyio" },
@@ -550,9 +550,9 @@ dependencies = [
     { name = "httpx" },
     { name = "wsproto" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/c0/dc/d7941f8a598e636779c1f34daa3fd88849b36d440dd3522ceba90915abc6/httpx_ws-0.8.0.tar.gz", hash = "sha256:a4dbe99509751d9498ead8564a455e0e8d27501560e19864d249b8b9766b24ad", size = 25488, upload-time = "2025-09-20T14:23:40.69Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/bb/3d/93a17bc7d769f8b47facc9c8e2cb5435b04185c1ebfdf49f2c7485f892b6/httpx_ws-0.8.1.tar.gz", hash = "sha256:fdc8f471980d572f371d113a50710bbf397245048e9a542606af0bba2b956ab5", size = 105819, upload-time = "2025-10-28T07:31:42.298Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/08/65/36bec7fe24c61e7e700a5e08210e8f10cf1cf78eb75491316125c958ca76/httpx_ws-0.8.0-py3-none-any.whl", hash = "sha256:42f650a63c5d9b4940e0375e4bee001b644620e06c87d192692ce6015e17f8e2", size = 14986, upload-time = "2025-09-20T14:23:41.409Z" },
+    { url = "https://files.pythonhosted.org/packages/69/b5/22a5a5b3e0497ec5ddc612474c0b50583bddd543eedc8f7da6eebc032c3d/httpx_ws-0.8.1-py3-none-any.whl", hash = "sha256:edef4173336a49e5cdec9e47ab8ffc896ef36c48a4b43a36c8daf93beeb9955c", size = 15311, upload-time = "2025-10-28T07:31:40.908Z" },
 ]
 
 [[package]]
