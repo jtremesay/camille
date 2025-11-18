@@ -11,7 +11,6 @@ from django.conf import settings
 from pydantic_ai.agent import Agent
 from pydantic_ai.common_tools.tavily import tavily_search_tool
 from pydantic_ai.messages import BinaryContent
-from pydantic_ai.models.gemini import GeminiModelSettings, GeminiSafetySettings
 from pydantic_ai.tools import RunContext
 
 from camille.mattermost.client import Mattermost
@@ -28,25 +27,26 @@ class MattermostAgent(Mattermost):
     def __init__(self, base_url: str, token: str):
         super().__init__(base_url, token)
         self.me: Optional[MMUser] = None
-        model_settings = GeminiModelSettings(
-            gemini_safety_settings=[
-                GeminiSafetySettings(
-                    category=category,
-                    threshold="BLOCK_NONE",
-                )
-                for category in [
-                    "HARM_CATEGORY_HARASSMENT",
-                    "HARM_CATEGORY_HATE_SPEECH",
-                    "HARM_CATEGORY_SEXUALLY_EXPLICIT",
-                    "HARM_CATEGORY_DANGEROUS_CONTENT",
-                    "HARM_CATEGORY_CIVIC_INTEGRITY",
-                ]
-            ]
-        )
+        # model_settings = GeminiModelSettings(
+        #     gemini_safety_settings=[
+        #         GeminiSafetySettings(
+        #             category=category,
+        #             threshold="BLOCK_NONE",
+        #         )
+        #         for category in [
+        #             "HARM_CATEGORY_HARASSMENT",
+        #             "HARM_CATEGORY_HATE_SPEECH",
+        #             "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+        #             "HARM_CATEGORY_DANGEROUS_CONTENT",
+        #             "HARM_CATEGORY_CIVIC_INTEGRITY",
+        #         ]
+        #     ]
+        # )
         self.agent = Agent(
-            model="google-gla:" + settings.AGENT_MODEL,
+            # model="google-gla:" + settings.AGENT_MODEL,
+            model=settings.AGENT_MODEL,
             deps_type=Dependency,
-            model_settings=model_settings,
+            # model_settings=model_settings,
             tools=[tavily_search_tool(settings.TAVILY_API_KEY)],
         )
         self.agent.system_prompt(dynamic=True)(self.base_system_prompt)
