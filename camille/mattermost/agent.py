@@ -276,7 +276,7 @@ Update the notes of the channel and the users with the information you have so y
                 user_input.extend(
                     (
                         f"The file {file['name']} is attached.",
-                        BinaryContent(content, file["mime_type"]),
+                        BinaryContent(data=content, media_type=file["mime_type"]),
                     )
                 )
             user_input.append(
