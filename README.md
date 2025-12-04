@@ -8,33 +8,30 @@ Camille search for its config in the following order:
 - a default value if available
 - raise an error
 
-### GEMINI_API_KEY
-
-The API key for Gogle Gemini API. Get a key [here](https://aistudio.google.com/apikey).
-
-Default: no default. You MUST provide a value
-
-
 ### MATTERMOST_HOST
 
-The mattermost host.
+The Mattermost host.
 
 Default: no default. You MUST provide a value
 
+### MATTERMOST_ACCESS_TOKEN
 
-### MATTERMOST_API_TOKEN
-
-The mattermost API token.
+The Mattermost access token.
 
 Default: no default. You MUST provide a value
 
+### TAVILY_API_KEY
+
+The Tavily API key.
+
+Default: no default. Optional. If not provided, Camille will not use Tavily features.
 
 ## Run
 
 ```shell
 # Install requirements
-pip install -r requirements.txt
+uv sync
 
-# Run the xmpp handler
-python -m camille
+# Run Camille
+uv run main.py
 ```
