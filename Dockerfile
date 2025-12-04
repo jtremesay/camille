@@ -18,16 +18,11 @@ RUN uv sync
 ENV UV_NO_SYNC=1
 
 # Copy source
-COPY entrypoint.sh manage.py ./
-COPY proj/ proj/
-COPY camille/ camille/
+COPY main.py ./
 
-# Collect static files
-RUN \
-    SECRET_KEY="empty" \
-    uv run manage.py collectstatic --noinput
-
-# Expose port and run
+# Define entrypoint
+COPY entrypoint.sh ./
 ENTRYPOINT [ "/app/entrypoint.sh" ]
-EXPOSE 8000
-CMD ["daphne", "-p", "8000", "-b", "0.0.0.0", "proj.asgi:application"]
+
+# Define default command
+CMD ["main.py"]
