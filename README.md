@@ -8,6 +8,13 @@ Camille search for its config in the following order:
 - a default value if available
 - raise an error
 
+### CAMILLE_MODEL
+
+The model Camille will use. Must be a valid Pydantic AI model name or model instance.
+https://ai.pydantic.dev/models/overview/#openai-compatible-providers
+
+Default: no default. You MUST provide a value
+
 ### MATTERMOST_HOST
 
 The Mattermost host.
