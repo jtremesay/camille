@@ -1,78 +1,30 @@
 services:
-  pg17:
-    image: "postgres:17"
-    environment:
-      POSTGRES_DB: "camille"
-      POSTGRES_USER: "camille"
-      POSTGRES_PASSWORD: "camille"
-    volumes:
-      - "pg17_data:/var/lib/postgresql/data"
-    networks:
-      - "network"
-
-  #backend:
-  #  image: "killruana/camille:main"
-  #  environment:
-  #    - "ALLOWED_HOSTS=camille.jtremesay.org"
-  #    - "DATABASE_URL=postgres://camille:camille@pg17/camille"
-  #    - "SECRET_KEY_FILE=camille_secret_key"
-  #    - "LOGFIRE_TOKEN_FILE=camille_logfire_token"
-  #  secrets:
-  #    - "camille_secret_key"
-  #    - "camille_logfire_token"
-  #  networks:
-  #    - "network"
-  #    - "traefik_public"
-
-  mattermost:
+  camille:
     image: "killruana/camille:main"
-    command: "manage.py mattermost"
     environment:
       - "MATTERMOST_HOST=https://mattermost.jtremesay.org"
-      - "MATTERMOST_API_TOKEN_FILE=camille_mattermost_api_token"
-      #- "AGENT_MODEL=gemini-2.5-flash"
-      - "AGENT_MODEL=bedrock:eu.anthropic.claude-sonnet-4-5-20250929-v1:0"
-      - "GEMINI_API_KEY_FILE=google_api_key"
-      - "TAVILY_API_KEY_FILE=tavily_api_key"
-      - "ALLOWED_HOSTS=camille.jtremesay.org"
-      - "DATABASE_URL=postgres://camille:camille@pg17/camille"
-      - "SECRET_KEY_FILE=camille_secret_key"
-      - "LOGFIRE_TOKEN_FILE=camille_logfire_token"
+      - "MATTERMOST_ACCESS_TOKEN_FILE=camille_mattermost_access_token"
+      - "CAMILLE_MODEL=bedrock:eu.anthropic.claude-sonnet-4-5-20250929-v1:0"
       - "AWS_DEFAULT_REGION=eu-central-1"
-      - "AWS_ACCESS_KEY_ID_FILE=camile_aws_access_key_id"
-      - "AWS_SECRET_ACCESS_KEY_FILE=camile_aws_secret_access_key"
+      - "AWS_ACCESS_KEY_ID_FILE=camille_aws_access_key_id"
+      - "AWS_SECRET_ACCESS_KEY_FILE=camille_aws_secret_access_key"
+      - "LOGFIRE_TOKEN_FILE=camille_logfire_token"
+      - "TAVILY_API_KEY_FILE=tavily_api_key"
     secrets:
-      - "camille_mattermost_api_token"
-      - "google_api_key"
-      - "tavily_api_key"
-      - "camille_secret_key"
+      - "camille_mattermost_access_token"
+      - "camille_aws_access_key_id"
+      - "camille_aws_secret_access_key"
       - "camille_logfire_token"
-      - "camile_aws_access_key_id"
-      - "camile_aws_secret_access_key"
-    networks:
-      - "network"
-
-
-volumes:
-  pg17_data:
-
-networks:
-  network:
-  traefik_public:
-    external: true
+      - "tavily_api_key"
 
 secrets:
-  camille_mattermost_api_token:
+  camille_mattermost_access_token:
     external: true
-  camille_secret_key:
+  camille_aws_access_key_id:
     external: true
-  google_api_key:
-    external: true
-  tavily_api_key:
+  camille_aws_secret_access_key:
     external: true
   camille_logfire_token:
     external: true
-  camile_aws_access_key_id:
-    external: true
-  camile_aws_secret_access_key:
+  tavily_api_key:
     external: true

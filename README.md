@@ -40,5 +40,5 @@ Default: no default. Optional. If not provided, Camille will not use Tavily feat
 uv sync
 
 # Run Camille
-uv run main.py
+uv run -m camille
 ```

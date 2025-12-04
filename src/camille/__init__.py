@@ -103,7 +103,7 @@ def load_env():
     load_dotenv()
 
 
-async def main():
+async def amain():
     logging.basicConfig(level=logging.INFO)
 
     # Load environment variables
@@ -125,5 +125,5 @@ async def main():
         logger.info("Logged in as %s (@%s)", me.first_name, me.username)
 
 
-if __name__ == "__main__":
-    asyncio.run(main())
+def main():
+    asyncio.run(amain())
