@@ -350,7 +350,7 @@ Update the notes of the channel and the users with the information you have so y
 
         await MMMembership.objects.aupdate_or_create(
             channel_id=channel_id,
-            user=user_id,
+            user_id=user_id,
         )
 
     async def on_user_updated(self, data, broadcast, seq):
