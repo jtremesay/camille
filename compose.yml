@@ -30,9 +30,9 @@ services:
     environment:
       - "MATTERMOST_HOST=https://mattermost.jtremesay.org"
       - "MATTERMOST_API_TOKEN_FILE=camille_mattermost_api_token"
-      #- "AGENT_MODEL=gemini-2.5-flash"
+      # - "AGENT_MODEL=gemini-2.5-flash"
       - "AGENT_MODEL=bedrock:eu.anthropic.claude-sonnet-4-5-20250929-v1:0"
-      - "GEMINI_API_KEY_FILE=google_api_key"
+      # - "GEMINI_API_KEY_FILE=google_api_key"
       - "TAVILY_API_KEY_FILE=tavily_api_key"
       - "ALLOWED_HOSTS=camille.jtremesay.org"
       - "DATABASE_URL=postgres://camille:camille@pg17/camille"
@@ -43,7 +43,7 @@ services:
       - "AWS_SECRET_ACCESS_KEY_FILE=camile_aws_secret_access_key"
     secrets:
       - "camille_mattermost_api_token"
-      - "google_api_key"
+      # - "google_api_key"
       - "tavily_api_key"
       - "camille_secret_key"
       - "camille_logfire_token"
@@ -66,8 +66,8 @@ secrets:
     external: true
   camille_secret_key:
     external: true
-  google_api_key:
-    external: true
+  # google_api_key:
+  #   external: true
   tavily_api_key:
     external: true
   camille_logfire_token:
