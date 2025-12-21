@@ -7,22 +7,6 @@ services:
       POSTGRES_PASSWORD: "camille"
     volumes:
       - "pg17_data:/var/lib/postgresql/data"
-    networks:
-      - "network"
-
-  #backend:
-  #  image: "killruana/camille:main"
-  #  environment:
-  #    - "ALLOWED_HOSTS=camille.jtremesay.org"
-  #    - "DATABASE_URL=postgres://camille:camille@pg17/camille"
-  #    - "SECRET_KEY_FILE=camille_secret_key"
-  #    - "LOGFIRE_TOKEN_FILE=camille_logfire_token"
-  #  secrets:
-  #    - "camille_secret_key"
-  #    - "camille_logfire_token"
-  #  networks:
-  #    - "network"
-  #    - "traefik_public"
 
   mattermost:
     image: "killruana/camille:main"
@@ -43,16 +27,9 @@ services:
       - "tavily_api_key"
       - "camille_secret_key"
       - "camille_logfire_token"
-    networks:
-      - "network"
 
 volumes:
   pg17_data:
-
-networks:
-  network:
-  traefik_public:
-    external: true
 
 secrets:
   camille_mattermost_api_token:
