@@ -14,7 +14,8 @@ services:
     environment:
       - "MATTERMOST_HOST=https://mattermost.jtremesay.org"
       - "MATTERMOST_API_TOKEN_FILE=camille_mattermost_api_token"
-      - "AGENT_MODEL=google-gla:gemini-flash-latest"
+      #- "AGENT_MODEL=google-gla:gemini-flash-latest"
+      - "AGENT_MODEL=google-gla:gemini-3-flash-preview"
       - "GOOGLE_API_KEY_FILE=google_api_key"
       - "TAVILY_API_KEY_FILE=tavily_api_key"
       - "ALLOWED_HOSTS=camille.jtremesay.org"
