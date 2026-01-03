@@ -15,8 +15,10 @@ services:
       - "MATTERMOST_HOST=https://mattermost.jtremesay.org"
       - "MATTERMOST_API_TOKEN_FILE=camille_mattermost_api_token"
       #- "AGENT_MODEL=google-gla:gemini-flash-latest"
-      - "AGENT_MODEL=google-gla:gemini-3-flash-preview"
+      #- "AGENT_MODEL=google-gla:gemini-3-flash-preview"
+      - "AGENT_MODEL=mistral:mistral-large-latest"
       - "GOOGLE_API_KEY_FILE=google_api_key"
+      - "MISTRAL_API_KEY_FILE=mistral_api_key"
       - "TAVILY_API_KEY_FILE=tavily_api_key"
       - "ALLOWED_HOSTS=camille.jtremesay.org"
       - "DATABASE_URL=postgres://camille:camille@pg17/camille"
@@ -25,6 +27,7 @@ services:
     secrets:
       - "camille_mattermost_api_token"
       - "google_api_key"
+      - "mistral_api_key"
       - "tavily_api_key"
       - "camille_secret_key"
       - "camille_logfire_token"
@@ -38,6 +41,8 @@ secrets:
   camille_secret_key:
     external: true
   google_api_key:
+    external: true
+  mistral_api_key:
     external: true
   tavily_api_key:
     external: true
