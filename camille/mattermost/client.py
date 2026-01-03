@@ -1,4 +1,3 @@
-from os import environ
 from typing import Optional
 
 from django.conf import settings
@@ -55,7 +54,11 @@ class Mattermost:
         token: str,
     ):
         self._http_client = AsyncClient(
-            base_url=base_url + "/api/v4/", headers={"Authorization": f"Bearer {token}"}
+            base_url=base_url + "/api/v4/",
+            headers={
+                "Authorization": f"Bearer {token}",
+                "User-Agent": "CamilleBot/1.0",
+            },
         )
         self._ws_client: Optional[AsyncWebSocketSession] = None
         self.current_seq = 0
@@ -105,7 +108,7 @@ class Mattermost:
             )
 
     async def get_users(self) -> list[User]:
-        response = await self._http_client.get(f"users")
+        response = await self._http_client.get("users")
         response.raise_for_status()
         return UserList.validate_json(response.content)
 
@@ -141,7 +144,7 @@ class Mattermost:
 
     async def post_message(self, channel_id: str, root_id: str, message: str):
         response = await self._http_client.post(
-            f"posts",
+            "posts",
             json={"channel_id": channel_id, "root_id": root_id, "message": message},
         )
         response.raise_for_status()
