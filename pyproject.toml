@@ -3,11 +3,7 @@ name = "camille"
 version = "5.0.0"
 description = "An AI assistant for Mattermost"
 requires-python = ">=3.13"
-dependencies = [
-    "httpx>=0.28.1",
-    "httpx-ws>=0.8.2",
-    "pydantic>=2.12.5",
-]
+dependencies = ["httpx>=0.28.1", "httpx-ws>=0.8.2", "pydantic>=2.12.5"]
 
 [project.scripts]
 camille = "camille.main:main"
@@ -17,6 +13,8 @@ requires = ["uv_build>=0.9.22,<0.10.0"]
 build-backend = "uv_build"
 
 [dependency-groups]
-dev = [
-    "ipython>=9.9.0",
-]
+dev = ["ipython>=9.9.0"]
+test = ["pytest>=9.0.2", "pytest-cov>=7.0.0", "pytest-xdist[psutil]>=3.8.0"]
+
+[tool.pytest.ini_options]
+addopts = "--maxfail=1 --cov=camille --cov-report=term-missing --cov-report=xml"

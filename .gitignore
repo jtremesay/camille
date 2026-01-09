@@ -5,3 +5,8 @@ __pycache__/
 
 # Direnv
 /.envrc
+
+# Tests
+/.pytest_cache/
+/coverage.xml
+/.coverage
