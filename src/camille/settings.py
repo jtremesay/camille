@@ -1,0 +1,4 @@
+from os import environ
+
+MATTERMOST_URL = environ["CAMILLE_MATTERMOST_URL"]
+MATTERMOST_TOKEN = environ["CAMILLE_MATTERMOST_TOKEN"]

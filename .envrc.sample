@@ -1,0 +1,5 @@
+uv sync --all-groups
+source .venv/bin/activate
+
+export CAMILLE_MATTERMOST_URL="https://mattermost.example.org"
+export CAMILLE_MATTERMOST_TOKEN="token"
