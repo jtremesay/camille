@@ -1,13 +1,14 @@
 from asyncio import run
+from os import environ
 
-from camille import settings
 from camille.mattermost.client.client import MattermostClient
 
 
 async def amain():
-    async with MattermostClient(
-        base_url=settings.MATTERMOST_URL, token=settings.MATTERMOST_TOKEN
-    ) as client:
+    mm_url = environ["CAMILLE_MATTERMOST_URL"]
+    mm_token = environ["CAMILLE_MATTERMOST_TOKEN"]
+
+    async with MattermostClient(base_url=mm_url, token=mm_token) as client:
         me = await client.users.get_me()
         print(me)
         # print(f"Logged in as: {me.username} ({me.first_name} {me.last_name})")
