@@ -2,5 +2,11 @@
 name = "camille"
 version = "5.0.0"
 description = "An AI assistant for Mattermost"
-readme = "README.md"
 requires-python = ">=3.13"
+
+[project.scripts]
+camille = "camille.main:main"
+
+[build-system]
+requires = ["uv_build>=0.9.22,<0.10.0"]
+build-backend = "uv_build"
