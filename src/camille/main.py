@@ -8,8 +8,9 @@ async def amain():
     async with MattermostClient(
         base_url=settings.MATTERMOST_URL, token=settings.MATTERMOST_TOKEN
     ) as client:
-        response = await client.get("/users/me")
-        print(response.json())
+        me = await client.get_me()
+        print(me)
+        # print(f"Logged in as: {me.username} ({me.first_name} {me.last_name})")
 
 
 def main():
