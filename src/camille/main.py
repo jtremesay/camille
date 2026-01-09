@@ -1,7 +1,7 @@
 from asyncio import run
 
 from camille import settings
-from camille.mattermost import MattermostClient
+from camille.mattermost.client.client import MattermostClient
 
 
 async def amain():
