@@ -17,4 +17,4 @@ dev = ["ipython>=9.9.0"]
 test = ["pytest>=9.0.2", "pytest-cov>=7.0.0", "pytest-xdist[psutil]>=3.8.0"]
 
 [tool.pytest.ini_options]
-addopts = "--maxfail=1 --cov=camille --cov-report=term-missing --cov-report=xml tests"
+addopts = "--maxfail=1 --cov=camille --cov-branch --cov-report=term-missing --cov-report=xml tests"
