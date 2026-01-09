@@ -2,7 +2,7 @@ from asyncio import run
 from unittest import IsolatedAsyncioTestCase
 from unittest.mock import AsyncMock
 
-from camille.mattermost.client.user import MMUserClient
+from mattermost.client import MMUserClient
 
 
 class TestMMUserClient(IsolatedAsyncioTestCase):

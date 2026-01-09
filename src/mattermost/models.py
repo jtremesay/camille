@@ -1,6 +1,12 @@
 from datetime import datetime
 
-from .object import MMObject
+from pydantic import BaseModel
+
+
+class MMObject(BaseModel):
+    @classmethod
+    def from_json(cls, data: dict) -> "MMObject":
+        return cls(**data)
 
 
 class MMUser(MMObject):

@@ -1,7 +1,6 @@
-from typing import cast
 from unittest import TestCase
 
-from camille.mattermost.models.testing import MMTestObject
+from mattermost.testing import MMTestObject
 
 
 class TestMMObject(TestCase):
@@ -19,7 +18,7 @@ class TestMMObject(TestCase):
 
         # This would normally fail without actual pydantic fields,
         # but we can test that it calls cls(**data)
-        obj = cast(MMTestObject, MMTestObject.from_json(json_data))
+        obj = MMTestObject.from_json(json_data)
         self.assertIsInstance(obj, MMTestObject)
         self.assertEqual(obj.id, 1)
         self.assertEqual(obj.name, "Test Object")

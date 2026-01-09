@@ -1,10 +1,8 @@
 from datetime import datetime
-from typing import cast
 from unittest import IsolatedAsyncioTestCase
 from unittest.mock import AsyncMock
 
-from camille.mattermost.client.testing import MMTestObjectClient
-from camille.mattermost.models.testing import MMTestObject
+from mattermost.testing import MMTestObjectClient
 
 
 class TestMMObjectClient(IsolatedAsyncioTestCase):
@@ -27,8 +25,8 @@ class TestMMObjectClient(IsolatedAsyncioTestCase):
 
         self.mock_client.get = AsyncMock(return_value=json_data)
 
-        obj = cast(MMTestObject, await self.object_client.get("1"))
-        self.mock_client.get.assert_awaited_once_with("/objects/1")
+        obj = await self.object_client.get("1")
+        self.mock_client.get.assert_awaited_once_with("/testobjects/1")
         self.assertIsNotNone(obj)
         self.assertEqual(obj.id, 1)
         self.assertEqual(obj.name, "Test Object")

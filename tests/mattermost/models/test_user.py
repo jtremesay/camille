@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from camille.mattermost.models.user import MMUser
+from mattermost.models import MMUser
 
 
 class TestMMUser(TestCase):

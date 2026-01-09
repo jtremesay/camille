@@ -1,6 +1,28 @@
+from typing import cast
+
 from httpx import AsyncClient as HttpClient
 
-from .user import MMUserClient
+from .models import MMObject, MMUser
+
+
+class MMObjectClient[T: MMObject]:
+    obj_class: type[T]
+    name: str
+
+    def __init__(self, client: "MattermostClient"):
+        self.client = client
+
+    async def get(self, object_id: str) -> T:
+        data = await self.client.get(f"/{self.name}s/{object_id}")
+        return cast(T, self.obj_class.from_json(data))
+
+
+class MMUserClient(MMObjectClient):
+    obj_class = MMUser
+    name = "user"
+
+    async def get_me(self) -> MMUser:
+        return cast(MMUser, await self.get("me"))
 
 
 class MattermostClient:

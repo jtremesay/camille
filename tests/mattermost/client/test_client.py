@@ -2,7 +2,7 @@ from asyncio import run
 from unittest import IsolatedAsyncioTestCase
 from unittest.mock import AsyncMock, Mock, patch
 
-from camille.mattermost.client.client import MattermostClient
+from mattermost.client import MattermostClient
 
 
 class TestMattermostClientContextManager(IsolatedAsyncioTestCase):
@@ -45,9 +45,7 @@ class TestMattermostClientContextManager(IsolatedAsyncioTestCase):
         """Test full async context manager flow."""
 
         async def run_test():
-            with patch(
-                "camille.mattermost.client.client.HttpClient"
-            ) as mock_http_class:
+            with patch("mattermost.client.HttpClient") as mock_http_class:
                 mock_http_instance = AsyncMock()
                 mock_http_class.return_value = mock_http_instance
 
