@@ -5,30 +5,19 @@ from sqlalchemy.ext.asyncio import create_async_engine
 
 from mattermost.client import MattermostClient
 
-from .models import meta
+from .agent import Agent
 
 
 async def amain():
-    engine = None
-    try:
-        engine = create_async_engine(
-            "sqlite+aiosqlite:///db.sqlite",
-            echo=True,
-        )
-        async with engine.begin() as conn:
-            await conn.run_sync(meta.drop_all)
-            await conn.run_sync(meta.create_all)
-    finally:
-        if engine is not None:
-            await engine.dispose()
-
     mm_url = environ["CAMILLE_MATTERMOST_URL"]
     mm_token = environ["CAMILLE_MATTERMOST_TOKEN"]
+    db_url = "sqlite+aiosqlite:///db.sqlite3"
 
-    async with MattermostClient(base_url=mm_url, token=mm_token) as client:
-        me = await client.users.get_me()
-        print(me)
-        # print(f"Logged in as: {me.username} ({me.first_name} {me.last_name})")
+    async with Agent(
+        MattermostClient(mm_url, mm_token), create_async_engine(db_url, echo=True)
+    ) as agent:
+        await agent.run()
+        print("Current user:", agent.me.username)
 
 
 def main():
