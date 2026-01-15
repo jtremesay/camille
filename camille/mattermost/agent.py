@@ -6,7 +6,9 @@ from typing import Optional
 
 import logfire
 from channels.db import aclose_old_connections
+from django.conf import settings
 from pydantic_ai import Agent, BinaryContent
+from pydantic_ai.common_tools.tavily import tavily_search_tool
 
 from camille.mattermost.client import Mattermost
 from camille.mattermost.commands import handle_command
@@ -179,11 +181,20 @@ class MattermostAgent(Mattermost):
                 )
             )
 
+            tools = []
+            if settings.TAVILY_API_KEY:
+                tools.append(
+                    tavily_search_tool(
+                        api_key=settings.TAVILY_API_KEY,
+                    )
+                )
+
             agent = Agent(
                 model=await create_model_for_user(mm_user),
                 system_prompt=DIHYAI_PROMPT.format(agent_name=self.me.first_name),
                 deps_type=Dependency,
                 toolsets=[toolset],
+                tools=tools,
             )
             agent.system_prompt(dynamic=True)(mm_system_prompt)
 

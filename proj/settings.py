@@ -169,6 +169,9 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 MATTERMOST_HOST = environ.get("MATTERMOST_HOST")
 MATTERMOST_API_TOKEN = environ.get("MATTERMOST_API_TOKEN")
 
+# Camille settings
+TAVILY_API_KEY = environ.get("TAVILY_API_KEY")
+
 # Logfire configuration
 if "manage.py" in argv[0]:
     service = argv[1]
