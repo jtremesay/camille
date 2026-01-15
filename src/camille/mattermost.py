@@ -4,8 +4,13 @@ from typing import Optional
 
 import logfire
 
-from camille.models import MattermostServer, MattermostTeam, MattermostUser
-from mattermost import Mattermost, Team, User
+from camille.models import (
+    MattermostChannel,
+    MattermostServer,
+    MattermostTeam,
+    MattermostUser,
+)
+from mattermost import Channel, Mattermost, Team, User
 
 TIMESTAMP_EPOCH = datetime(1970, 1, 1, tzinfo=timezone.utc)
 
@@ -112,6 +117,57 @@ async def get_sync_teams(
     return mm_teams
 
 
+async def get_sync_channel_from_data(
+    mm_team: MattermostTeam,
+    channel_data: Channel,
+) -> Optional[MattermostChannel]:
+    if channel_data.delete_at > TIMESTAMP_EPOCH:
+        logger.info("Deleting channel '%s' from database.", channel_data.name)
+        await MattermostChannel.objects.filter(
+            team=mm_team,
+            channel_id=channel_data.id,
+        ).adelete()
+        return None
+
+    mm_channel, _ = await MattermostChannel.objects.aupdate_or_create(
+        team=mm_team,
+        channel_id=channel_data.id,
+        defaults={
+            "name": channel_data.name,
+            "display_name": channel_data.display_name,
+            "header": channel_data.header,
+            "purpose": channel_data.purpose,
+            "last_post_at": channel_data.last_post_at,
+            "create_at": channel_data.create_at,
+            "update_at": channel_data.update_at,
+        },
+    )
+
+    return mm_channel
+
+
+async def get_sync_channels_for_team(
+    mm: Mattermost, mm_team: MattermostTeam
+) -> dict[str, MattermostChannel]:
+    mm_channels = {}
+    for channel_data in await mm.get_channels_for_user("me", mm_team.team_id):
+        mm_channel = await get_sync_channel_from_data(mm_team, channel_data)
+        if mm_channel is not None:
+            mm_channels[channel_data.id] = mm_channel
+
+    return mm_channels
+
+
+async def get_sync_channels(
+    mm: Mattermost, mm_teams: dict[str, MattermostTeam]
+) -> dict[str, dict[str, MattermostChannel]]:
+    mm_channels = {}
+    for team_id, mm_team in mm_teams.items():
+        mm_channels[team_id] = await get_sync_channels_for_team(mm, mm_team)
+
+    return mm_channels
+
+
 @logfire.instrument("mattermost_sync_db_all")
 async def sync_db_all() -> None:
     async for mm_server in MattermostServer.objects.all():
@@ -134,3 +190,4 @@ async def sync_db_server(mm: Mattermost, mm_server: MattermostServer) -> None:
 
     mm_users = await get_sync_users(mm, mm_server)
     mm_teams = await get_sync_teams(mm, mm_server)
+    mm_channels = await get_sync_channels(mm, mm_teams)

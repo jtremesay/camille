@@ -86,7 +86,7 @@ class MattermostTeam(models.Model):
         unique_together = ("server", "team_id")
 
     def __str__(self) -> str:
-        return f"{self.name} ({self.server.name})"
+        return self.name
 
 
 class MattermostUser(models.Model):
@@ -104,3 +104,21 @@ class MattermostUser(models.Model):
 
     def __str__(self) -> str:
         return f"{self.username} ({self.server.name})"
+
+
+class MattermostChannel(models.Model):
+    team = models.ForeignKey(MattermostTeam, on_delete=models.CASCADE)
+    channel_id = models.CharField(max_length=255)
+    name = models.CharField(max_length=255)
+    display_name = models.CharField(max_length=255)
+    header = models.TextField()
+    purpose = models.TextField()
+    last_post_at = models.DateTimeField()
+    create_at = models.DateTimeField()
+    update_at = models.DateTimeField()
+
+    class Meta:
+        unique_together = ("team", "channel_id")
+
+    def __str__(self) -> str:
+        return self.name

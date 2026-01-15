@@ -29,6 +29,10 @@ class Channel(BaseModel):
     display_name: str
     header: str
     purpose: str
+    last_post_at: datetime
+    create_at: datetime
+    update_at: datetime
+    delete_at: datetime
 
 
 ChannelList = TypeAdapter(list[Channel])

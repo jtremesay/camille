@@ -76,3 +76,19 @@ class MattermostUserAdmin(admin.ModelAdmin):
         "update_at",
     )
     search_fields = ("user_id", "username", "nickname", "first_name", "last_name")
+
+
+@admin.register(models.MattermostChannel)
+class MattermostChannelAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "team__server",
+        "team",
+        "channel_id",
+        "name",
+        "display_name",
+        "last_post_at",
+        "create_at",
+        "update_at",
+    )
+    search_fields = ("channel_id", "name", "display_name")
