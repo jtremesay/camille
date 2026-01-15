@@ -87,3 +87,20 @@ class MattermostTeam(models.Model):
 
     def __str__(self) -> str:
         return f"{self.name} ({self.server.name})"
+
+
+class MattermostUser(models.Model):
+    server = models.ForeignKey(MattermostServer, on_delete=models.CASCADE)
+    user_id = models.CharField(max_length=255)
+    username = models.CharField(max_length=255)
+    nickname = models.CharField(max_length=255)
+    first_name = models.CharField(max_length=255)
+    last_name = models.CharField(max_length=255)
+    create_at = models.DateTimeField()
+    update_at = models.DateTimeField()
+
+    class Meta:
+        unique_together = ("server", "user_id")
+
+    def __str__(self) -> str:
+        return f"{self.username} ({self.server.name})"

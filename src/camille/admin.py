@@ -60,3 +60,19 @@ class MattermostTeamAdmin(admin.ModelAdmin):
         "update_at",
     )
     search_fields = ("team_id", "name", "display_name")
+
+
+@admin.register(models.MattermostUser)
+class MattermostUserAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "server",
+        "user_id",
+        "username",
+        "nickname",
+        "first_name",
+        "last_name",
+        "create_at",
+        "update_at",
+    )
+    search_fields = ("user_id", "username", "nickname", "first_name", "last_name")

@@ -40,6 +40,9 @@ class User(BaseModel):
     nickname: str
     first_name: str
     last_name: str
+    create_at: datetime
+    update_at: datetime
+    delete_at: datetime
 
 
 UserList = TypeAdapter(list[User])
