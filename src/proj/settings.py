@@ -49,16 +49,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-^%+du2)cxb9%o-%m#sz)+yjgbzz)3lij0i7c_!)6_09ji4o#_2"
+SECRET_KEY = environ["SECRET_KEY"]
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = environ.get("DEBUG", "false").lower() == "true"
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = environ.get("ALLOWED_HOSTS", "*").split(",") + ["localhost"]
 
 # Application definition
-
 INSTALLED_APPS = [
     "daphne",
     "django.contrib.admin",

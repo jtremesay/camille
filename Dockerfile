@@ -20,12 +20,12 @@ ENV UV_NO_SYNC=1
 # Copy source
 COPY entrypoint.sh manage.py README.md ./
 COPY src src
-RUN uv sync
 
 # Collect static files
+ARG SECRET_KEY="empty"
 RUN \
-    SECRET_KEY="empty" \
-    uv run manage.py collectstatic --noinput
+    uv sync \
+    && uv run manage.py collectstatic --noinput
 
 # Expose port and run
 ENTRYPOINT [ "/app/entrypoint.sh" ]

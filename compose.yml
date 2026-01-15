@@ -6,7 +6,7 @@ services:
       POSTGRES_USER: "camille"
       POSTGRES_PASSWORD: "camille"
     volumes:
-      - "pg18_data:/var/lib/postgresql/18/docker
+      - "pg18_data:/var/lib/postgresql/18/docker"
 
   web:
     image: "killruana/camille:main"
@@ -21,17 +21,17 @@ services:
     depends_on:
       - "pg18"
 
-  mattermost:
-    image: "killruana/camille:main"
-    restart: "always"
-    command: "manage.py mattermost"
-    environment:
-      - "ALLOWED_HOSTS=camille.jtremesay.org"
-      - "DATABASE_URL=postgres://camille:camille@pg18/camille"
-      - "SECRET_KEY"
-      - "LOGFIRE_TOKEN"
-    depends_on:
-      - "pg18"
+# mattermost:
+#   image: "killruana/camille:main"
+#   restart: "always"
+#   command: "manage.py mattermost"
+#   environment:
+#     - "ALLOWED_HOSTS=camille.jtremesay.org"
+#     - "DATABASE_URL=postgres://camille:camille@pg18/camille"
+#     - "SECRET_KEY"
+#     - "LOGFIRE_TOKEN"
+#   depends_on:
+#     - "pg18"
 
 volumes:
   pg18_data:
