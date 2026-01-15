@@ -103,6 +103,52 @@ async def cmd_set_mistral_ai_creds(
     )
 
 
+async def cmd_tldr(
+    client: Mattermost, args: Namespace, channel_id: str, root_id: str, user_id: str
+):
+    await client.post_message(
+        channel_id,
+        root_id,
+        """\
+TL;DR:
+
+```
+!/set_model google-gla:gemini-flash-latest
+!/set_google_gla_creds YOUR_GOOGLE_API_KEY
+```
+
+**You must set a model and probably credentials before using Camille.**
+
+Use the following commands to set them:
+
+- `!/set_model <model_name>`: Set the AI model to use.
+- `!/set_aws_creds <bearer_token> <region>`: Set AWS Bedrock credentials.
+- `!/set_google_gla_creds <api_key>`: Set Google Generative Language API credentials.
+- `!/set_mistral_ai_creds <api_key>`: Set Mistral AI credentials.
+
+See [here](https://ai.pydantic.dev/models/overview/) for available models and more information on setting up credentials.
+
+Supported providers:
+
+- [AWS Bedrock](https://docs.aws.amazon.com/bedrock/latest/userguide/models-supported.html)
+- [Google GLA](https://ai.google.dev/gemini-api/docs/pricing)
+- [Mistral AI](https://docs.mistral.ai/getting-started/models)
+
+Know to work models:
+
+- `bedrock:eu.anthropic.claude-sonnet-4-5-20250929-v1:0`
+- `google-gla:gemini-flash-latest`
+- `mistral:mistral-medium-latest`
+
+How to get credentials ?
+
+- **AWS Bedrock**: Follow the [AWS Bedrock Getting Started Guide](https://docs.aws.amazon.com/bedrock/latest/userguide/getting-started.html) to create an AWS account and obtain your Bearer Token.
+- **Google GLA**: Create an API key [here](https://aistudio.google.com/api-keys).
+- **Mistral AI**: Create an API key [here](https://console.mistral.ai/home?workspace_dialog=apiKeys).
+""",
+    )
+
+
 async def handle_command(
     client: Mattermost, args: Namespace, channel_id: str, root_id: str, user_id: str
 ):
@@ -147,6 +193,9 @@ async def handle_command(
         "api_key", type=str, help="Mistral AI API Key"
     )
     set_mistral_ai_creds_parser.set_defaults(func=cmd_set_mistral_ai_creds)
+
+    tldr_parser = subparsers.add_parser("tldr", help="tl;dr")
+    tldr_parser.set_defaults(func=cmd_tldr)
 
     try:
         parsed_args = parser.parse_args(args.split())

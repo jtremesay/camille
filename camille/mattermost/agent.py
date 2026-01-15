@@ -11,9 +11,9 @@ from pydantic_ai import Agent, BinaryContent
 from camille.mattermost.client import Mattermost
 from camille.mattermost.commands import handle_command
 from camille.mattermost.models import create_model_for_user
-from camille.mattermost.tools import toolset
+from camille.mattermost.tools import mm_system_prompt, toolset
 from camille.models import MMChannel, MMMembership, MMTeam, MMThread, MMUser
-from camille.prompts import DARK_DIHYAI_PROMPT
+from camille.prompts import DIHYAI_PROMPT
 
 
 @dataclass
@@ -146,7 +146,6 @@ class MattermostAgent(Mattermost):
                 )
                 return
 
-            await self.user_typing(channel_id)
             channel = await MMChannel.objects.aget(id=channel_id)
             thread = (
                 await MMThread.objects.aget_or_create(
@@ -179,12 +178,14 @@ class MattermostAgent(Mattermost):
                     indent=2,
                 )
             )
+
             agent = Agent(
                 model=await create_model_for_user(mm_user),
-                system_prompt=DARK_DIHYAI_PROMPT.format(agent_name=self.me.first_name),
+                system_prompt=DIHYAI_PROMPT.format(agent_name=self.me.first_name),
                 deps_type=Dependency,
                 toolsets=[toolset],
             )
+            agent.system_prompt(dynamic=True)(mm_system_prompt)
 
             deps = Dependency(
                 channel=channel,
@@ -194,6 +195,7 @@ class MattermostAgent(Mattermost):
                 },
             )
 
+            await self.user_typing(channel_id)
             async with agent.iter(user_input, message_history=history, deps=deps) as r:
                 async for node in r:
                     if agent.is_call_tools_node(node):
