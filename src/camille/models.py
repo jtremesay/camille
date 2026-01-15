@@ -74,7 +74,12 @@ class MattermostServer(models.Model):
 
 
 class MattermostTeam(models.Model):
-    server = models.ForeignKey(MattermostServer, on_delete=models.CASCADE)
+    server = models.ForeignKey(
+        MattermostServer,
+        on_delete=models.CASCADE,
+        related_name="teams",
+        related_query_name="team",
+    )
     team_id = models.CharField(max_length=255)
     name = models.CharField(max_length=255)
     display_name = models.CharField(max_length=255)
@@ -90,7 +95,12 @@ class MattermostTeam(models.Model):
 
 
 class MattermostUser(models.Model):
-    server = models.ForeignKey(MattermostServer, on_delete=models.CASCADE)
+    server = models.ForeignKey(
+        MattermostServer,
+        on_delete=models.CASCADE,
+        related_name="users",
+        related_query_name="user",
+    )
     user_id = models.CharField(max_length=255)
     username = models.CharField(max_length=255)
     nickname = models.CharField(max_length=255)
@@ -103,11 +113,16 @@ class MattermostUser(models.Model):
         unique_together = ("server", "user_id")
 
     def __str__(self) -> str:
-        return f"{self.username} ({self.server.name})"
+        return self.username
 
 
 class MattermostChannel(models.Model):
-    team = models.ForeignKey(MattermostTeam, on_delete=models.CASCADE)
+    team = models.ForeignKey(
+        MattermostTeam,
+        on_delete=models.CASCADE,
+        related_name="channels",
+        related_query_name="channel",
+    )
     channel_id = models.CharField(max_length=255)
     name = models.CharField(max_length=255)
     display_name = models.CharField(max_length=255)
@@ -122,3 +137,32 @@ class MattermostChannel(models.Model):
 
     def __str__(self) -> str:
         return self.name
+
+
+class MattermostChannelMember(models.Model):
+    channel = models.ForeignKey(
+        MattermostChannel,
+        on_delete=models.CASCADE,
+        related_name="memberships",
+        related_query_name="membership",
+    )
+    user = models.ForeignKey(
+        MattermostUser,
+        on_delete=models.CASCADE,
+        related_name="memberships",
+        related_query_name="membership",
+    )
+
+    class Meta:
+        unique_together = ("channel", "user")
+
+    def __str__(self) -> str:
+        return f"{self.user.username} in {self.channel.name}"
+
+    def save(self, *args, **kwargs) -> None:
+        if self.channel.team.server != self.user.server:
+            raise ValueError(
+                "Channel and User must belong to the same Mattermost server."
+            )
+
+        super().save(*args, **kwargs)

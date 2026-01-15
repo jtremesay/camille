@@ -92,3 +92,15 @@ class MattermostChannelAdmin(admin.ModelAdmin):
         "update_at",
     )
     search_fields = ("channel_id", "name", "display_name")
+
+
+@admin.register(models.MattermostChannelMember)
+class MattermostChannelMemberAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "channel__team__server",
+        "channel__team",
+        "channel",
+        "user",
+    )
+    search_fields = ("channel__name", "user__username")
