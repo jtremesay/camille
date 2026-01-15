@@ -160,6 +160,12 @@ STORAGES = {
     },
 }
 
+# Authentication settings
+LOGIN_REDIRECT_URL = "camille:view_profile"
+LOGOUT_REDIRECT_URL = "login"
+
+# Logfire settings
+
 logfire.configure(send_to_logfire="if-token-present")
 logfire.instrument_django()
 logfire.instrument_pydantic_ai()

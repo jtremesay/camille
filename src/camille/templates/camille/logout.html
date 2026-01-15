@@ -1,0 +1,10 @@
+{% extends "camille/base.html" %}
+
+{% block content %}
+<h1>Logout</h1>
+<form method="post" action="{% url 'logout' %}">
+    {% csrf_token %}
+    <p>Are you sure you want to log out?</p>
+    <button type="submit">Log Out</button>
+</form>
+{% endblock %}
