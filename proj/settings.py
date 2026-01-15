@@ -165,17 +165,11 @@ STATIC_ROOT = BASE_DIR / "static"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-
 # Mattermost settings
 MATTERMOST_HOST = environ.get("MATTERMOST_HOST")
 MATTERMOST_API_TOKEN = environ.get("MATTERMOST_API_TOKEN")
 
-# Agent settings
-AGENT_MODEL = environ.get("AGENT_MODEL", "gemini-2.5-flash")
-
-# Tavily
-TAVILY_API_KEY = environ.get("TAVILY_API_KEY")
-
+# Logfire configuration
 if "manage.py" in argv[0]:
     service = argv[1]
 else:

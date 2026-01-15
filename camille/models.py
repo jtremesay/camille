@@ -1,8 +1,12 @@
-from itertools import chain
-
 from django.db import models
 from pydantic_ai.agent import AgentRunResult
 from pydantic_ai.messages import ModelMessage, ModelMessagesTypeAdapter
+
+
+class InferenceProvider(models.TextChoices):
+    AWS_BEDROCK = "aws-bedrock", "AWS Bedrock"
+    GOOGLE_GLA = "google-gla", "Google Generative Language API"
+    MISTRAL_AI = "mistral-ai", "Mistral AI"
 
 
 class MMTeam(models.Model):
@@ -48,9 +52,37 @@ class MMUser(models.Model):
     last_name = models.CharField(max_length=255, blank=True)
 
     notes = models.TextField(blank=True)
+    model = models.CharField(
+        max_length=255, blank=True
+    )  # LLM model associated with the user
 
     def __str__(self):
         return self.username or "Unnamed User"
+
+
+class InferenceCredentials(models.Model):
+    class Meta:
+        abstract = True
+        unique_together = ("user", "provider")
+
+    user = models.ForeignKey(
+        MMUser,
+        on_delete=models.CASCADE,
+    )
+    provider = models.CharField(max_length=50, choices=InferenceProvider.choices)
+
+
+class AWSBedrockCredentials(InferenceCredentials):
+    bearer_token = models.TextField()
+    region = models.CharField(max_length=100, default="eu-west-3")
+
+
+class GoogleGLACredentials(InferenceCredentials):
+    api_key = models.TextField()
+
+
+class MistralAICredentials(InferenceCredentials):
+    api_key = models.TextField()
 
 
 class MMMembership(models.Model):
