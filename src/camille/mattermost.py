@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 
 @logfire.instrument(
-    "mattermost_get_sync_user_from_data {mm_server.name=} {user_data.id=}"
+    "mattermost_get_sync_user_from_data {mm_server.name=} {user_data.username=}"
 )
 async def get_sync_user_from_data(
     mm_server: MattermostServer, user_data: User
@@ -78,7 +78,7 @@ async def get_sync_users(
 
 
 @logfire.instrument(
-    "mattermost_get_sync_team_from_data {mm_server.name=} {team_data.id=}"
+    "mattermost_get_sync_team_from_data {mm_server.name=} {team_data.name=}"
 )
 async def get_sync_team_from_data(
     mm_server: MattermostServer, team_data: Team
@@ -188,6 +188,27 @@ async def get_sync_channel_member_from_data(
     return mm_membership
 
 
+@logfire.instrument("mattermost_get_sync_channel_members {mm_channel.name=}")
+async def get_sync_channel_members(
+    mm: Mattermost,
+    mm_channel: MattermostChannel,
+    mm_users: dict[str, MattermostUser],
+) -> list[MattermostChannelMember]:
+    mm_memberships = []
+    channel_members_data = await mm.get_channel_members(mm_channel.channel_id)
+
+    for channel_member_data in channel_members_data:
+        mm_memberships.append(
+            await get_sync_channel_member_from_data(
+                mm_channel,
+                channel_member_data,
+                mm_users,
+            )
+        )
+
+    return mm_memberships
+
+
 @logfire.instrument("mattermost_get_sync_channels_members")
 async def get_sync_channels_members(
     mm: Mattermost,
@@ -195,28 +216,10 @@ async def get_sync_channels_members(
     mm_channels: dict[str, MattermostChannel],
 ) -> list[MattermostChannelMember]:
     mm_memberships = []
-    for channel_id, mm_channel in mm_channels.items():
-        channel_members_data = await mm.get_channel_members(channel_id)
-        for channel_member_data in channel_members_data:
-            mm_memberships.append(
-                await get_sync_channel_member_from_data(
-                    mm_channel,
-                    channel_member_data,
-                    mm_users,
-                )
-            )
+    for mm_channel in mm_channels.values():
+        mm_memberships.extend(await get_sync_channel_members(mm, mm_channel, mm_users))
 
     return mm_memberships
-
-
-@logfire.instrument("mattermost_sync_db_all")
-async def sync_db_all() -> None:
-    async for mm_server in MattermostServer.objects.all():
-        async with Mattermost(
-            base_url=mm_server.url,
-            token=mm_server.token,
-        ) as mm:
-            await sync_db_server(mm, mm_server)
 
 
 @logfire.instrument("mattermost_sync_db_server {mm_server.name=}")
@@ -233,3 +236,13 @@ async def sync_db_server(mm: Mattermost, mm_server: MattermostServer) -> None:
     mm_teams = await get_sync_teams(mm, mm_server)
     mm_channels = await get_sync_channels(mm, mm_teams.values())
     mm_channels_members = await get_sync_channels_members(mm, mm_users, mm_channels)
+
+
+@logfire.instrument("mattermost_sync_db_all")
+async def sync_db_all() -> None:
+    async for mm_server in MattermostServer.objects.all():
+        async with Mattermost(
+            base_url=mm_server.url,
+            token=mm_server.token,
+        ) as mm:
+            await sync_db_server(mm, mm_server)
