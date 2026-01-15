@@ -1,13 +1,19 @@
 from dataclasses import dataclass
+from datetime import datetime, timezone
+from json import dumps as json_dumps
 from json import loads as json_loads
 from typing import Optional
 
 import logfire
 from channels.db import aclose_old_connections
+from pydantic_ai import Agent, BinaryContent
 
 from camille.mattermost.client import Mattermost
 from camille.mattermost.commands import handle_command
-from camille.models import MMChannel, MMMembership, MMTeam, MMUser
+from camille.mattermost.models import create_model_for_user
+from camille.mattermost.tools import toolset
+from camille.models import MMChannel, MMMembership, MMTeam, MMThread, MMUser
+from camille.prompts import DARK_DIHYAI_PROMPT
 
 
 @dataclass
@@ -109,20 +115,112 @@ class MattermostAgent(Mattermost):
         root_id = post.get("root_id") or post_id
         message = post["message"]
 
-        # Handle commands starting with "!/"
-        if message.startswith("!/"):
-            command_line = message[2:].strip()
-            await handle_command(
-                self,
-                command_line,
-                channel_id,
-                root_id,
-                sender_id,
-            )
-            return
+        try:
+            # Handle commands starting with "!/"
+            if message.startswith("!/"):
+                command_line = message[2:].strip()
+                await handle_command(
+                    self,
+                    command_line,
+                    channel_id,
+                    root_id,
+                    sender_id,
+                )
+                return
 
-        print(data)
-        print(broadcast)
+            if mentions_data := data.get("mentions"):
+                mentions = set(json_loads(mentions_data))
+            else:
+                mentions = set()
+
+            # Respond only if DM or if mentioned in a channel
+            if not (channel_type == "D" or self.me.id in mentions):
+                return
+
+            mm_user = await MMUser.objects.aget(id=sender_id)
+            if not mm_user.model:
+                await self.post_message(
+                    channel_id=channel_id,
+                    root_id=root_id,
+                    message="No model configured for your user. Please set up your model first.",
+                )
+                return
+
+            await self.user_typing(channel_id)
+            channel = await MMChannel.objects.aget(id=channel_id)
+            thread = (
+                await MMThread.objects.aget_or_create(
+                    id=root_id,
+                    defaults=dict(
+                        channel=channel,
+                    ),
+                )
+            )[0]
+
+            history = await thread.get_history()
+            user_input = []
+            for file in post["metadata"].get("files", []):
+                content = await self.get_file(file["id"])
+                user_input.extend(
+                    (
+                        f"The file {file['name']} is attached.",
+                        BinaryContent(data=content, media_type=file["mime_type"]),
+                    )
+                )
+            user_input.append(
+                json_dumps(
+                    dict(
+                        user_id=sender_id,
+                        timestamp=datetime.fromtimestamp(
+                            post["create_at"] / 1000, timezone.utc
+                        ).isoformat(),
+                        message=message,
+                    ),
+                    indent=2,
+                )
+            )
+            agent = Agent(
+                model=await create_model_for_user(mm_user),
+                system_prompt=DARK_DIHYAI_PROMPT.format(agent_name=self.me.first_name),
+                deps_type=Dependency,
+                toolsets=[toolset],
+            )
+
+            deps = Dependency(
+                channel=channel,
+                users={
+                    user.id: user
+                    async for user in MMUser.objects.filter(membership__channel=channel)
+                },
+            )
+
+            async with agent.iter(user_input, message_history=history, deps=deps) as r:
+                async for node in r:
+                    if agent.is_call_tools_node(node):
+                        for part in node.model_response.parts:
+                            if part.part_kind == "text":
+                                await self.post_message(
+                                    channel.id,
+                                    root_id,
+                                    part.content,
+                                )
+
+                if r.result:
+                    await thread.append_interaction(post_id, r.result)
+                else:
+                    await self.post_message(
+                        channel_id=channel_id,
+                        root_id=root_id,
+                        message="Failed to generate a response.",
+                    )
+
+        except Exception as e:
+            logfire.error(f"Error processing posted event: {e}")
+            await self.post_message(
+                channel_id=channel_id,
+                root_id=root_id,
+                message=f"An error occurred while processing your message.\n```\n{e}\n```",
+            )
 
     async def on_user_added(self, data, broadcast, seq):
         user_id = data["user_id"]
