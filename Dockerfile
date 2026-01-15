@@ -14,13 +14,13 @@ RUN uv python install
 ENV UV_FROZEN=1
 ENV UV_NO_DEV=1
 COPY pyproject.toml uv.lock ./
-RUN uv sync
+RUN uv sync --no-install-project
 ENV UV_NO_SYNC=1
 
 # Copy source
-COPY entrypoint.sh manage.py ./
-COPY proj/ proj/
-COPY camille/ camille/
+COPY entrypoint.sh manage.py README.md ./
+COPY src src
+RUN uv sync
 
 # Collect static files
 RUN \

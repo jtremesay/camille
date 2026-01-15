@@ -10,9 +10,36 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
+from os import environ
 from pathlib import Path
 
 import dj_database_url
+import logfire
+from dotenv import load_dotenv
+
+
+def load_docker_secrets() -> None:
+    secrets_keys = [key for key in environ.keys() if key.endswith("_FILE")]
+
+    base_path = Path("/") / "run" / "secrets"
+    for secret_key in secrets_keys:
+        secret_path = base_path / environ[secret_key]
+        try:
+            secret = secret_path.read_text().strip()
+        except FileNotFoundError:
+            continue
+
+        key = secret_key[:-5]
+        environ[key] = secret
+
+
+def load_env():
+    load_docker_secrets()
+    load_dotenv()
+
+
+load_env()
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -134,3 +161,9 @@ STORAGES = {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
 }
+
+logfire.configure(send_to_logfire="if-token-present")
+logfire.instrument_django()
+logfire.instrument_pydantic_ai()
+logfire.instrument_psycopg()
+logfire.instrument_sqlite3()
