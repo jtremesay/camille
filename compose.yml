@@ -14,9 +14,12 @@ services:
     environment:
       - "MATTERMOST_HOST=https://mattermost.jtremesay.org"
       - "MATTERMOST_API_TOKEN_FILE=camille_mattermost_api_token"
+      - "AGENT_MODEL=bedrock:eu.anthropic.claude-sonnet-4-5-20250929-v1:0"
       #- "AGENT_MODEL=google-gla:gemini-flash-latest"
-      - "AGENT_MODEL=google-gla:gemini-3-flash-preview"
+      #- "AGENT_MODEL=google-gla:gemini-3-flash-preview"
       #- "AGENT_MODEL=mistral:mistral-medium-latest"
+      - "AWS_DEFAULT_REGION=eu-west-3"
+      - "AWS_BEARER_TOKEN_BEDROCK_FILE=aws_bearer_token_bedrock"
       - "GOOGLE_API_KEY_FILE=google_api_key"
       - "MISTRAL_API_KEY_FILE=mistral_api_key"
       - "TAVILY_API_KEY_FILE=tavily_api_key"
@@ -26,6 +29,7 @@ services:
       - "LOGFIRE_TOKEN_FILE=camille_logfire_token"
     secrets:
       - "camille_mattermost_api_token"
+      - "aws_bearer_token_bedrock"
       - "google_api_key"
       - "mistral_api_key"
       - "tavily_api_key"
@@ -39,6 +43,8 @@ secrets:
   camille_mattermost_api_token:
     external: true
   camille_secret_key:
+    external: true
+  aws_bearer_token_bedrock:
     external: true
   google_api_key:
     external: true
