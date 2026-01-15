@@ -1,0 +1,45 @@
+services:
+  pg17:
+    image: "postgres:17"
+    environment:
+      POSTGRES_DB: "camille"
+      POSTGRES_USER: "camille"
+      POSTGRES_PASSWORD: "camille"
+    volumes:
+      - "pg17_data:/var/lib/postgresql/data"
+
+  mattermost:
+    image: "killruana/camille:main"
+    command: "manage.py mattermost"
+    environment:
+      - "MATTERMOST_HOST=https://mattermost.jtremesay.org"
+      - "MATTERMOST_API_TOKEN_FILE=camille_mattermost_api_token"
+      - "TAVILY_API_KEY_FILE=tavily_api_key"
+      - "ALLOWED_HOSTS=camille.jtremesay.org"
+      - "DATABASE_URL=postgres://camille:camille@pg17/camille"
+      - "SECRET_KEY_FILE=camille_secret_key"
+      - "LOGFIRE_TOKEN_FILE=camille_logfire_token"
+    secrets:
+      - "camille_mattermost_api_token"
+      - "tavily_api_key"
+      - "camille_secret_key"
+      - "camille_logfire_token"
+
+volumes:
+  pg17_data:
+
+secrets:
+  camille_mattermost_api_token:
+    external: true
+  camille_secret_key:
+    external: true
+  aws_bearer_token_bedrock:
+    external: true
+  google_api_key:
+    external: true
+  mistral_api_key:
+    external: true
+  tavily_api_key:
+    external: true
+  camille_logfire_token:
+    external: true
