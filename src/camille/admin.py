@@ -41,3 +41,8 @@ class UserGoogleGLAInferenceProviderCredentialsAdmin(admin.ModelAdmin):
 @admin.register(models.UserMistralAIInferenceProviderCredentials)
 class UserMistralAIInferenceProviderCredentialsAdmin(admin.ModelAdmin):
     list_display = ("id", "profile")
+
+
+@admin.register(models.MattermostServer)
+class MattermostServerAdmin(admin.ModelAdmin):
+    list_display = ("id", "name", "url")
