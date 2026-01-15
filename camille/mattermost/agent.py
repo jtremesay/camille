@@ -6,6 +6,7 @@ import logfire
 from channels.db import aclose_old_connections
 
 from camille.mattermost.client import Mattermost
+from camille.mattermost.commands import handle_command
 from camille.models import MMChannel, MMMembership, MMTeam, MMUser
 
 
@@ -13,122 +14,6 @@ from camille.models import MMChannel, MMMembership, MMTeam, MMUser
 class Dependency:
     channel: MMChannel
     users: dict[str, MMUser]
-
-
-class CommandHandler:
-    def __init__(self, client: Mattermost):
-        self.client = client
-
-    async def handle(
-        self, command_line: str, channel_id: str, root_id: str, user_id: str
-    ):
-        # Simple command parser: split by spaces
-        try:
-            command, args = command_line.split(" ", 1)
-        except ValueError:
-            command = command_line
-            args = ""
-
-        match command:
-            case "ping":
-                await self.cmd_ping(args, channel_id, root_id, user_id)
-            case "get_model":
-                await self.cmd_get_model(args, channel_id, root_id, user_id)
-            case "set_model":
-                await self.cmd_set_model(args, channel_id, root_id, user_id)
-            case _:
-                await self.cmd_help(args, channel_id, root_id, user_id)
-
-    async def cmd_help(self, args: str, channel_id: str, root_id: str, user_id: str):
-        match args:
-            case "ping":
-                message = """\
-Usage: `!/ping`
-
-Check if the bot is responsive.
-
-Example:
-
-```
-!/ping
-```
-"""
-            case "get_model":
-                message = """\
-Usage: `!/get_model`
-
-Get the current AI model used by the agent.
-
-Example:
-
-```
-!/get_model
-```
-"""
-            case "set_model":
-                message = """\
-Usage: !/set_model <model_name>
-
-Set the AI model to be used by the agent.
-
-See [here](https://developers.generativeai.google/products/gemini/models) for available models.
-
-Known models:
-
-- `bedrock:eu.anthropic.claude-sonnet-4-5-20250929-v1:0`
-- `google-gla:gemini-flash-latest`
-- `mistral:mistral-medium-latest`
-
-Example:
-
-```
-!/set_model google-gla:gemini-flash-latest
-```
-"""
-            case _:
-                message = """\
-Available commands:
-- `!/ping`: Check if the bot is responsive.
-- `!/get_model`: Get the current AI model used by the agent.
-- `!/set_model <model_name>`: Set the AI model to be used by the agent.
-
-Use `!/help <command>` for detailed usage of a specific command.
-"""
-
-        await self.client.post_message(channel_id, root_id, message)
-
-    async def cmd_ping(self, args: str, channel_id: str, root_id: str, user_id: str):
-        await self.client.post_message(
-            channel_id,
-            root_id,
-            "Pong!",
-        )
-
-    async def cmd_get_model(
-        self, args: str, channel_id: str, root_id: str, user_id: str
-    ):
-        mm_user = await MMUser.objects.aget(id=user_id)
-        model = mm_user.model or "not set"
-        await self.client.post_message(
-            channel_id,
-            root_id,
-            f"The current model is: {model}",
-        )
-
-    async def cmd_set_model(
-        self, args: str, channel_id: str, root_id: str, user_id: str
-    ):
-        if not args:
-            return await self.cmd_help("set_model", channel_id, root_id, user_id)
-
-        mm_user = await MMUser.objects.aget(id=user_id)
-        mm_user.model = args.strip()
-        await mm_user.asave()
-        await self.client.post_message(
-            channel_id,
-            root_id,
-            f"Model set to: {mm_user.model}",
-        )
 
 
 class MattermostAgent(Mattermost):
@@ -227,16 +112,13 @@ class MattermostAgent(Mattermost):
         # Handle commands starting with "!/"
         if message.startswith("!/"):
             command_line = message[2:].strip()
-            cli_handler = CommandHandler(self)
-            try:
-                await cli_handler.handle(command_line, channel_id, root_id, sender_id)
-            except Exception as e:
-                logfire.error("Error handling command", error=e)
-                await self.post_message(
-                    channel_id,
-                    root_id,
-                    f"An error occurred while processing your command:\n°°°{e}°°°",
-                )
+            await handle_command(
+                self,
+                command_line,
+                channel_id,
+                root_id,
+                sender_id,
+            )
             return
 
         print(data)
