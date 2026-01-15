@@ -9,8 +9,10 @@ https://docs.djangoproject.com/en/6.0/howto/deployment/wsgi/
 
 import os
 
+import logfire
 from django.core.wsgi import get_wsgi_application
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "proj.settings")
 
 application = get_wsgi_application()
+logfire.instrument_wsgi(application)

@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional
 
 from django.conf import settings
@@ -10,6 +11,11 @@ class Team(BaseModel):
     id: str
     name: str
     display_name: str
+    description: str
+    create_at: datetime
+    update_at: datetime
+    delete_at: datetime
+    type: str
 
 
 TeamList = TypeAdapter(list[Team])

@@ -168,7 +168,7 @@ dependencies = [
     { name = "django" },
     { name = "httpx", extra = ["brotli", "http2", "zstd"] },
     { name = "httpx-ws" },
-    { name = "logfire", extra = ["django", "httpx", "psycopg", "sqlite3"] },
+    { name = "logfire", extra = ["asgi", "django", "httpx", "psycopg", "sqlite3", "wsgi"] },
     { name = "psycopg", extra = ["binary"] },
     { name = "pydantic-ai-slim", extra = ["bedrock", "google", "mistral", "tavily"] },
     { name = "python-dotenv" },
@@ -189,7 +189,7 @@ requires-dist = [
     { name = "django", specifier = ">=5.2.5" },
     { name = "httpx", extras = ["brotli", "http2", "zstd"], specifier = ">=0.28.1" },
     { name = "httpx-ws", specifier = ">=0.7.2" },
-    { name = "logfire", extras = ["django", "httpx", "psycopg", "sqlite3"], specifier = ">=4.3.1" },
+    { name = "logfire", extras = ["asgi", "django", "httpx", "psycopg", "sqlite3", "wsgi"], specifier = ">=4.3.1" },
     { name = "psycopg", extras = ["binary"], specifier = ">=3.2.9" },
     { name = "pydantic-ai-slim", extras = ["bedrock", "google", "mistral", "tavily"], specifier = ">=0.7.0" },
     { name = "python-dotenv", specifier = ">=1.1.1" },
@@ -784,6 +784,9 @@ wheels = [
 ]
 
 [package.optional-dependencies]
+asgi = [
+    { name = "opentelemetry-instrumentation-asgi" },
+]
 django = [
     { name = "opentelemetry-instrumentation-asgi" },
     { name = "opentelemetry-instrumentation-django" },
@@ -797,6 +800,9 @@ psycopg = [
 ]
 sqlite3 = [
     { name = "opentelemetry-instrumentation-sqlite3" },
+]
+wsgi = [
+    { name = "opentelemetry-instrumentation-wsgi" },
 ]
 
 [[package]]

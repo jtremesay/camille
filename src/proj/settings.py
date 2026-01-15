@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 from os import environ
 from pathlib import Path
+from sys import argv
 
 import dj_database_url
 import logfire
@@ -164,10 +165,30 @@ STORAGES = {
 LOGIN_REDIRECT_URL = "camille:view_profile"
 LOGOUT_REDIRECT_URL = "login"
 
-# Logfire settings
+# Logging
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "logfire": {
+            "class": "logfire.LogfireLoggingHandler",
+        },
+    },
+    "root": {
+        "handlers": ["logfire"],
+        "level": "INFO",
+    },
+}
 
-logfire.configure(send_to_logfire="if-token-present")
+# Logfire settings
+if "manage.py" in argv[0]:
+    service = argv[1]
+else:
+    service = argv[0].split("/")[-1]
+
+logfire.configure(send_to_logfire="if-token-present", service_name=service)
 logfire.instrument_django()
-logfire.instrument_pydantic_ai()
+logfire.instrument_httpx()
 logfire.instrument_psycopg()
+logfire.instrument_pydantic_ai()
 logfire.instrument_sqlite3()

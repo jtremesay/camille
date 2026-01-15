@@ -71,3 +71,19 @@ class MattermostServer(models.Model):
 
     def __str__(self) -> str:
         return self.name
+
+
+class MattermostTeam(models.Model):
+    server = models.ForeignKey(MattermostServer, on_delete=models.CASCADE)
+    team_id = models.CharField(max_length=255)
+    name = models.CharField(max_length=255)
+    display_name = models.CharField(max_length=255)
+    description = models.TextField()
+    create_at = models.DateTimeField()
+    update_at = models.DateTimeField()
+
+    class Meta:
+        unique_together = ("server", "team_id")
+
+    def __str__(self) -> str:
+        return f"{self.name} ({self.server.name})"

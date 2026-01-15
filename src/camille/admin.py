@@ -46,3 +46,17 @@ class UserMistralAIInferenceProviderCredentialsAdmin(admin.ModelAdmin):
 @admin.register(models.MattermostServer)
 class MattermostServerAdmin(admin.ModelAdmin):
     list_display = ("id", "name", "url")
+
+
+@admin.register(models.MattermostTeam)
+class MattermostTeamAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "server",
+        "team_id",
+        "name",
+        "display_name",
+        "create_at",
+        "update_at",
+    )
+    search_fields = ("team_id", "name", "display_name")
