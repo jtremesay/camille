@@ -104,3 +104,20 @@ class MattermostChannelMemberAdmin(admin.ModelAdmin):
         "user",
     )
     search_fields = ("channel__name", "user__username")
+    list_filter = ("channel", "user")
+
+
+@admin.register(models.ProfileMattermostMapping)
+class ProfileMattermostMappingAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "profile",
+        "mm_user__server",
+        "mm_user",
+    )
+    search_fields = (
+        "profile",
+        "mm_user__server__name",
+        "mm_user",
+    )
+    list_filter = ("profile", "mm_user")

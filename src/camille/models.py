@@ -166,3 +166,24 @@ class MattermostChannelMember(models.Model):
             )
 
         super().save(*args, **kwargs)
+
+
+class ProfileMattermostMapping(models.Model):
+    profile = models.ForeignKey(
+        Profile,
+        on_delete=models.CASCADE,
+        related_name="mm_mappings",
+        related_query_name="mm_mapping",
+    )
+    mm_user = models.OneToOneField(
+        MattermostUser,
+        on_delete=models.CASCADE,
+        related_name="mm_mappings",
+        related_query_name="mm_mapping",
+    )
+
+    class Meta:
+        unique_together = ("profile", "mm_user")
+
+    def __str__(self) -> str:
+        return f"{self.profile.user.username} -> {self.mm_user.username}"
