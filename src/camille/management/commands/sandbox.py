@@ -4,7 +4,7 @@ from asyncio import run
 from django.core.management.base import BaseCommand
 
 from camille.models import MattermostServer, MattermostTeam
-from mattermost import Mattermost
+from mattermost import MattermostClient
 
 logger = logging.getLogger(__name__)
 
@@ -23,13 +23,11 @@ class Command(BaseCommand):
             logger.warning("No MattermostTeam found in database.")
             return
 
-        async with Mattermost(
+        async with MattermostClient(
             base_url=mm_server.url,
             token=mm_server.token,
         ) as mm:
-            channels_data = await mm.get_channels_for_user("me", mm_team.team_id)
-            for channel_data in channels_data:
-                logger.info("Channel: %s", channel_data)
+            pass
 
     def handle(self, *args, **options):
         run(self.async_handle())

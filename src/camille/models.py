@@ -116,6 +116,33 @@ class MattermostUser(models.Model):
         return self.username
 
 
+class MattermostTeamMember(models.Model):
+    team = models.ForeignKey(
+        MattermostTeam,
+        on_delete=models.CASCADE,
+        related_name="memberships",
+        related_query_name="membership",
+    )
+    user = models.ForeignKey(
+        MattermostUser,
+        on_delete=models.CASCADE,
+        related_name="team_memberships",
+        related_query_name="team_membership",
+    )
+
+    class Meta:
+        unique_together = ("team", "user")
+
+    def save(self, *args, **kwargs) -> None:
+        if self.team.server != self.user.server:
+            raise ValueError("Team and User must belong to the same Mattermost server.")
+
+        super().save(*args, **kwargs)
+
+    def __str__(self) -> str:
+        return f"{self.user.username} in {self.team.name}"
+
+
 class MattermostChannel(models.Model):
     team = models.ForeignKey(
         MattermostTeam,
@@ -143,14 +170,14 @@ class MattermostChannelMember(models.Model):
     channel = models.ForeignKey(
         MattermostChannel,
         on_delete=models.CASCADE,
-        related_name="memberships",
-        related_query_name="membership",
+        related_name="channel_memberships",
+        related_query_name="channel_membership",
     )
     user = models.ForeignKey(
         MattermostUser,
         on_delete=models.CASCADE,
-        related_name="memberships",
-        related_query_name="membership",
+        related_name="channel_memberships",
+        related_query_name="channel_membership",
     )
 
     class Meta:

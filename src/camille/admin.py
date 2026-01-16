@@ -78,6 +78,18 @@ class MattermostUserAdmin(admin.ModelAdmin):
     search_fields = ("user_id", "username", "nickname", "first_name", "last_name")
 
 
+@admin.register(models.MattermostTeamMember)
+class MattermostTeamMemberAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "team__server",
+        "team",
+        "user",
+    )
+    search_fields = ("team__name", "user__username")
+    list_filter = ("user",)
+
+
 @admin.register(models.MattermostChannel)
 class MattermostChannelAdmin(admin.ModelAdmin):
     list_display = (
