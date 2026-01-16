@@ -168,6 +168,9 @@ class Mattermost:
         return response.content
 
     async def ws_send(self, action: str, data: dict) -> None:
+        if self._ws_client is None:
+            raise RuntimeError("WebSocket client is not connected.")
+
         self.current_seq += 1
         await self._ws_client.send_json(
             {
