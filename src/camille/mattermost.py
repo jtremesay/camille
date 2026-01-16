@@ -223,7 +223,17 @@ async def get_sync_channels_members(
 
 
 @logfire.instrument("mattermost_sync_db_server {mm_server.name=}")
-async def sync_db_server(mm: Mattermost, mm_server: MattermostServer) -> None:
+async def sync_db_server(
+    mm: Mattermost, mm_server: MattermostServer
+) -> Optional[
+    tuple[
+        MattermostUser,
+        dict[str, MattermostUser],
+        dict[str, MattermostTeam],
+        dict[str, MattermostChannel],
+        list[MattermostChannelMember],
+    ]
+]:
     mm_me = await get_sync_me(mm, mm_server)
     if mm_me is None:
         logger.warning(
@@ -237,12 +247,67 @@ async def sync_db_server(mm: Mattermost, mm_server: MattermostServer) -> None:
     mm_channels = await get_sync_channels(mm, mm_teams.values())
     mm_channels_members = await get_sync_channels_members(mm, mm_users, mm_channels)
 
+    return mm_me, mm_users, mm_teams, mm_channels, mm_channels_members
+
 
 @logfire.instrument("mattermost_sync_db_all")
-async def sync_db_all() -> None:
+async def sync_db_all() -> dict[
+    MattermostServer,
+    tuple[
+        MattermostUser,
+        dict[str, MattermostUser],
+        dict[str, MattermostTeam],
+        dict[str, MattermostChannel],
+        list[MattermostChannelMember],
+    ],
+]:
+    results = {}
     async for mm_server in MattermostServer.objects.all():
         async with Mattermost(
             base_url=mm_server.url,
             token=mm_server.token,
         ) as mm:
-            await sync_db_server(mm, mm_server)
+            result = await sync_db_server(mm, mm_server)
+            if result is not None:
+                results[mm_server] = result
+
+    return results
+
+
+class MattermostAgent:
+    def __init__(self, mm_server: MattermostServer) -> None:
+        self.mm_server = mm_server
+        self.mm: Mattermost = Mattermost(
+            base_url=mm_server.url,
+            token=mm_server.token,
+        )
+        self.mm_me: Optional[MattermostUser] = None
+        self.mm_users: dict[str, MattermostUser] = {}
+        self.mm_teams: dict[str, MattermostTeam] = {}
+        self.mm_channels: dict[str, MattermostChannel] = {}
+        self.mm_channel_members: list[MattermostChannelMember] = []
+
+    async def __aenter__(self) -> "MattermostAgent":
+        await self.mm.__aenter__()
+
+        res = await sync_db_server(self.mm, self.mm_server)
+        if res is None:
+            raise RuntimeError(
+                f"Cannot sync server '{self.mm_server.name}' because the sync user could not be found."
+            )
+
+        (
+            self.mm_me,
+            self.mm_users,
+            self.teams,
+            self.channels,
+            self.channel_members,
+        ) = res
+
+        return self
+
+    async def __aexit__(self, exc_type, exc, tb) -> None:
+        await self.mm.__aexit__(exc_type, exc, tb)
+
+    async def run(self) -> None:
+        pass
