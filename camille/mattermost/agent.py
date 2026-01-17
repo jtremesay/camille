@@ -7,7 +7,7 @@ from typing import Optional
 import logfire
 from channels.db import aclose_old_connections
 from django.conf import settings
-from pydantic_ai import Agent, BinaryContent
+from pydantic_ai import Agent, BinaryContent, RunContext
 from pydantic_ai.common_tools.tavily import tavily_search_tool
 
 from camille.mattermost.client import Mattermost
@@ -20,8 +20,13 @@ from camille.prompts import DARK_DIHYAI_PROMPT
 
 @dataclass
 class Dependency:
+    me: MMUser
     channel: MMChannel
     users: dict[str, MMUser]
+
+
+def personality_prompt(ctx: RunContext[Dependency]) -> str:
+    return DARK_DIHYAI_PROMPT.format(agent_name=ctx.deps.me.first_name)
 
 
 class MattermostAgent(Mattermost):
@@ -191,14 +196,15 @@ class MattermostAgent(Mattermost):
 
             agent = Agent(
                 model=await create_model_for_user(mm_user),
-                system_prompt=DARK_DIHYAI_PROMPT.format(agent_name=self.me.first_name),
                 deps_type=Dependency,
                 toolsets=[toolset],
                 tools=tools,
             )
+            agent.system_prompt(dynamic=True)(personality_prompt)
             agent.system_prompt(dynamic=True)(mm_system_prompt)
 
             deps = Dependency(
+                me=self.me,
                 channel=channel,
                 users={
                     user.id: user
