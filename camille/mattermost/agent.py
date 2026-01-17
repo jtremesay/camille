@@ -15,7 +15,7 @@ from camille.mattermost.commands import handle_command
 from camille.mattermost.models import create_model_for_user
 from camille.mattermost.tools import mm_system_prompt, toolset
 from camille.models import MMChannel, MMMembership, MMTeam, MMThread, MMUser
-from camille.prompts import DIHYAI_PROMPT
+from camille.prompts import DARK_DIHYAI_PROMPT
 
 
 @dataclass
@@ -191,7 +191,7 @@ class MattermostAgent(Mattermost):
 
             agent = Agent(
                 model=await create_model_for_user(mm_user),
-                system_prompt=DIHYAI_PROMPT.format(agent_name=self.me.first_name),
+                system_prompt=DARK_DIHYAI_PROMPT.format(agent_name=self.me.first_name),
                 deps_type=Dependency,
                 toolsets=[toolset],
                 tools=tools,
