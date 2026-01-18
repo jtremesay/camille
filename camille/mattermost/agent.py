@@ -165,14 +165,6 @@ class MattermostAgent(Mattermost):
 
             history = await thread.get_history()
             user_input = []
-            for file in post["metadata"].get("files", []):
-                content = await self.get_file(file["id"])
-                user_input.extend(
-                    (
-                        f"The file {file['name']} is attached.",
-                        BinaryContent(data=content, media_type=file["mime_type"]),
-                    )
-                )
             user_input.append(
                 json_dumps(
                     dict(
@@ -185,6 +177,19 @@ class MattermostAgent(Mattermost):
                     indent=2,
                 )
             )
+
+            for file in post["metadata"].get("files", []):
+                identifier = file["name"]
+                mime_type = file["mime_type"]
+                if ";" in mime_type:  # Only keep the mime type without any parameters
+                    mime_type = mime_type.split(";")[0].strip()
+
+                binary_content = BinaryContent(
+                    data=await self.get_file(file["id"]),
+                    media_type=mime_type,
+                    identifier=identifier,
+                )
+                user_input.extend([f"This is file `{identifier}`: ", binary_content])
 
             tools = []
             if settings.TAVILY_API_KEY:
