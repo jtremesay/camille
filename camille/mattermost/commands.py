@@ -26,8 +26,9 @@ async def cmd_ping(
 async def cmd_set_prompt(
     client: Mattermost, args: Namespace, channel_id: str, root_id: str, user_id: str
 ):
+    prompt = " ".join(args.prompt)
     mm_user = await MMUser.objects.aget(id=user_id)
-    mm_user.prompt = args.prompt
+    mm_user.prompt = prompt
     await mm_user.asave()
     await client.post_message(
         channel_id,
@@ -191,7 +192,9 @@ async def handle_command(
     set_prompt_parser = subparsers.add_parser(
         "set_prompt", help="Set a custom prompt for the user"
     )
-    set_prompt_parser.add_argument("prompt", type=str, help="The custom prompt to set")
+    set_prompt_parser.add_argument(
+        "prompt", type=str, nargs="*", help="The custom prompt to set"
+    )
     set_prompt_parser.set_defaults(func=cmd_set_prompt)
 
     get_model_parser = subparsers.add_parser(
