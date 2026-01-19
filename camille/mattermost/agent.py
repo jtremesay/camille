@@ -15,18 +15,18 @@ from camille.mattermost.commands import handle_command
 from camille.mattermost.models import create_model_for_user
 from camille.mattermost.tools import mm_system_prompt, toolset
 from camille.models import MMChannel, MMMembership, MMTeam, MMThread, MMUser
-from camille.prompts import DARK_DIHYAI_PROMPT
 
 
 @dataclass
 class Dependency:
     me: MMUser
+    sender: MMUser
     channel: MMChannel
     users: dict[str, MMUser]
 
 
 def personality_prompt(ctx: RunContext[Dependency]) -> str:
-    return DARK_DIHYAI_PROMPT.format(agent_name=ctx.deps.me.first_name)
+    return ctx.deps.sender.prompt.format(agent_name=ctx.deps.me.first_name)
 
 
 class MattermostAgent(Mattermost):
@@ -208,13 +208,17 @@ class MattermostAgent(Mattermost):
             agent.system_prompt(dynamic=True)(personality_prompt)
             agent.system_prompt(dynamic=True)(mm_system_prompt)
 
+            users = {
+                user.id: user
+                async for user in MMUser.objects.filter(membership__channel=channel)
+            }
+            sender = users[sender_id]
+
             deps = Dependency(
                 me=self.me,
+                sender=sender,
                 channel=channel,
-                users={
-                    user.id: user
-                    async for user in MMUser.objects.filter(membership__channel=channel)
-                },
+                users=users,
             )
 
             await self.user_typing(channel_id)

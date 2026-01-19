@@ -23,6 +23,31 @@ async def cmd_ping(
     )
 
 
+async def cmd_set_prompt(
+    client: Mattermost, args: Namespace, channel_id: str, root_id: str, user_id: str
+):
+    mm_user = await MMUser.objects.aget(id=user_id)
+    mm_user.prompt = args.prompt
+    await mm_user.asave()
+    await client.post_message(
+        channel_id,
+        root_id,
+        "Custom prompt set successfully.",
+    )
+
+
+async def cmd_get_prompt(
+    client: Mattermost, args: Namespace, channel_id: str, root_id: str, user_id: str
+):
+    mm_user = await MMUser.objects.aget(id=user_id)
+    prompt = mm_user.prompt or "not set"
+    await client.post_message(
+        channel_id,
+        root_id,
+        f"The current custom prompt is:\n{prompt}",
+    )
+
+
 async def cmd_get_model(
     client: Mattermost, args: Namespace, channel_id: str, root_id: str, user_id: str
 ):
@@ -157,6 +182,17 @@ async def handle_command(
 
     ping_parser = subparsers.add_parser("ping", help="Check if the bot is responsive")
     ping_parser.set_defaults(func=cmd_ping)
+
+    get_prompt_parser = subparsers.add_parser(
+        "get_prompt", help="Get the current custom prompt for the user"
+    )
+    get_prompt_parser.set_defaults(func=cmd_get_prompt)
+
+    set_prompt_parser = subparsers.add_parser(
+        "set_prompt", help="Set a custom prompt for the user"
+    )
+    set_prompt_parser.add_argument("prompt", type=str, help="The custom prompt to set")
+    set_prompt_parser.set_defaults(func=cmd_set_prompt)
 
     get_model_parser = subparsers.add_parser(
         "get_model", help="Get the current AI model used by the agent"

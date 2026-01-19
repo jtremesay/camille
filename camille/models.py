@@ -55,6 +55,7 @@ class MMUser(models.Model):
     model = models.CharField(
         max_length=255, blank=True
     )  # LLM model associated with the user
+    prompt = models.TextField(blank=True)
 
     def __str__(self):
         return self.username or "Unnamed User"
