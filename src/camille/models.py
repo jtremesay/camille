@@ -151,6 +151,7 @@ class MattermostChannel(models.Model):
         related_query_name="channel",
     )
     channel_id = models.CharField(max_length=255)
+    type = models.CharField(max_length=50)
     name = models.CharField(max_length=255)
     display_name = models.CharField(max_length=255)
     header = models.TextField()

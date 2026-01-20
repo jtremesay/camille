@@ -97,13 +97,14 @@ class MattermostChannelAdmin(admin.ModelAdmin):
         "team__server",
         "team",
         "channel_id",
+        "type",
         "name",
         "display_name",
         "last_post_at",
         "create_at",
         "update_at",
     )
-    search_fields = ("channel_id", "name", "display_name")
+    search_fields = ("channel_id", "type", "name", "display_name")
 
 
 @admin.register(models.MattermostChannelMember)

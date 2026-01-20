@@ -183,6 +183,7 @@ async def get_sync_channel_from_data(
         team=mm_team,
         channel_id=channel_data.id,
         defaults={
+            "type": channel_data.type,
             "name": channel_data.name,
             "display_name": channel_data.display_name,
             "header": channel_data.header,
