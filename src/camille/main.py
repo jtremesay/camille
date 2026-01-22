@@ -7,8 +7,11 @@ from typing import Optional
 import argon2
 import logfire
 from dotenv import load_dotenv
-from pydantic_ai import Agent
-from sqlmodel import Field, Session, SQLModel, create_engine
+from pydantic import BaseModel
+from pydantic_ai import Agent, RunContext
+from sqlalchemy.ext.asyncio.engine import create_async_engine
+from sqlmodel import Field, SQLModel
+from sqlmodel.ext.asyncio.session import AsyncSession as Session
 
 load_dotenv()
 
@@ -26,17 +29,33 @@ class User(SQLModel, table=True):
     birthdate: Optional[datetime.date] = None
 
 
-agent = Agent("bedrock:eu.anthropic.claude-sonnet-4-5-20250929-v1:0")
-
 sqlite_file_name = "db.sqlite3"
-sqlite_url = f"sqlite:///{sqlite_file_name}"
+sqlite_url = f"sqlite+aiosqlite:///{sqlite_file_name}"
 
 connect_args = {"check_same_thread": False}
-engine = create_engine(sqlite_url, connect_args=connect_args)
+engine = create_async_engine(sqlite_url, connect_args=connect_args)
+
+
+class Deps(BaseModel):
+    user: User
+
+
+agent = Agent("bedrock:eu.anthropic.claude-sonnet-4-5-20250929-v1:0", deps_type=Deps)
+
+
+@agent.system_prompt(dynamic=True)
+def sp_user_context(ctx: RunContext[Deps]) -> str:
+    return f"You are talking with:\n```json\r{ctx.deps.user.model_dump_json()}\n```"
 
 
 async def cmd_clai(args: Namespace):
-    await agent.to_cli()
+    async with Session(engine) as session:
+        user = await session.get(User, 1)
+    assert user is not None, "User with ID 1 does not exist."
+
+    deps = Deps(user=user)
+
+    await agent.to_cli(deps=deps)
 
 
 async def cmd_create_user(args: Namespace):
@@ -85,10 +104,10 @@ async def cmd_create_user(args: Namespace):
         birthdate=birthdate,
     )
 
-    with Session(engine) as session:
+    async with Session(engine) as session:
         session.add(user)
-        session.commit()
-        session.refresh(user)
+        await session.commit()
+        await session.refresh(user)
 
     print(f"User {user.username} created with ID {user.id}")
 
