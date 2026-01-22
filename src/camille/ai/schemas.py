@@ -12,3 +12,5 @@ class UserSchema(Schema):
 
 class ProfileSchema(Schema):
     user: UserSchema
+    model_name: Optional[str] = None
+    notes: Optional[str] = None

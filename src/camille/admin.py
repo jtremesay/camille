@@ -6,7 +6,7 @@ from camille import models
 # Register your models here.
 @admin.register(models.Profile)
 class ProfileAdmin(admin.ModelAdmin):
-    list_display = ("user",)
+    list_display = ("user", "model_name")
 
 
 @admin.register(models.BedrockCredentials)

@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandParser
 
-from camille.agents import Deps, create_agent_for_profile
+from camille.ai.agents import Deps, create_agent_for_profile
 from camille.models import Profile
 
 

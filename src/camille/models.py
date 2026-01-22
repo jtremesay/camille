@@ -12,6 +12,14 @@ class Profile(models.Model):
         related_query_name="profile",
     )
 
+    # LLM default settings
+    model_name = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+    )
+    notes = models.TextField(blank=True, null=True)
+
 
 # create profile when user is created
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
