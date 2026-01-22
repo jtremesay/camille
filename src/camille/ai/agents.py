@@ -14,8 +14,9 @@ def create_agent_for_profile(profile: Profile) -> Agent[Deps]:
             profile,
         ),
         deps_type=Deps,
-        toolsets=[tools.toolset],
+        toolsets=[tools.user_toolset, tools.thread_toolset],
     )
     agent.system_prompt(dynamic=True)(system_prompts.personality_context)
+    agent.system_prompt(dynamic=True)(system_prompts.thread_context)
     agent.system_prompt(dynamic=True)(system_prompts.user_profile_context)
     return agent

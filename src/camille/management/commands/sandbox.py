@@ -93,7 +93,7 @@ class Command(BaseCommand):
 
                 # Recreate the agent for each interaction to ensure fresh state
                 profile.refresh_from_db()
-                deps = Deps(profile=profile)
+                deps = Deps(profile=profile, thread=thread)
                 agent = create_agent_for_profile(profile)
 
                 r = agent.run_sync(user_input, deps=deps, message_history=messages)

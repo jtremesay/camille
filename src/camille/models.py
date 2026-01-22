@@ -99,6 +99,7 @@ class AgentPersonality(models.Model):
 
 class LLMThread(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
+    summary = models.TextField()
 
     def messages(self) -> list:
         all_messages = []

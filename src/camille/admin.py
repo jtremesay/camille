@@ -31,7 +31,7 @@ class AgentPersonalityAdmin(admin.ModelAdmin):
 
 @admin.register(models.LLMThread)
 class LLMThreadAdmin(admin.ModelAdmin):
-    list_display = ("id", "created_at")
+    list_display = ("id", "created_at", "summary")
 
 
 @admin.register(models.LLMInteraction)

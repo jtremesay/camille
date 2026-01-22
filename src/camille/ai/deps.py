@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 from camille.models import (
+    LLMThread,
     Profile,
 )
 
@@ -8,4 +9,5 @@ from camille.models import (
 @dataclass
 class Deps:
     profile: Profile
+    thread: LLMThread
     agent_name: str = "Camille"

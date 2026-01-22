@@ -79,7 +79,7 @@ def create_personality_for_user(
     )
 
 
-toolset = FunctionToolset(
+user_toolset = FunctionToolset(
     id="camille_user_tools",
     tools=[
         update_notes_for_user,
@@ -87,5 +87,24 @@ toolset = FunctionToolset(
         list_personalities,
         set_personality_for_user,
         create_personality_for_user,
+    ],
+)
+
+
+def set_thread_summary(ctx: RunContext[Deps], summary: str) -> None:
+    """
+    Set the summary for the current LLM thread.
+
+    :param summary: The summary to set for the thread.
+    """
+    thread = ctx.deps.thread
+    thread.summary = summary
+    thread.save()
+
+
+thread_toolset = FunctionToolset(
+    id="camille_thread_tools",
+    tools=[
+        set_thread_summary,
     ],
 )
