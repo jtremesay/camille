@@ -1,5 +1,6 @@
 from typing import Optional
 
+import httpx
 from pydantic_ai import RunContext
 from pydantic_ai.toolsets import FunctionToolset
 
@@ -106,5 +107,26 @@ thread_toolset = FunctionToolset(
     id="camille_thread_tools",
     tools=[
         set_thread_summary,
+    ],
+)
+
+
+def get_url_content(ctx: RunContext[Deps], url: str) -> bytes:
+    """
+    Fetch the content of a URL.
+
+    :param url: The URL to fetch content from.
+    :return: The content of the URL.
+    """
+    response = httpx.get(url)
+    response.raise_for_status()
+
+    return response.content
+
+
+fetch_toolset = FunctionToolset(
+    id="camille_fetch_tools",
+    tools=[
+        get_url_content,
     ],
 )
