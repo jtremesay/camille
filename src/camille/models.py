@@ -1,14 +1,66 @@
-import datetime
-from typing import Optional
+from django.conf import settings
+from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
-from sqlmodel import Field, SQLModel
+
+class Profile(models.Model):
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="profile",
+        related_query_name="profile",
+    )
 
 
-class User(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
-    username: str = Field(unique=True, index=True)
-    password: str  # Hashed password with Argon2
-    email: Optional[str] = None
-    first_name: Optional[str] = None
-    last_name: Optional[str] = None
-    birthdate: Optional[datetime.date] = None
+# create profile when user is created
+@receiver(post_save, sender=settings.AUTH_USER_MODEL)
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        Profile.objects.create(user=instance)
+
+
+class InferenceProvider(models.TextChoices):
+    BEDROCK = "bedrock", "Bedrock"
+    GOOGLE_GLA = "google_gla", "Google GLA"
+    MISTRAL_AI = "mistral_ai", "Mistral AI"
+
+
+class InferenceCredentials(models.Model):
+    default_provider: InferenceProvider
+
+    class Meta:
+        abstract = True
+        unique_together = ("user", "provider")
+
+    profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    provider = models.CharField(max_length=20, choices=InferenceProvider.choices)
+
+    def save(
+        self,
+        *args,
+        **kwargs,
+    ) -> None:
+        self.provider = self.default_provider
+
+        return super().save(*args, **kwargs)
+
+
+class ApiKeyInferenceCredentials(InferenceCredentials):
+    class Meta:
+        abstract = True
+
+    api_key = models.CharField(max_length=255)
+
+
+class BedrockCredentials(ApiKeyInferenceCredentials):
+    default_provider = InferenceProvider.BEDROCK
+    region = models.CharField(max_length=100)
+
+
+class GoogleGLACredentials(ApiKeyInferenceCredentials):
+    default_provider = InferenceProvider.GOOGLE_GLA
+
+
+class MistralAICredentials(ApiKeyInferenceCredentials):
+    default_provider = InferenceProvider.MISTRAL_AI
