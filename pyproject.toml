@@ -4,7 +4,9 @@ version = "6.0.0"
 description = "An agent"
 requires-python = ">=3.14"
 dependencies = [
+    "aiosqlite>=0.22.1",
     "alembic>=1.18.1",
+    "argon2-cffi>=25.1.0",
     "clai>=1.44.0",
     "pydantic-ai-slim[bedrock,logfire]>=1.44.0",
     "python-dotenv>=1.2.1",
