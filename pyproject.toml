@@ -3,7 +3,14 @@ name = "camille"
 version = "6.0.0"
 description = "An agent"
 requires-python = ">=3.14"
-dependencies = []
+dependencies = [
+    "clai>=1.44.0",
+    "pydantic-ai-slim[bedrock,logfire]>=1.44.0",
+    "python-dotenv>=1.2.1",
+]
+
+[project.scripts]
+camille = "camille.main:main"
 
 [build-system]
 requires = ["uv_build>=0.9.25,<0.10.0"]
