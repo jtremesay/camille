@@ -1,180 +1,47 @@
-import datetime
-from argparse import ArgumentParser, Namespace
+from argparse import ArgumentParser
 from asyncio import run
-from getpass import getpass
 from os import environ
-from typing import Optional
 
-import argon2
 import logfire
 from dotenv import load_dotenv
-from pydantic import BaseModel
-from pydantic_ai import Agent, RunContext
-from sqlalchemy.ext.asyncio.engine import create_async_engine
-from sqlmodel import Field, SQLModel, select
-from sqlmodel.ext.asyncio.session import AsyncSession as Session
 
-load_dotenv()
-
-logfire.configure(send_to_logfire="if-token-present")
-logfire.instrument_pydantic_ai()
-
-
-class User(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
-    username: str = Field(unique=True, index=True)
-    password: str  # Hashed password with Argon2
-    email: Optional[str] = None
-    first_name: Optional[str] = None
-    last_name: Optional[str] = None
-    birthdate: Optional[datetime.date] = None
-
-
-sqlite_file_name = "db.sqlite3"
-sqlite_url = f"sqlite+aiosqlite:///{sqlite_file_name}"
-
-connect_args = {"check_same_thread": False}
-engine = create_async_engine(sqlite_url, connect_args=connect_args)
-
-
-class Deps(BaseModel):
-    user: User
-
-
-def sp_user_context(ctx: RunContext[Deps]) -> str:
-    return f"You are talking with:\n```json\r{ctx.deps.user.model_dump_json()}\n```"
-
-
-def create_agent() -> Agent[Deps]:
-    agent = Agent(
-        "bedrock:eu.anthropic.claude-sonnet-4-5-20250929-v1:0", deps_type=Deps
-    )
-    agent.system_prompt(dynamic=True)(sp_user_context)
-
-    return agent
-
-
-async def cmd_clai(args: Namespace):
-    async with Session(engine) as session:
-        if args.user_id:
-            user = await session.get(User, args.user_id)
-            if not user:
-                print(f"User with ID {args.user_id} not found.")
-                return
-        elif args.username:
-            result = await session.exec(
-                select(User).where(User.username == args.username)
-            )
-            user = result.one_or_none()
-
-            if not user:
-                print(f"User with username '{args.username}' not found.")
-                return
-        else:
-            print("Please provide either a user ID or a username to proceed.")
-            return
-    deps = Deps(user=user)
-
-    await create_agent().to_cli(deps=deps)
-
-
-async def cmd_create_user(args: Namespace):
-    while True:
-        username = args.username or ""
-        while not username:
-            username = input("Username: ")
-
-        password = ""
-        while not password:
-            password = getpass("Password: ")
-        email = args.email or input("Email (optional): ") or None
-        first_name = args.first_name or input("First name (optional): ") or None
-        last_name = args.last_name or input("Last name (optional): ") or None
-        birthdate_str = (
-            args.birthdate or input("Birthdate (YYYY-MM-DD, optional): ") or None
-        )
-        birthdate = (
-            datetime.datetime.strptime(birthdate_str, "%Y-%m-%d").date()
-            if birthdate_str
-            else None
-        )
-
-        confirm = ""
-        while confirm.lower() not in ("y", "n"):
-            print("\nPlease confirm the entered information:")
-            print(f"Username: {username}")
-            print(f"Email: {email}")
-            print(f"First name: {first_name}")
-            print(f"Last name: {last_name}")
-            print(f"Birthdate: {birthdate}")
-            confirm = input("Is this information correct? (y/n): ")
-
-        if confirm.lower() == "y":
-            break
-
-    ph = argon2.PasswordHasher()
-    password = ph.hash(password)
-
-    user = User(
-        username=username,
-        password=password,
-        email=email,
-        first_name=first_name,
-        last_name=last_name,
-        birthdate=birthdate,
-    )
-
-    async with Session(engine) as session:
-        session.add(user)
-        await session.commit()
-        await session.refresh(user)
-
-    print(f"User {user.username} created with ID {user.id}")
+from camille.commands.clai import Command as ClaiCommand
+from camille.commands.createuser import Command as CreateUserCommand
+from camille.db import create_db_engine
 
 
 async def amain():
+    load_dotenv()
+
+    logfire.configure(send_to_logfire="if-token-present")
+    logfire.instrument_pydantic_ai()
+
     parser = ArgumentParser(description="Camille CLI")
-    subparsers = parser.add_subparsers(title="subcommands", dest="command")
 
-    clai_parser = subparsers.add_parser("clai", help="Launch the Camille AI CLI")
-    clai_parser.add_argument(
-        "-i",
-        "--user-id",
-        type=int,
-        default=environ.get("CAMILLE_USER_ID"),
-        help="User ID to use in the CLI",
-    )
-    clai_parser.add_argument(
-        "-u",
-        "--username",
+    parser.add_argument(
+        "-d",
+        "--db-url",
         type=str,
-        default=environ.get("CAMILLE_USER_NAME"),
-        help="Username to use in the CLI (overrides user ID)",
+        default=environ.get("CAMILLE_DB_URL"),
+        help="Database URL",
     )
-    clai_parser.set_defaults(func=cmd_clai)
 
-    create_user_parser = subparsers.add_parser("createuser", help="Create a new user")
-    create_user_parser.add_argument(
-        "-u", "--username", type=str, help="Username for the new user"
-    )
-    create_user_parser.add_argument(
-        "-e", "--email", type=str, help="Email address for the new user"
-    )
-    create_user_parser.add_argument(
-        "-f", "--first-name", type=str, help="First name of the new user"
-    )
-    create_user_parser.add_argument(
-        "-l", "--last-name", type=str, help="Last name of the new user"
-    )
-    create_user_parser.add_argument(
-        "-b", "--birthdate", type=str, help="Birthdate (YYYY-MM-DD) of the new user"
-    )
-    create_user_parser.set_defaults(func=cmd_create_user)
+    subparsers = parser.add_subparsers(title="subcommands", dest="command")
+    for command_class in [CreateUserCommand, ClaiCommand]:
+        command = command_class()
+        subparser = subparsers.add_parser(command.name, help=f"{command.name} command")
+        command.add_arguments(subparser)
+        subparser.set_defaults(func=command.handle)
 
     args = parser.parse_args()
 
+    if not args.db_url:
+        print("Database URL must be provided via --db-url or CAMILLE_DB_URL env var.")
+        return
+    engine = create_db_engine(args.db_url)
+
     if (func := getattr(args, "func", None)) is not None:
-        await func(args)
+        await func(engine, args)
     else:
         parser.print_help()
 
