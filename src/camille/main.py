@@ -2,6 +2,7 @@ import datetime
 from argparse import ArgumentParser, Namespace
 from asyncio import run
 from getpass import getpass
+from os import environ
 from typing import Optional
 
 import argon2
@@ -10,7 +11,7 @@ from dotenv import load_dotenv
 from pydantic import BaseModel
 from pydantic_ai import Agent, RunContext
 from sqlalchemy.ext.asyncio.engine import create_async_engine
-from sqlmodel import Field, SQLModel
+from sqlmodel import Field, SQLModel, select
 from sqlmodel.ext.asyncio.session import AsyncSession as Session
 
 load_dotenv()
@@ -50,9 +51,23 @@ def sp_user_context(ctx: RunContext[Deps]) -> str:
 
 async def cmd_clai(args: Namespace):
     async with Session(engine) as session:
-        user = await session.get(User, 1)
-    assert user is not None, "User with ID 1 does not exist."
+        if args.user_id:
+            user = await session.get(User, args.user_id)
+            if not user:
+                print(f"User with ID {args.user_id} not found.")
+                return
+        elif args.username:
+            result = await session.exec(
+                select(User).where(User.username == args.username)
+            )
+            user = result.one_or_none()
 
+            if not user:
+                print(f"User with username '{args.username}' not found.")
+                return
+        else:
+            print("Please provide either a user ID or a username to proceed.")
+            return
     deps = Deps(user=user)
 
     await agent.to_cli(deps=deps)
@@ -117,6 +132,20 @@ async def amain():
     subparsers = parser.add_subparsers(title="subcommands", dest="command")
 
     clai_parser = subparsers.add_parser("clai", help="Launch the Camille AI CLI")
+    clai_parser.add_argument(
+        "-i",
+        "--user-id",
+        type=int,
+        default=environ.get("CAMILLE_USER_ID"),
+        help="User ID to use in the CLI",
+    )
+    clai_parser.add_argument(
+        "-u",
+        "--username",
+        type=str,
+        default=environ.get("CAMILLE_USER_NAME"),
+        help="Username to use in the CLI (overrides user ID)",
+    )
     clai_parser.set_defaults(func=cmd_clai)
 
     create_user_parser = subparsers.add_parser("createuser", help="Create a new user")
