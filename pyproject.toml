@@ -7,6 +7,7 @@ dependencies = [
     "clai>=1.44.0",
     "django>=6.0.1",
     "django-ninja>=1.5.3",
+    "logfire[asgi,django,httpx,psycopg,sqlite3,wsgi]>=4.19.0",
     "pydantic-ai-slim[bedrock,logfire]>=1.44.0",
     "python-dotenv>=1.2.1",
 ]

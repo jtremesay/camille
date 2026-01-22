@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 from os import environ
 from pathlib import Path
 
+import logfire
 from dotenv import load_dotenv
 
 load_dotenv()  # Load environment variables from .env file
@@ -125,3 +126,11 @@ STATIC_URL = "static/"
 # Camille specific settings
 CAMILLE_USER_ID = environ.get("CAMILLE_USER_ID")
 CAMILLE_USER_NAME = environ.get("CAMILLE_USER_NAME")
+
+# Logfire configuration
+logfire.configure(send_to_logfire="if-token-present")
+logfire.instrument_django()
+logfire.instrument_httpx()
+logfire.instrument_psycopg()
+logfire.instrument_pydantic_ai()
+logfire.instrument_sqlite3()
