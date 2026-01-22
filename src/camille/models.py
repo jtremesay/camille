@@ -2,6 +2,7 @@ from django.conf import settings
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from pydantic_ai.messages import ModelMessagesTypeAdapter
 
 
 class Profile(models.Model):
@@ -94,3 +95,37 @@ class AgentPersonality(models.Model):
 
     def __str__(self) -> str:
         return self.name
+
+
+class LLMThread(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def messages(self) -> list:
+        all_messages = []
+        for interaction in self.interactions.order_by("created_at"):
+            all_messages.extend(interaction.messages())
+
+        return all_messages
+
+
+class LLMInteraction(models.Model):
+    class Meta:
+        ordering = ["created_at"]
+
+    thread = models.ForeignKey(
+        LLMThread,
+        on_delete=models.CASCADE,
+        related_name="interactions",
+        related_query_name="interaction",
+    )
+    initiator = models.ForeignKey(
+        Profile,
+        on_delete=models.CASCADE,
+        related_name="llm_interactions",
+        related_query_name="llm_interaction",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    messages_json = models.BinaryField()
+
+    def messages(self) -> list:
+        return ModelMessagesTypeAdapter.validate_json(self.messages_json)

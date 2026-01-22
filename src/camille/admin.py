@@ -27,3 +27,13 @@ class MistralAICredentialsAdmin(admin.ModelAdmin):
 @admin.register(models.AgentPersonality)
 class AgentPersonalityAdmin(admin.ModelAdmin):
     list_display = ("owner", "name", "description")
+
+
+@admin.register(models.LLMThread)
+class LLMThreadAdmin(admin.ModelAdmin):
+    list_display = ("id", "created_at")
+
+
+@admin.register(models.LLMInteraction)
+class LLMInteractionAdmin(admin.ModelAdmin):
+    list_display = ("id", "thread", "created_at", "initiator", "messages_json")
