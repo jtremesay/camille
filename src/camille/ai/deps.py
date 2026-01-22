@@ -8,3 +8,4 @@ from camille.models import (
 @dataclass
 class Deps:
     profile: Profile
+    agent_name: str = "Camille"

@@ -13,3 +13,11 @@ You are talking with:
 {profile_schema.model_dump_json()}
 ```
 """
+
+
+def personality_context(ctx: RunContext[Deps]) -> str:
+    personality = ctx.deps.profile.personality
+    if personality is None:
+        ""
+
+    return personality.prompt_template.format(agent_name=ctx.deps.agent_name)

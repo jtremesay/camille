@@ -19,6 +19,15 @@ class Profile(models.Model):
         null=True,
     )
     notes = models.TextField(blank=True, null=True)
+    personality = models.ForeignKey(
+        "AgentPersonality",
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+    )
+
+    def __str__(self) -> str:
+        return self.user.username
 
 
 # create profile when user is created
@@ -72,3 +81,16 @@ class GoogleGLACredentials(ApiKeyInferenceCredentials):
 
 class MistralAICredentials(ApiKeyInferenceCredentials):
     default_provider = InferenceProvider.MISTRAL_AI
+
+
+class AgentPersonality(models.Model):
+    owner = models.ForeignKey(
+        Profile,
+        on_delete=models.CASCADE,
+    )
+    name = models.CharField(max_length=100)
+    description = models.TextField()
+    prompt_template = models.TextField()
+
+    def __str__(self) -> str:
+        return self.name
