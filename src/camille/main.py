@@ -41,12 +41,17 @@ class Deps(BaseModel):
     user: User
 
 
-agent = Agent("bedrock:eu.anthropic.claude-sonnet-4-5-20250929-v1:0", deps_type=Deps)
-
-
-@agent.system_prompt(dynamic=True)
 def sp_user_context(ctx: RunContext[Deps]) -> str:
     return f"You are talking with:\n```json\r{ctx.deps.user.model_dump_json()}\n```"
+
+
+def create_agent() -> Agent[Deps]:
+    agent = Agent(
+        "bedrock:eu.anthropic.claude-sonnet-4-5-20250929-v1:0", deps_type=Deps
+    )
+    agent.system_prompt(dynamic=True)(sp_user_context)
+
+    return agent
 
 
 async def cmd_clai(args: Namespace):
@@ -70,7 +75,7 @@ async def cmd_clai(args: Namespace):
             return
     deps = Deps(user=user)
 
-    await agent.to_cli(deps=deps)
+    await create_agent().to_cli(deps=deps)
 
 
 async def cmd_create_user(args: Namespace):
