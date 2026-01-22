@@ -86,10 +86,7 @@ class Command(BaseCommand):
         messages = thread.messages()
         try:
             while True:
-                try:
-                    user_input = input("You: ")
-                except (EOFError, KeyboardInterrupt):
-                    raise
+                user_input = input("You: ")
 
                 # Recreate the agent for each interaction to ensure fresh state
                 profile.refresh_from_db()
