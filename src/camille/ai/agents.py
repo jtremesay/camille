@@ -1,6 +1,6 @@
 from pydantic_ai import Agent
 
-from camille.ai import system_prompts
+from camille.ai import system_prompts, tools
 from camille.ai.deps import Deps
 from camille.ai.models import create_model_for_profile
 from camille.models import (
@@ -14,6 +14,7 @@ def create_agent_for_profile(profile: Profile) -> Agent[Deps]:
             profile,
         ),
         deps_type=Deps,
+        toolsets=[tools.toolset],
     )
     agent.system_prompt(dynamic=True)(system_prompts.personality_context)
     agent.system_prompt(dynamic=True)(system_prompts.user_profile_context)

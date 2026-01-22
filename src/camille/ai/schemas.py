@@ -11,6 +11,15 @@ class UserSchema(Schema):
 
 
 class ProfileSchema(Schema):
+    id: int
     user: UserSchema
     model_name: Optional[str] = None
+    personality_id: Optional[int] = None
     notes: Optional[str] = None
+
+
+class AgentPersonalitySchema(Schema):
+    id: int
+    name: str
+    description: str
+    prompt_template: str
