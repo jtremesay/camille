@@ -1,39 +1,39 @@
-from django.contrib import admin
+# from django.contrib import admin
 
-from camille import models
-
-
-# Register your models here.
-@admin.register(models.Profile)
-class ProfileAdmin(admin.ModelAdmin):
-    list_display = ("user", "model_name", "personality")
+# from camille import models
 
 
-@admin.register(models.BedrockCredentials)
-class BedrockCredentialsAdmin(admin.ModelAdmin):
-    list_display = ("profile", "region")
+# # Register your models here.
+# @admin.register(models.Profile)
+# class ProfileAdmin(admin.ModelAdmin):
+#     list_display = ("user", "model_name", "personality")
 
 
-@admin.register(models.GoogleGLACredentials)
-class GoogleGLACredentialsAdmin(admin.ModelAdmin):
-    list_display = ("profile",)
+# @admin.register(models.BedrockCredentials)
+# class BedrockCredentialsAdmin(admin.ModelAdmin):
+#     list_display = ("profile", "region")
 
 
-@admin.register(models.MistralAICredentials)
-class MistralAICredentialsAdmin(admin.ModelAdmin):
-    list_display = ("profile",)
+# @admin.register(models.GoogleGLACredentials)
+# class GoogleGLACredentialsAdmin(admin.ModelAdmin):
+#     list_display = ("profile",)
 
 
-@admin.register(models.AgentPersonality)
-class AgentPersonalityAdmin(admin.ModelAdmin):
-    list_display = ("owner", "name", "description")
+# @admin.register(models.MistralAICredentials)
+# class MistralAICredentialsAdmin(admin.ModelAdmin):
+#     list_display = ("profile",)
 
 
-@admin.register(models.LLMThread)
-class LLMThreadAdmin(admin.ModelAdmin):
-    list_display = ("id", "created_at", "summary")
+# @admin.register(models.AgentPersonality)
+# class AgentPersonalityAdmin(admin.ModelAdmin):
+#     list_display = ("owner", "name", "description")
 
 
-@admin.register(models.LLMInteraction)
-class LLMInteractionAdmin(admin.ModelAdmin):
-    list_display = ("id", "thread", "created_at", "initiator", "messages_json")
+# @admin.register(models.LLMThread)
+# class LLMThreadAdmin(admin.ModelAdmin):
+#     list_display = ("id", "created_at", "summary")
+
+
+# @admin.register(models.LLMInteraction)
+# class LLMInteractionAdmin(admin.ModelAdmin):
+#     list_display = ("id", "thread", "created_at", "initiator", "messages_json")
