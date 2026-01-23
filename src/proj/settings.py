@@ -124,6 +124,7 @@ USE_TZ = True
 STATIC_URL = "static/"
 
 # Camille specific settings
+CAMILLE_USER_AGENT = environ.get("CAMILLE_USER_AGENT", "Camille/1.0")
 CAMILLE_USER_ID = environ.get("CAMILLE_USER_ID")
 CAMILLE_USER_NAME = environ.get("CAMILLE_USER_NAME")
 

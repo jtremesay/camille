@@ -1,3 +1,5 @@
+import datetime
+
 from pydantic_ai import RunContext
 
 from camille.ai.deps import Deps
@@ -34,3 +36,8 @@ def thread_context(ctx: RunContext[Deps]) -> str:
 def user_profile_context(ctx: RunContext[Deps]) -> str:
     profile = ctx.deps.profile
     return f"The last message was sent by user: {profile.user.username} (profile ID: {profile.id})"
+
+
+def time_context(ctx: RunContext[Deps]) -> str:
+    now = datetime.datetime.now(datetime.timezone.utc)
+    return f"The current UTC date and time is: {now.strftime('%a, %b %d %Y %H:%M:%S')} GMT ({now.isoformat()}Z)"

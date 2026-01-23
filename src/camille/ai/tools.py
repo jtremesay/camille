@@ -1,6 +1,5 @@
 from typing import Optional
 
-import httpx
 from pydantic_ai import RunContext
 from pydantic_ai.toolsets import FunctionToolset
 
@@ -118,10 +117,11 @@ def get_url_content(ctx: RunContext[Deps], url: str) -> bytes:
     :param url: The URL to fetch content from.
     :return: The content of the URL.
     """
-    response = httpx.get(url)
-    response.raise_for_status()
+    with ctx.deps.http_client as httpx:
+        response = httpx.get(url)
+        response.raise_for_status()
 
-    return response.content
+        return response.content
 
 
 fetch_toolset = FunctionToolset(

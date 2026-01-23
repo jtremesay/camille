@@ -23,7 +23,8 @@ class Command(BaseCommand):
             default=settings.CAMILLE_USER_NAME,
         )
         parser.add_argument(
-            "-n--new-thread",
+            "-n",
+            "--new-thread",
             action="store_true",
             help="Create a new LLM thread for the interaction",
         )
@@ -59,6 +60,7 @@ class Command(BaseCommand):
         thread = None
         if options.get("new_thread"):
             thread = LLMThread.objects.create()
+            self.stdout.write(f"Created new thread ID {thread.id}.")
         elif (thread_id := options.get("thread_id")) is not None:
             thread = LLMThread.objects.filter(
                 id=thread_id, interaction__initiator=profile
