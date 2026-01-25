@@ -215,7 +215,7 @@ class MattermostAgent(Mattermost):
                     )
 
         except Exception as e:
-            logfire.error(f"Error processing posted event: {e}")
+            logfire.exception(f"Error processing posted event: {e}")
             await self.post_message(
                 channel_id=channel_id,
                 root_id=root_id,
