@@ -8,4 +8,4 @@ def personality_prompt(ctx: RunContext[Dependency]) -> str:
     if prompt is None:
         return ""
 
-    return prompt.format(agent_name=ctx.deps.me.first_name)
+    return prompt.prompt_template.format(agent_name=ctx.deps.me.first_name)

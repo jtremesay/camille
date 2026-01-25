@@ -25,7 +25,7 @@ async def set_channel_notes(ctx: RunContext[Dependency], notes: str):
 
 
 async def get_notes_for_user(ctx: RunContext[Dependency], user_id: str) -> str:
-    """Get your notes about an user.
+    """Get your notes about an user in the thread.
 
     Args:
         user_id: The ID of the user.
@@ -40,7 +40,7 @@ async def get_notes_for_user(ctx: RunContext[Dependency], user_id: str) -> str:
 async def set_notes_for_user(
     ctx: RunContext[Dependency], user_id: str, notes: str
 ) -> None:
-    """Set your notes about an user.
+    """Set your notes about an user in the thread.
 
     Args:
         user_id: The ID of the user.

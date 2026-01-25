@@ -55,10 +55,35 @@ class MMUser(models.Model):
     model = models.CharField(
         max_length=255, blank=True
     )  # LLM model associated with the user
-    prompt = models.TextField(blank=True)
+    prompt = models.ForeignKey(
+        "PersonalityPrompt",
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name="users_with_new_prompt",
+        related_query_name="user_with_new_prompt",
+    )
 
     def __str__(self):
         return self.username or "Unnamed User"
+
+
+class PersonalityPrompt(models.Model):
+    class Meta:
+        unique_together = ("user", "name")
+
+    user = models.ForeignKey(
+        MMUser,
+        on_delete=models.CASCADE,
+        related_name="personality_prompts",
+        related_query_name="personality_prompt",
+    )
+    name = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    prompt_template = models.TextField()
+
+    def __str__(self):
+        return f"{self.user.username} - {self.name}"
 
 
 class InferenceCredentials(models.Model):

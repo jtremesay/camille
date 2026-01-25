@@ -5,7 +5,7 @@ from pydantic_ai.toolsets import FunctionToolset
 from camille.ai.deps import Dependency
 
 
-async def get_model_for_current_user(ctx: RunContext[Dependency]):
+async def get_model_for_current_user(ctx: RunContext[Dependency]) -> str:
     """Get the LLM model for the current user.
 
     Returns:
@@ -41,35 +41,105 @@ model_toolset = FunctionToolset(
 )
 
 
-async def get_prompt_for_current_user(ctx: RunContext[Dependency]) -> str:
-    """Get the personality prompt for the current user.
+async def list_prompts_of_current_user(
+    ctx: RunContext[Dependency],
+) -> list[tuple[str, str, str]]:
+    """List available personality prompts for the current user.
 
     Returns:
-        The personality prompt for the user.
-    """
-    return ctx.deps.sender.prompt
-
-
-async def set_prompt_for_current_user(ctx: RunContext[Dependency], prompt: str):
-    """Set the personality prompt for the current user.
-
-    Supported placeholders:
-
-    - `{agent_name}`: The name of the AI agent.
-
-    Args:
-        prompt: The personality prompt to set for the current user.
+        A list of available personality prompts for the user.
     """
     user = ctx.deps.sender
-    user.prompt = prompt
+    return [
+        (pp.name, pp.description, pp.prompt_template)
+        async for pp in user.personality_prompts.order_by("name")
+    ]
 
+
+async def get_prompt_of_current_user(
+    ctx: RunContext[Dependency], prompt_name: str
+) -> tuple[str, str, str]:
+    """Get a personality prompt template for the current user.
+
+    Args:
+        prompt_name: The name of the personality prompt.
+
+    Returns:
+        A tuple of (name, description, prompt_template) for the personality prompt.
+    """
+    user = ctx.deps.sender
+    pp = await user.personality_prompts.aget(name=prompt_name)
+    return pp.name, pp.description, pp.prompt_template
+
+
+async def create_prompt_for_current_user(
+    ctx: RunContext[Dependency], name: str, description: str, prompt_template: str
+):
+    """Create a new personality prompt for the current user.
+
+    Update any existing prompt with the same name.
+
+    Args:
+        name: The name of the personality prompt.
+        description: The description of the personality prompt.
+        prompt_template: The prompt template.
+    """
+    user = ctx.deps.sender
+    await user.personality_prompts.aupdate_or_create(
+        name=name,
+        defaults={
+            "description": description,
+            "prompt_template": prompt_template,
+        },
+    )
+
+
+async def del_prompt_for_current_user(ctx: RunContext[Dependency], name: str):
+    """Delete a personality prompt for the current user.
+
+    Args:
+        name: The name of the personality prompt to delete.
+    """
+    user = ctx.deps.sender
+    await user.personality_prompts.filter(name=name).adelete()
+
+
+async def use_prompt_for_current_user(ctx: RunContext[Dependency], name: str):
+    """Set the current personality prompt for the current user.
+
+    Args:
+        name: The name of the personality prompt to use.
+    """
+    user = ctx.deps.sender
+    pp = await user.personality_prompts.aget(name=name)
+    user.prompt = pp
     await user.asave()
+
+
+async def get_current_prompt_for_current_user(
+    ctx: RunContext[Dependency],
+) -> tuple[str, str, str] | None:
+    """Get the current personality prompt for the current user.
+
+    Returns:
+        A tuple of (name, description, prompt_template) for the current personality prompt,
+        or None if no prompt is set.
+    """
+    user = ctx.deps.sender
+    pp = user.prompt
+    if pp is None:
+        return None
+    return pp.name, pp.description, pp.prompt_template
 
 
 prompt_toolset = FunctionToolset(
     [
-        get_prompt_for_current_user,
-        set_prompt_for_current_user,
+        list_prompts_of_current_user,
+        get_prompt_of_current_user,
+        create_prompt_for_current_user,
+        del_prompt_for_current_user,
+        use_prompt_for_current_user,
+        get_current_prompt_for_current_user,
     ],
     id="camille.user.prompt",
 )
