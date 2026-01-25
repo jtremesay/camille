@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from datetime import datetime, timezone
 from json import dumps as json_dumps
 from json import loads as json_loads
@@ -6,27 +5,13 @@ from typing import Optional
 
 import logfire
 from channels.db import aclose_old_connections
-from django.conf import settings
-from pydantic_ai import Agent, BinaryContent, RunContext
-from pydantic_ai.common_tools.tavily import tavily_search_tool
+from pydantic_ai import BinaryContent
 
+from camille.mattermost.agents import create_agent_for_user
 from camille.mattermost.client import Mattermost
 from camille.mattermost.commands import handle_command
-from camille.mattermost.models import create_model_for_user
-from camille.mattermost.tools import mm_system_prompt, toolset
+from camille.mattermost.deps import Dependency
 from camille.models import MMChannel, MMMembership, MMTeam, MMThread, MMUser
-
-
-@dataclass
-class Dependency:
-    me: MMUser
-    sender: MMUser
-    channel: MMChannel
-    users: dict[str, MMUser]
-
-
-def personality_prompt(ctx: RunContext[Dependency]) -> str:
-    return ctx.deps.sender.prompt.format(agent_name=ctx.deps.me.first_name)
 
 
 class MattermostAgent(Mattermost):
@@ -190,23 +175,10 @@ class MattermostAgent(Mattermost):
                     identifier=identifier,
                 )
                 user_input.extend([f"This is file `{identifier}`: ", binary_content])
-
-            tools = []
-            if settings.TAVILY_API_KEY:
-                tools.append(
-                    tavily_search_tool(
-                        api_key=settings.TAVILY_API_KEY,
-                    )
-                )
-
-            agent = Agent(
-                model=await create_model_for_user(mm_user),
-                deps_type=Dependency,
-                toolsets=[toolset],
-                tools=tools,
+            agent = await create_agent_for_user(
+                user=mm_user,
+                deps_class=Dependency,
             )
-            agent.system_prompt(dynamic=True)(personality_prompt)
-            agent.system_prompt(dynamic=True)(mm_system_prompt)
 
             users = {
                 user.id: user
