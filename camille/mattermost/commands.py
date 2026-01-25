@@ -23,30 +23,30 @@ async def cmd_ping(
     )
 
 
-async def cmd_set_prompt(
-    client: Mattermost, args: Namespace, channel_id: str, root_id: str, user_id: str
-):
-    prompt = " ".join(args.prompt)
-    mm_user = await MMUser.objects.aget(id=user_id)
-    mm_user.prompt = prompt
-    await mm_user.asave()
-    await client.post_message(
-        channel_id,
-        root_id,
-        "Custom prompt set successfully.",
-    )
+# async def cmd_set_prompt(
+#     client: Mattermost, args: Namespace, channel_id: str, root_id: str, user_id: str
+# ):
+#     prompt = " ".join(args.prompt)
+#     mm_user = await MMUser.objects.aget(id=user_id)
+#     mm_user.prompt = prompt
+#     await mm_user.asave()
+#     await client.post_message(
+#         channel_id,
+#         root_id,
+#         "Custom prompt set successfully.",
+#     )
 
 
-async def cmd_get_prompt(
-    client: Mattermost, args: Namespace, channel_id: str, root_id: str, user_id: str
-):
-    mm_user = await MMUser.objects.aget(id=user_id)
-    prompt = mm_user.prompt or "not set"
-    await client.post_message(
-        channel_id,
-        root_id,
-        f"The current custom prompt is:\n{prompt}",
-    )
+# async def cmd_get_prompt(
+#     client: Mattermost, args: Namespace, channel_id: str, root_id: str, user_id: str
+# ):
+#     mm_user = await MMUser.objects.aget(id=user_id)
+#     prompt = mm_user.prompt or "not set"
+#     await client.post_message(
+#         channel_id,
+#         root_id,
+#         f"The current custom prompt is:\n{prompt}",
+#     )
 
 
 async def cmd_get_model(
@@ -136,21 +136,42 @@ async def cmd_tldr(
         channel_id,
         root_id,
         """\
-TL;DR:
+# TL;DR: Google free tier
+
+Create an API key [here](https://aistudio.google.com/api-keys).
+
+Send these commands to Camille in MP (each command is a separate message):
 
 ```
+!/set_google_gla_creds <YOUR_GOOGLE_API_KEY>
 !/set_model google-gla:gemini-flash-latest
-!/set_google_gla_creds YOUR_GOOGLE_API_KEY
 ```
+
+For more information, run the command:
+
+```
+!/more_info 
+```
+""",
+    )
+
+
+async def cmd_more_info(
+    client: Mattermost, args: Namespace, channel_id: str, root_id: str, user_id: str
+):
+    await client.post_message(
+        channel_id,
+        root_id,
+        """\
 
 **You must set a model and probably credentials before using Camille.**
 
 Use the following commands to set them:
 
-- `!/set_model <model_name>`: Set the AI model to use.
-- `!/set_aws_creds <bearer_token> <region>`: Set AWS Bedrock credentials.
 - `!/set_google_gla_creds <api_key>`: Set Google Generative Language API credentials.
 - `!/set_mistral_ai_creds <api_key>`: Set Mistral AI credentials.
+- `!/set_aws_creds <bearer_token> <region>`: Set AWS Bedrock credentials.
+- `!/set_model <model_name>`: Set the AI model to use.
 
 See [here](https://ai.pydantic.dev/models/overview/) for available models and more information on setting up credentials.
 
@@ -184,18 +205,18 @@ async def handle_command(
     ping_parser = subparsers.add_parser("ping", help="Check if the bot is responsive")
     ping_parser.set_defaults(func=cmd_ping)
 
-    get_prompt_parser = subparsers.add_parser(
-        "get_prompt", help="Get the current custom prompt for the user"
-    )
-    get_prompt_parser.set_defaults(func=cmd_get_prompt)
+    # get_prompt_parser = subparsers.add_parser(
+    #     "get_prompt", help="Get the current custom prompt for the user"
+    # )
+    # get_prompt_parser.set_defaults(func=cmd_get_prompt)
 
-    set_prompt_parser = subparsers.add_parser(
-        "set_prompt", help="Set a custom prompt for the user"
-    )
-    set_prompt_parser.add_argument(
-        "prompt", type=str, nargs="*", help="The custom prompt to set"
-    )
-    set_prompt_parser.set_defaults(func=cmd_set_prompt)
+    # set_prompt_parser = subparsers.add_parser(
+    #     "set_prompt", help="Set a custom prompt for the user"
+    # )
+    # set_prompt_parser.add_argument(
+    #     "prompt", type=str, nargs="*", help="The custom prompt to set"
+    # )
+    # set_prompt_parser.set_defaults(func=cmd_set_prompt)
 
     get_model_parser = subparsers.add_parser(
         "get_model", help="Get the current AI model used by the agent"
@@ -235,6 +256,11 @@ async def handle_command(
 
     tldr_parser = subparsers.add_parser("tldr", help="tl;dr")
     tldr_parser.set_defaults(func=cmd_tldr)
+
+    more_info_parser = subparsers.add_parser(
+        "more_info", help="Get more information about setting up models and credentials"
+    )
+    more_info_parser.set_defaults(func=cmd_more_info)
 
     try:
         parsed_args = parser.parse_args(args.split())
