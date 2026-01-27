@@ -8,5 +8,5 @@ async def personality_prompt(ctx: RunContext[Dependency]) -> str:
     if prompt_id is None:
         return ""
 
-    prompt = await PersonalityPrompt.objects.get(id=prompt_id)
+    prompt = await PersonalityPrompt.objects.aget(id=prompt_id)
     return prompt.prompt_template.format(agent_name=ctx.deps.me.first_name)
