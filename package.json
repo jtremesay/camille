@@ -1,0 +1,19 @@
+{
+  "name": "camille_v6",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build:bootstrap": "mkdir -p camille/static/third-party/bootstrap && cp -r node_modules/bootstrap/dist/css/* camille/static/third-party/bootstrap/ && cp -r node_modules/bootstrap/dist/js/* camille/static/third-party/bootstrap/"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@popperjs/core": "^2.11.8",
+    "bootstrap": "^5.3.8"
+  }
+}

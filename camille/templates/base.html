@@ -1,45 +1,67 @@
 <!DOCTYPE html>
-<html lang="en">
+{% load static %}
+<html lang="en" data-bs-theme="light">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Camille - AI Assistant{% endblock %}</title>
-    <link rel="stylesheet" href="{% load static %}{% static 'camille/style.css' %}">
+    <link href="{% static 'third-party/bootstrap/bootstrap.min.css' %}" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'camille/style.css' %}">
 </head>
 
-<body>
-    <header>
+<body class="d-flex flex-column min-vh-100">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container">
-            <nav>
-                <div class="nav-brand">
-                    <h1>Camille</h1>
-                </div>
-                <div class="nav-links">
+            <a class="navbar-brand fw-bold"
+                href="{% if user.is_authenticated %}{% url 'camille:home' %}{% else %}{% url 'camille:landing' %}{% endif %}">
+                🤖 Camille
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
                     {% if user.is_authenticated %}
-                    <span class="user-info">{{ user.username }}</span>
-                    <a href="{% url 'camille:home' %}">Home</a>
-                    <a href="{% url 'camille:credentials_list' %}">Credentials</a>
-                    <a href="{% url 'password_change' %}">Change Password</a>
-                    <a href="{% url 'camille:logout_confirm' %}">Logout</a>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'camille:home' %}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'camille:credentials_list' %}">Credentials</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            {{ user.username }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                            <li><a class="dropdown-item" href="{% url 'password_change' %}">Change Password</a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><a class="dropdown-item" href="{% url 'camille:logout_confirm' %}">Logout</a></li>
+                        </ul>
+                    </li>
                     {% else %}
-                    <a href="{% url 'login' %}">Login</a>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'login' %}">Login</a>
+                    </li>
                     {% endif %}
-                </div>
-            </nav>
-        </div>
-    </header>
-
-    <main>
-        <div class="container">
-            {% if messages %}
-            <div class="messages">
-                {% for message in messages %}
-                <div class="message message-{{ message.tags }}">
-                    {{ message }}
-                </div>
-                {% endfor %}
+                </ul>
             </div>
+        </div>
+    </nav>
+
+    <main class="flex-grow-1">
+        <div class="container my-4">
+            {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
             {% endif %}
 
             {% block content %}
@@ -47,11 +69,13 @@
         </div>
     </main>
 
-    <footer>
-        <div class="container">
-            <p>&copy; 2026 Camille - AI Assistant for Mattermost</p>
+    <footer class="bg-light py-3 mt-auto">
+        <div class="container text-center text-muted">
+            <small>&copy; 2026 Camille - AI Assistant for Mattermost</small>
         </div>
     </footer>
+
+    <script src="{% static 'third-party/bootstrap/bootstrap.bundle.min.js' %}"></script>
 </body>
 
 </html>

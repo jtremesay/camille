@@ -3,33 +3,46 @@
 {% block title %}Welcome - Camille{% endblock %}
 
 {% block content %}
-<div class="landing-container">
-    <div class="hero">
-        <h1>Welcome to Camille</h1>
-        <p class="subtitle">AI Assistant for Mattermost</p>
-        <p class="description">
+<div class="text-center py-5">
+    <div class="mb-5">
+        <h1 class="display-3 fw-bold mb-3">Welcome to Camille</h1>
+        <p class="lead text-muted mb-2">AI Assistant for Mattermost</p>
+        <p class="fs-5 mb-4">
             Camille is a powerful AI assistant that integrates with Mattermost to provide
             intelligent conversational capabilities using multiple LLM providers.
         </p>
-        <div class="cta-buttons">
-            <a href="{% url 'login' %}" class="btn btn-primary btn-large">Login</a>
-        </div>
+        <a href="{% url 'login' %}" class="btn btn-primary btn-lg">Get Started</a>
     </div>
 
-    <div class="features">
-        <h2>Features</h2>
-        <div class="feature-grid">
-            <div class="feature-item">
-                <h3>🤖 Multiple AI Providers</h3>
-                <p>Support for Google Gemini, Mistral, and AWS Bedrock Claude</p>
+    <div class="mt-5">
+        <h2 class="mb-4">Features</h2>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <div class="display-4 mb-3">🤖</div>
+                        <h3 class="h5 card-title">Multiple AI Providers</h3>
+                        <p class="card-text text-muted">Support for Google Gemini, Mistral, and AWS Bedrock Claude</p>
+                    </div>
+                </div>
             </div>
-            <div class="feature-item">
-                <h3>🔐 Secure Credentials</h3>
-                <p>Manage your API keys securely for each AI provider</p>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <div class="display-4 mb-3">🔐</div>
+                        <h3 class="h5 card-title">Secure Credentials</h3>
+                        <p class="card-text text-muted">Manage your API keys securely for each AI provider</p>
+                    </div>
+                </div>
             </div>
-            <div class="feature-item">
-                <h3>💬 Mattermost Integration</h3>
-                <p>Seamless integration with your Mattermost workspace</p>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <div class="display-4 mb-3">💬</div>
+                        <h3 class="h5 card-title">Mattermost Integration</h3>
+                        <p class="card-text text-muted">Seamless integration with your Mattermost workspace</p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
