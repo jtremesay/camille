@@ -84,3 +84,14 @@ class UserCredentials(models.Model):
 
     def __str__(self):
         return f"{self.user_profile.user.username} - {self.credentials.name}"
+
+
+class MattermostServer(models.Model):
+    """A Mattermost server"""
+
+    name = models.CharField(max_length=255)
+    base_url = models.URLField()
+    api_token = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
