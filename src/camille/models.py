@@ -95,3 +95,82 @@ class MattermostServer(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class MattermostTeam(models.Model):
+    """A Mattermost team"""
+
+    server = models.ForeignKey(
+        MattermostServer,
+        on_delete=models.CASCADE,
+        related_name="teams",
+        related_query_name="team",
+    )
+    team_id = models.CharField(max_length=255)
+    name = models.CharField(max_length=255)
+    display_name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+
+
+class MattermostChannel(models.Model):
+    """A Mattermost channel"""
+
+    team = models.ForeignKey(
+        MattermostTeam,
+        on_delete=models.CASCADE,
+        related_name="channels",
+        related_query_name="channel",
+    )
+    channel_id = models.CharField(max_length=255)
+    kind = models.CharField(max_length=50)
+    name = models.CharField(max_length=255)
+    display_name = models.CharField(max_length=255)
+    header = models.TextField(blank=True, null=True)
+    purpose = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return self.name
+
+
+class MattermostUser(models.Model):
+    """A Mattermost user associated"""
+
+    server = models.ForeignKey(
+        MattermostServer,
+        on_delete=models.CASCADE,
+        related_name="users",
+        related_query_name="user",
+    )
+    user_id = models.CharField(max_length=255)
+    username = models.CharField(max_length=255)
+    display_name = models.CharField(max_length=255)
+    first_name = models.CharField(max_length=255, blank=True, null=True)
+    last_name = models.CharField(max_length=255, blank=True, null=True)
+
+    def __str__(self):
+        return self.username
+
+
+class MattermostChannelMember(models.Model):
+    """A member of a Mattermost channel"""
+
+    channel = models.ForeignKey(
+        MattermostChannel,
+        on_delete=models.CASCADE,
+        related_name="members",
+        related_query_name="member",
+    )
+    user = models.ForeignKey(
+        MattermostUser,
+        on_delete=models.CASCADE,
+        related_name="channel_memberships",
+        related_query_name="channel_membership",
+    )
+
+    class Meta:
+        unique_together = ("channel", "user")
+
+    def __str__(self):
+        return f"{self.user.username} in {self.channel.name}"

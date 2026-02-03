@@ -62,7 +62,7 @@ class UserCredentialsAdmin(admin.ModelAdmin):
 
 @admin.register(models.MattermostServer)
 class MattermostServerAdmin(admin.ModelAdmin):
-    list_display = ("name", "base_url", "api_token")
+    list_display = ("name", "base_url", "api_token_preview")
     search_fields = ("name", "base_url")
 
     def api_token_preview(self, obj):
@@ -72,3 +72,35 @@ class MattermostServerAdmin(admin.ModelAdmin):
                 f"{obj.api_token[:8]}..." if len(obj.api_token) > 8 else obj.api_token
             )
         return ""
+
+
+@admin.register(models.MattermostTeam)
+class MattermostTeamAdmin(admin.ModelAdmin):
+    list_display = ("name", "display_name", "server")
+    search_fields = ("name", "display_name", "team_id")
+    list_filter = ("server",)
+    raw_id_fields = ("server",)
+
+
+@admin.register(models.MattermostChannel)
+class MattermostChannelAdmin(admin.ModelAdmin):
+    list_display = ("name", "display_name", "kind", "team")
+    search_fields = ("name", "display_name", "channel_id")
+    list_filter = ("kind", "team")
+    raw_id_fields = ("team",)
+
+
+@admin.register(models.MattermostUser)
+class MattermostUserAdmin(admin.ModelAdmin):
+    list_display = ("username", "display_name", "user_id", "server")
+    search_fields = ("username", "display_name", "user_id")
+    list_filter = ("server",)
+    raw_id_fields = ("server",)
+
+
+@admin.register(models.MattermostChannelMember)
+class MattermostChannelMemberAdmin(admin.ModelAdmin):
+    list_display = ("user", "channel")
+    search_fields = ("user__username", "channel__name")
+    list_filter = ("channel__team__server",)
+    raw_id_fields = ("channel", "user")
