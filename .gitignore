@@ -18,4 +18,4 @@ wheels/
 
 # Node modules
 node_modules/
-camille/static/third-party/
+src/camille/static/third-party/

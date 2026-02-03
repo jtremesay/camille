@@ -4,7 +4,7 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "build:bootstrap": "mkdir -p camille/static/third-party/bootstrap && cp -r node_modules/bootstrap/dist/css/* camille/static/third-party/bootstrap/ && cp -r node_modules/bootstrap/dist/js/* camille/static/third-party/bootstrap/"
+    "build:bootstrap": "mkdir -p src/camille/static/third-party/bootstrap && cp -r node_modules/bootstrap/dist/css/* src/camille/static/third-party/bootstrap/ && cp -r node_modules/bootstrap/dist/js/* src/camille/static/third-party/bootstrap/"
   },
   "devDependencies": {
     "@types/bun": "latest"
