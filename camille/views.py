@@ -1,4 +1,5 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.exceptions import PermissionDenied
 from django.urls import reverse_lazy
 from django.views.generic import (
     CreateView,
@@ -12,9 +13,19 @@ from .models import (
     AwsBedrockCredentials,
     BaseCredentials,
     GoogleGlaCredentials,
+    MattermostServer,
     MistralCredentials,
     UserCredentials,
 )
+
+
+class StaffRequiredMixin:
+    """Mixin to restrict access to staff members only."""
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_staff:
+            raise PermissionDenied
+        return super().dispatch(request, *args, **kwargs)
 
 
 class LandingPageView(TemplateView):
@@ -267,3 +278,50 @@ class MistralCredentialsDeleteView(LoginRequiredMixin, DeleteView):
         return MistralCredentials.objects.filter(
             user_credential__user_profile=self.request.user.profile
         )
+
+
+# Mattermost Server Views
+
+
+class MattermostServerListView(LoginRequiredMixin, ListView):
+    """List all Mattermost servers. All users can view, staff can edit/delete."""
+
+    model = MattermostServer
+    template_name = "camille/mattermost_list.html"
+    context_object_name = "servers"
+
+
+class MattermostServerCreateView(LoginRequiredMixin, StaffRequiredMixin, CreateView):
+    """Create new Mattermost server. Staff only."""
+
+    model = MattermostServer
+    template_name = "camille/mattermost_form.html"
+    fields = ["name", "base_url", "api_token"]
+    success_url = reverse_lazy("camille:mattermost_list")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["action"] = "Add"
+        return context
+
+
+class MattermostServerUpdateView(LoginRequiredMixin, StaffRequiredMixin, UpdateView):
+    """Update existing Mattermost server. Staff only."""
+
+    model = MattermostServer
+    template_name = "camille/mattermost_form.html"
+    fields = ["name", "base_url", "api_token"]
+    success_url = reverse_lazy("camille:mattermost_list")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["action"] = "Edit"
+        return context
+
+
+class MattermostServerDeleteView(LoginRequiredMixin, StaffRequiredMixin, DeleteView):
+    """Delete Mattermost server. Staff only."""
+
+    model = MattermostServer
+    template_name = "camille/mattermost_confirm_delete.html"
+    success_url = reverse_lazy("camille:mattermost_list")

@@ -61,4 +61,25 @@ urlpatterns = [
         views.MistralCredentialsDeleteView.as_view(),
         name="mistral_credentials_delete",
     ),
+    # Mattermost Servers
+    path(
+        "mattermost/",
+        views.MattermostServerListView.as_view(),
+        name="mattermost_list",
+    ),
+    path(
+        "mattermost/add/",
+        views.MattermostServerCreateView.as_view(),
+        name="mattermost_create",
+    ),
+    path(
+        "mattermost/<int:pk>/edit/",
+        views.MattermostServerUpdateView.as_view(),
+        name="mattermost_update",
+    ),
+    path(
+        "mattermost/<int:pk>/delete/",
+        views.MattermostServerDeleteView.as_view(),
+        name="mattermost_delete",
+    ),
 ]

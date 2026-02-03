@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Mattermost Servers - Camille{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Mattermost Servers</h2>
+    {% if user.is_staff %}
+    <a href="{% url 'camille:mattermost_create' %}" class="btn btn-primary">Add Server</a>
+    {% endif %}
+</div>
+
+{% if servers %}
+<div class="table-responsive">
+    <table class="table table-hover">
+        <thead class="table-light">
+            <tr>
+                <th>Name</th>
+                <th>URL</th>
+                {% if user.is_staff %}
+                <th>API Key</th>
+                <th class="text-end">Actions</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for server in servers %}
+            <tr>
+                <td>
+                    <strong>{{ server.name }}</strong>
+                </td>
+                <td>
+                    <a href="{{ server.base_url }}" target="_blank" rel="noopener noreferrer">{{ server.base_url }}</a>
+                </td>
+                {% if user.is_staff %}
+                <td>
+                    <code>{{ server.api_token|slice:":4" }}********</code>
+                </td>
+                <td class="text-end">
+                    <div class="btn-group btn-group-sm" role="group">
+                        <a href="{% url 'camille:mattermost_update' server.pk %}"
+                            class="btn btn-outline-secondary">Edit</a>
+                        <a href="{% url 'camille:mattermost_delete' server.pk %}"
+                            class="btn btn-outline-danger">Delete</a>
+                    </div>
+                </td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="alert alert-info">
+    <strong>No Mattermost servers configured.</strong>
+    {% if user.is_staff %}
+    <a href="{% url 'camille:mattermost_create' %}" class="alert-link">Add one now</a>.
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}
