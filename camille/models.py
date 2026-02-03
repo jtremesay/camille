@@ -45,13 +45,25 @@ class AwsBedrockCredentials(ApiKeyCredentials):
 
     region_name = models.CharField(max_length=255)
 
+    class Meta:
+        verbose_name = "AWS Bedrock Credentials"
+        verbose_name_plural = "AWS Bedrock Credentials"
+
 
 class GoogleGlaCredentials(ApiKeyCredentials):
     """Credentials for Google Generative Language API"""
 
+    class Meta:
+        verbose_name = "Google GLA Credentials"
+        verbose_name_plural = "Google GLA Credentials"
+
 
 class MistralCredentials(ApiKeyCredentials):
     """Credentials for Mistral API"""
+
+    class Meta:
+        verbose_name = "Mistral Credentials"
+        verbose_name_plural = "Mistral Credentials"
 
 
 class UserCredentials(models.Model):
@@ -69,3 +81,6 @@ class UserCredentials(models.Model):
         related_name="user_credentials",
         related_query_name="user_credential",
     )
+
+    def __str__(self):
+        return f"{self.user_profile.user.username} - {self.credentials.name}"

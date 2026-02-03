@@ -16,26 +16,6 @@ class ProfileAdmin(admin.ModelAdmin):
     inlines = [UserCredentialsInline]
 
 
-@admin.register(models.BaseCredentials)
-class BaseCredentialsAdmin(admin.ModelAdmin):
-    list_display = ("name",)
-    search_fields = ("name",)
-
-
-@admin.register(models.ApiKeyCredentials)
-class ApiKeyCredentialsAdmin(admin.ModelAdmin):
-    list_display = ("name", "api_key_preview")
-    search_fields = ("name",)
-
-    def api_key_preview(self, obj):
-        """Show only the first few characters of the API key for security."""
-        if obj.api_key:
-            return f"{obj.api_key[:8]}..." if len(obj.api_key) > 8 else obj.api_key
-        return ""
-
-    api_key_preview.short_description = "API Key"
-
-
 @admin.register(models.AwsBedrockCredentials)
 class AwsBedrockCredentialsAdmin(admin.ModelAdmin):
     list_display = ("name", "region_name", "api_key_preview")
@@ -47,8 +27,6 @@ class AwsBedrockCredentialsAdmin(admin.ModelAdmin):
         if obj.api_key:
             return f"{obj.api_key[:8]}..." if len(obj.api_key) > 8 else obj.api_key
         return ""
-
-    api_key_preview.short_description = "API Key"
 
 
 @admin.register(models.GoogleGlaCredentials)
@@ -62,8 +40,6 @@ class GoogleGlaCredentialsAdmin(admin.ModelAdmin):
             return f"{obj.api_key[:8]}..." if len(obj.api_key) > 8 else obj.api_key
         return ""
 
-    api_key_preview.short_description = "API Key"
-
 
 @admin.register(models.MistralCredentials)
 class MistralCredentialsAdmin(admin.ModelAdmin):
@@ -75,8 +51,6 @@ class MistralCredentialsAdmin(admin.ModelAdmin):
         if obj.api_key:
             return f"{obj.api_key[:8]}..." if len(obj.api_key) > 8 else obj.api_key
         return ""
-
-    api_key_preview.short_description = "API Key"
 
 
 @admin.register(models.UserCredentials)
