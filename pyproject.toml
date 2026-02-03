@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "django>=6.0.2",
+    "django-tasks>=0.11.0",
     "httpx>=0.28.1",
     "httpx-ws>=0.8.2",
     "pydantic>=2.12.5",
@@ -14,3 +15,8 @@ dependencies = [
 [build-system]
 requires = ["uv_build>=0.9.29,<0.10.0"]
 build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "ipython>=9.10.0",
+]
