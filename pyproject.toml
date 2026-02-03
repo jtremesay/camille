@@ -5,6 +5,7 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "channels-redis>=4.3.0",
     "channels[daphne]>=4.3.2",
     "django>=6.0.2",
     "django-tasks>=0.11.0",
@@ -19,5 +20,6 @@ build-backend = "uv_build"
 
 [dependency-groups]
 dev = [
+    "channels[types]>=4.3.2",
     "ipython>=9.10.0",
 ]
