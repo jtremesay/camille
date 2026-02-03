@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Camille{% endblock %}
+
+{% block content %}
+<div class="home-container">
+    <h2>Welcome, {{ user.username }}!</h2>
+
+    <div class="dashboard-cards">
+        <div class="dashboard-card">
+            <h3>🔑 Credentials</h3>
+            <p>Manage your AI provider credentials (AWS, Google, Mistral)</p>
+            <a href="{% url 'camille:credentials_list' %}" class="btn btn-primary">Manage Credentials</a>
+        </div>
+
+        <div class="dashboard-card">
+            <h3>🔒 Security</h3>
+            <p>Change your password and manage account security</p>
+            <a href="{% url 'password_change' %}" class="btn btn-secondary">Change Password</a>
+        </div>
+    </div>
+
+    <div class="info-section">
+        <h3>Getting Started</h3>
+        <p>To use Camille with Mattermost, you'll need to:</p>
+        <ol>
+            <li>Add credentials for at least one AI provider (AWS, Google, or Mistral)</li>
+            <li>Configure your Mattermost workspace to connect to Camille</li>
+            <li>Start chatting with the AI assistant in Mattermost!</li>
+        </ol>
+    </div>
+</div>
+{% endblock %}

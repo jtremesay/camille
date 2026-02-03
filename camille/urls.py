@@ -5,6 +5,12 @@ from . import views
 app_name = "camille"
 
 urlpatterns = [
+    # Landing page for unauthenticated users
+    path("", views.LandingPageView.as_view(), name="landing"),
+    # Home page for authenticated users
+    path("home/", views.HomeView.as_view(), name="home"),
+    # Logout confirmation
+    path("logout/", views.LogoutConfirmView.as_view(), name="logout_confirm"),
     # Dashboard - list all credentials
     path("credentials/", views.CredentialsListView.as_view(), name="credentials_list"),
     # AWS Bedrock Credentials

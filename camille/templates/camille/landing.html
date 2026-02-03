@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome - Camille{% endblock %}
+
+{% block content %}
+<div class="landing-container">
+    <div class="hero">
+        <h1>Welcome to Camille</h1>
+        <p class="subtitle">AI Assistant for Mattermost</p>
+        <p class="description">
+            Camille is a powerful AI assistant that integrates with Mattermost to provide
+            intelligent conversational capabilities using multiple LLM providers.
+        </p>
+        <div class="cta-buttons">
+            <a href="{% url 'login' %}" class="btn btn-primary btn-large">Login</a>
+        </div>
+    </div>
+
+    <div class="features">
+        <h2>Features</h2>
+        <div class="feature-grid">
+            <div class="feature-item">
+                <h3>🤖 Multiple AI Providers</h3>
+                <p>Support for Google Gemini, Mistral, and AWS Bedrock Claude</p>
+            </div>
+            <div class="feature-item">
+                <h3>🔐 Secure Credentials</h3>
+                <p>Manage your API keys securely for each AI provider</p>
+            </div>
+            <div class="feature-item">
+                <h3>💬 Mattermost Integration</h3>
+                <p>Seamless integration with your Mattermost workspace</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

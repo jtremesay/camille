@@ -1,6 +1,12 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, DeleteView, ListView, UpdateView
+from django.views.generic import (
+    CreateView,
+    DeleteView,
+    ListView,
+    TemplateView,
+    UpdateView,
+)
 
 from .models import (
     AwsBedrockCredentials,
@@ -9,6 +15,24 @@ from .models import (
     MistralCredentials,
     UserCredentials,
 )
+
+
+class LandingPageView(TemplateView):
+    """Landing page for unauthenticated users."""
+
+    template_name = "camille/landing.html"
+
+
+class HomeView(LoginRequiredMixin, TemplateView):
+    """Home page for authenticated users."""
+
+    template_name = "camille/home.html"
+
+
+class LogoutConfirmView(LoginRequiredMixin, TemplateView):
+    """Logout confirmation page."""
+
+    template_name = "registration/logout_confirm.html"
 
 
 class CredentialsListView(LoginRequiredMixin, ListView):
