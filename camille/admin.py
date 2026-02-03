@@ -58,3 +58,17 @@ class UserCredentialsAdmin(admin.ModelAdmin):
     list_display = ("user_profile", "credentials")
     search_fields = ("user_profile__user__username", "credentials__name")
     raw_id_fields = ("user_profile", "credentials")
+
+
+@admin.register(models.MattermostServer)
+class MattermostServerAdmin(admin.ModelAdmin):
+    list_display = ("name", "base_url", "api_token")
+    search_fields = ("name", "base_url")
+
+    def api_token_preview(self, obj):
+        """Show only the first few characters of the API token for security."""
+        if obj.api_token:
+            return (
+                f"{obj.api_token[:8]}..." if len(obj.api_token) > 8 else obj.api_token
+            )
+        return ""
