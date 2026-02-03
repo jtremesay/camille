@@ -2,153 +2,196 @@
 
 ## Project Overview
 
-Camille is an AI assistant for Mattermost, built with Django. It's an AI agent that integrates with Mattermost to provide intelligent conversational capabilities using various LLM providers (Google Gemini, Mistral, AWS Bedrock Claude).
+Camille v6 is an AI assistant built with Django and pydantic-ai. It provides intelligent conversational capabilities using multiple LLM providers (Google Gemini, Mistral, AWS Bedrock Claude). The project includes:
+- A web interface for secure credential management
+- AI agent framework with extensible tool-based architecture
+- Planned integrations with chat platforms (Mattermost, Slack, etc.)
+
+Currently in active development, with the web interface for credential management operational and chat platform integrations on the roadmap.
 
 ## Tech Stack
 
 - **Framework**: Django 6.x
 - **Python**: 3.13+
-- **Database**: PostgreSQL (via psycopg), SQLite for development
-- **Async Support**: Django Channels, Daphne (ASGI server)
-- **AI Framework**: pydantic-ai with support for:
-  - Google Gemini
-  - Mistral
-  - AWS Bedrock (Claude)
-  - Tavily search integration
-- **HTTP Client**: httpx with websocket support (httpx-ws)
-- **Monitoring**: Logfire
-- **Static Files**: WhiteNoise
+- **Database**: PostgreSQL (production), SQLite (development)
+- **AI Framework**: pydantic-ai (for agent capabilities)
+- **Frontend**: Bootstrap 5
+- **Package Managers**: uv (Python), bun (JavaScript)
+- **Static Files**: Django's built-in static file handling
+- **Planned Integrations**: Mattermost, Slack (WebSocket/API-based)
 
 ## Architecture
 
 ### Core Components
 
-1. **Django Application**: `camille/` - Main Django app
+1. **Django Application**: `camille/` - Main Django app with models, views, templates
 2. **Project Settings**: `proj/` - Django project configuration
-3. **AI Agent Layer**: Handles LLM interactions via pydantic-ai
-4. **Mattermost Integration**: WebSocket-based real-time communication
-5. **Database Models**: Users, channels, threads, messages, prompts
+3. **Database Models**: Profile, BaseCredentials, ApiKeyCredentials, AwsBedrockCredentials, GoogleGlaCredentials, MistralCredentials, UserCredentials
+4. **Web Interface**: Bootstrap 5-based UI for credential management
+5. **AI Agent Layer**: pydantic-ai based agent framework (planned/in development)
+6. **Chat Integrations**: Platform connectors for Mattermost, Slack, etc. (planned)
+7. **Authentication**: Django's built-in authentication with custom profile extension
 
 ### Key Patterns
 
-- **Async-first**: Use async Django ORM (`aget`, `aupdate_or_create`, `asave`, etc.)
-- **Event-driven**: WebSocket events from Mattermost drive agent interactions
-- **Tool-based architecture**: AI agents have access to toolsets for various capabilities
-- **User-configurable**: Each user can configure their own model and personality prompts
+- **Class-Based Views**: Using Django's generic views (ListView, CreateView, UpdateView, DeleteView)
+- **Model Inheritance**: Credentials use Django's multi-table inheritance
+- **User Profiles**: Auto-created profile extension using signals
+- **Authentication**: Login required for all credential management pages
+- **Tool-Based AI**: Extensible tool architecture for AI agent capabilities (planned)
+- **Multi-Platform**: Support for multiple chat platforms through unified interface (planned)
 
 ## Code Style & Conventions
 
 ### General Python
 - Use Python 3.13+ features
-- Type hints are required (use `typing` module)
-- Prefer async/await for I/O operations
+- Type hints are encouraged
 - Use f-strings for string formatting
 - Follow PEP 8 style guide
 
 ### Django Specific
-- Always use async ORM methods when in async context
-- Use `aclose_old_connections()` in long-running async tasks
+- Use class-based views for CRUD operations
 - Model fields should have explicit types
 - Use Django's built-in validators
+- Leverage Django's generic views (CreateView, UpdateView, DeleteView, ListView)
+- Use `LoginRequiredMixin` for views requiring authentication
+- Follow Django's URL naming conventions
 
-### AI/Agent Code
-- All agent functions should be properly typed with `RunContext[Dependency]`
-- Tools should have clear docstrings explaining their purpose and args
-- Use `FunctionToolset` for organizing related tools
-- Always handle agent errors gracefully with user-friendly messages
+### Templates
+- Use Bootstrap 5 components consistently
+- Extend from `base.html` template
+- Keep templates organized by feature in subdirectories
+- Use Django template inheritance and includes
 
-### Error Handling
-- Catch specific exceptions, not bare `except:`
-- Log errors with logfire: `logfire.exception()`
-- Return user-friendly error messages to Mattermost
-- Always wrap async database operations in try/except
+### Forms
+- Use Django's model forms for creating and editing credentials
+- Include proper form validation
+- Display user-friendly error messages
+
+### AI/Agent Code (When Implementing)
+- Use pydantic-ai for agent framework
+- Type hints required for agent functions and tools
+- Tools should have clear docstrings (used by AI for understanding)
+- Handle agent errors gracefully with user-friendly messages
+- Support multiple LLM providers through credential system
 
 ## Important Considerations
 
-### Mattermost Integration
-- Never respond to messages from the bot itself (check `sender_id == self.me.id`)
-- Ignore non-text posts (system messages, etc.)
-- Only respond in DMs or when mentioned in channels
-- Handle commands starting with `!/`
-- Support file attachments with proper MIME type handling
+### Credential Security
+- Never log or display API keys in plain text
+- Use environment variables for sensitive configuration
+- Ensure credentials are only accessible by their owner
+- Follow Django security best practices for credential storage
+
+### User Experience
+- Provide clear feedback on credential operations (create, update, delete)
+- Use Bootstrap alerts for success/error messages
+- Implement proper form validation with user-friendly error messages
+- Ensure responsive design works on mobile devices
 
 ### Database
-- Use `aupdate_or_create` for idempotent updates
-- Always check if user has a model configured before processing
-- Thread history management is critical for context
-- Close old connections in event handlers
+- Use Django's ORM for all database operations
+- Profile is auto-created via signals when a user is created
+- UserCredentials links a user's profile to their credentials
+- Support multiple credentials per user for the same provider
 
-### AI Agent Best Practices
-- System prompts should be dynamic and user-configurable
-- Support multiple LLM providers (Google, Mistral, Bedrock)
-- Use binary content for file attachments
-- Stream responses when using `agent.iter()`
-- Maintain conversation history per thread
+### AI Agent Integration (Planned)
+- Agent will use user-configured credentials to access LLM providers
+- Support for tool-based extensibility
+- User-configurable personalities and system prompts
+- Conversation history management per chat thread
 
-### Tool Development
-- Tools should be composable and focused on single responsibility
-- Use dependency injection via `RunContext[Dependency]`
-- Tools can access: current user, sender, channel, users in channel
-- Common toolsets: model management, prompt management, notes, URL fetching, web search (Tavily)
+### Chat Platform Integration (Planned)
+- Mattermost: WebSocket-based real-time communication (in roadmap)
+- Slack: API-based integration (in roadmap)
+- Other platforms: Extensible connector architecture
+- Handle platform-specific message formats and events
 
 ## Configuration
 
-The application expects these environment variables:
-- `GEMINI_API_KEY`: Google Gemini API key
-- `MATTERMOST_HOST`: Mattermost server URL
-- `MATTERMOST_API_TOKEN`: Bot API token
-- `TAVILY_API_KEY`: Optional, for web search capabilities
-- Database configuration via `dj-database-url`
+The application uses Django's standard configuration:
+- `SECRET_KEY`: Django secret key (should be changed in production)
+- `DEBUG`: Set to False in production
+- `ALLOWED_HOSTS`: Configure for production deployment
+- Database: SQLite for development, PostgreSQL recommended for production
+- Static files served via Django's built-in handling
+- Authentication URLs: LOGIN_URL="/login/", LOGIN_REDIRECT_URL="/home/", LOGOUT_REDIRECT_URL="/"
 
 ## File Organization
 
 ```
 camille/
-  ai/           # AI agent core (models, tools, prompts)
-  mattermost/   # Mattermost integration (client, agent, commands)
-  management/   # Django management commands
-  migrations/   # Database migrations
-  models.py     # Django models (User, Channel, Thread, etc.)
+  migrations/       # Database migrations
+  static/           # Static files (CSS, Bootstrap)
+    camille/        # App-specific static files
+    third-party/    # Third-party libraries (Bootstrap)
+  templates/        # Django templates
+    base.html       # Base template
+    camille/        # App-specific templates
+    registration/   # Authentication templates
+  models.py         # Django models (Profile, Credentials)
+  views.py          # Class-based views
+  urls.py           # URL routing
+  admin.py          # Django admin configuration
   
 proj/
-  settings.py   # Django settings
-  urls.py       # URL configuration
-  asgi.py       # ASGI application
+  settings.py       # Django settings
+  urls.py           # Root URL configuration
+  wsgi.py           # WSGI application
+  asgi.py           # ASGI application (for future use)
 ```
 
 ## Testing
-- Always test async functions with proper async context
-- Mock Mattermost API calls in tests
-- Test both successful and error paths
-- Verify database state after operations
+- Write tests for models, views, and forms
+- Test authentication and authorization
+- Verify credential CRUD operations
+- Test user profile auto-creation
 
 ## Common Tasks
 
-### Adding a New Tool
-1. Create async function in appropriate toolset file
-2. Add type hints including `RunContext[Dependency]`
-3. Write comprehensive docstring (used by AI)
-4. Add to toolset using `FunctionToolset`
-5. Register toolset in agent creation
+### Adding a New Credential Type
+1. Create new model inheriting from `ApiKeyCredentials` in [models.py](camille/models.py)
+2. Generate migration: `python manage.py makemigrations`
+3. Create views (CreateView, UpdateView, DeleteView) in [views.py](camille/views.py)
+4. Add URL patterns in [urls.py](camille/urls.py)
+5. Update templates for the new credential type
+6. Update credentials list view to include the new type
 
 ### Adding a New Model Field
-1. Update model in `models.py`
+1. Update model in [models.py](camille/models.py)
 2. Generate migration: `python manage.py makemigrations`
-3. Update any serialization/deserialization logic
-4. Update Mattermost sync if needed
+3. Run migration: `python manage.py migrate`
+4. Update forms and views as needed
+5. Update templates to display the new field
 
-### Debugging Agent Issues
-1. Check logfire output for errors
-2. Verify user has model configured
-3. Check message history is being maintained
-4. Ensure tools are registered correctly
-5. Validate dependency injection is working
+### Customizing the UI
+1. Edit Bootstrap 5 templates in `camille/templates/`
+2. Add custom CSS in `camille/static/camille/style.css`
+3. Use Bootstrap components for consistency
+4. Test responsive design on mobile devices
 
 ## Version History Context
 
 This is v6, a complete rewrite. Previous versions (v1-v5) exist but this is a fresh start with:
 - Modern Django (6.x)
 - Python 3.13+
-- pydantic-ai framework
-- Enhanced async support
-- Better tool architecture
+- pydantic-ai framework for AI agent capabilities
+- Bootstrap 5 web UI for credential management
+- Extensible architecture for multiple chat platforms
+- Better security practices
+- Focus on modular, scalable design
+
+## Current Development Status
+
+**Completed:**
+- ✅ Web interface for credential management
+- ✅ User authentication and profiles
+- ✅ Multi-provider credential storage (Google, Mistral, AWS Bedrock)
+- ✅ Bootstrap 5 responsive UI
+
+**In Progress/Planned:**
+- 🚧 Mattermost integration (in roadmap)
+- 🚧 Slack integration (in roadmap)
+- 🚧 pydantic-ai agent framework integration
+- 🚧 Tool-based extensibility system
+- 🚧 User-configurable AI personalities
