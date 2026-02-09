@@ -184,7 +184,7 @@ async def get_url_content(url: str) -> bytes:
     Returns:
         The content of the URL.
     """
-    async with AsyncClient() as client:
+    async with AsyncClient(headers={"User-Agent": "Camille/1.0"}) as client:
         r = await client.get(url)
         r.raise_for_status()
 
