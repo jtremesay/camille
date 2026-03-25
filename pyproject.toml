@@ -16,6 +16,7 @@ dependencies = [
     "pydantic-ai-slim[bedrock,google,mistral,tavily]>=0.7.0",
     "python-dotenv>=1.1.1",
     "whitenoise[brotli]>=6.9.0",
+    "mistralai<2.0.0",
 ]
 
 [dependency-groups]
