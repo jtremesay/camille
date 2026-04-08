@@ -167,7 +167,7 @@ async def set_notes_for_current_user(ctx: RunContext[Dependency], notes: str):
 
 note_toolset = FunctionToolset(
     [
-        get_notes_for_current_user,
+        # get_notes_for_current_user,
         set_notes_for_current_user,
     ],
     id="camille.user.notes",
