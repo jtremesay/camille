@@ -1,8 +1,8 @@
 from typing import Optional
 
-from django.conf import settings
 from pydantic_ai import Agent
-from pydantic_ai.common_tools.tavily import tavily_search_tool
+from pydantic_ai.common_tools.duckduckgo import duckduckgo_search_tool
+from pydantic_ai.common_tools.web_fetch import web_fetch_tool
 
 from camille.ai.deps import Dependency
 from camille.ai.models import create_model_for_user
@@ -19,21 +19,24 @@ async def create_agent_for_user(
 ) -> Agent[Dependency]:
     if tools is None:
         tools = []
+
+    tools.extend(
+        [
+            duckduckgo_search_tool(),
+            web_fetch_tool(),
+        ]
+    )
+
     if toolsets is None:
         toolsets = []
 
-    if settings.TAVILY_API_KEY:
-        tools.append(
-            tavily_search_tool(
-                api_key=settings.TAVILY_API_KEY,
-            )
-        )
+    toolsets.extend(ai_toolsets)
 
     agent = Agent(
         model=await create_model_for_user(user),
         deps_type=deps_class,
         tools=tools,
-        toolsets=toolsets + ai_toolsets,
+        toolsets=toolsets,
     )
     agent.system_prompt(dynamic=True)(personality_prompt)
 

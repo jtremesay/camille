@@ -1,4 +1,3 @@
-from httpx import AsyncClient
 from pydantic_ai import RunContext
 from pydantic_ai.toolsets import FunctionToolset
 
@@ -174,33 +173,8 @@ note_toolset = FunctionToolset(
     id="camille.user.notes",
 )
 
-
-async def get_url_content(url: str) -> bytes:
-    """Get the content of a URL.
-
-    Args:
-        url: The URL to get the content of.
-
-    Returns:
-        The content of the URL.
-    """
-    async with AsyncClient(headers={"User-Agent": "Camille/1.0"}) as client:
-        r = await client.get(url)
-        r.raise_for_status()
-
-        return r.content
-
-
-fetch_toolset = FunctionToolset(
-    [
-        get_url_content,
-    ],
-    id="camille.fetch",
-)
-
 toolsets = [
     model_toolset,
     prompt_toolset,
     note_toolset,
-    fetch_toolset,
 ]

@@ -8,16 +8,9 @@ Camille search for its config in the following order:
 - a default value if available
 - raise an error
 
-### GEMINI_API_KEY
+### MATTERMOST_BASE_URL
 
-The API key for Gogle Gemini API. Get a key [here](https://aistudio.google.com/apikey).
-
-Default: no default. You MUST provide a value
-
-
-### MATTERMOST_HOST
-
-The mattermost host.
+The mattermost base url.
 
 Default: no default. You MUST provide a value
 

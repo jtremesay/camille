@@ -65,7 +65,7 @@ class Mattermost:
 
     @classmethod
     def create(cls):
-        return cls(settings.MATTERMOST_HOST, settings.MATTERMOST_API_TOKEN)
+        return cls(settings.MATTERMOST_BASE_URL, settings.MATTERMOST_API_TOKEN)
 
     async def __aenter__(self):
         await self._http_client.__aenter__()
