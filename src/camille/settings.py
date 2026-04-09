@@ -86,7 +86,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = "proj.urls"
+ROOT_URLCONF = "camille.urls"
 
 TEMPLATES = [
     {
@@ -103,7 +103,7 @@ TEMPLATES = [
     },
 ]
 
-ASGI_APPLICATION = "proj.asgi.application"
+ASGI_APPLICATION = "camille.asgi.application"
 
 
 # Database

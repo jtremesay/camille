@@ -19,5 +19,12 @@ dependencies = [
     "mistralai>=2.0.0",
 ]
 
+[project.scripts]
+camille = "camille.manage:main"
+
 [dependency-groups]
 dev = ["ipython>=9.4.0"]
+
+[build-system]
+requires = ["uv_build>=0.11.6,<0.12"]
+build-backend = "uv_build"

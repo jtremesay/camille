@@ -14,20 +14,22 @@ RUN uv python install
 ENV UV_FROZEN=1
 ENV UV_NO_DEV=1
 COPY pyproject.toml uv.lock ./
-RUN uv sync
-ENV UV_NO_SYNC=1
+RUN uv sync --no-install-project
 
 # Copy source
-COPY entrypoint.sh manage.py ./
-COPY proj/ proj/
-COPY camille/ camille/
+COPY entrypoint.sh README.md ./
+COPY src/ src/
+
+# Install project
+RUN uv sync
+ENV UV_NO_SYNC=1
 
 # Collect static files
 RUN \
     SECRET_KEY="empty" \
-    uv run manage.py collectstatic --noinput
+    uv run camille collectstatic --noinput
 
 # Expose port and run
 ENTRYPOINT [ "/app/entrypoint.sh" ]
 EXPOSE 8000
-CMD ["daphne", "-p", "8000", "-b", "0.0.0.0", "proj.asgi:application"]
+CMD ["daphne", "-p", "8000", "-b", "0.0.0.0", "camille.asgi:application"]

@@ -178,7 +178,7 @@ wheels = [
 [[package]]
 name = "camille"
 version = "5.0.0"
-source = { virtual = "." }
+source = { editable = "." }
 dependencies = [
     { name = "channels", extra = ["daphne"] },
     { name = "daphne" },
