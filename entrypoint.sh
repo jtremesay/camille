@@ -1,6 +1,6 @@
 #!/bin/sh
 set -e
 
-uv run manage.py migrate
+uv run camille migrate
 
 exec uv run $@

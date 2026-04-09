@@ -172,10 +172,14 @@ MATTERMOST_API_TOKEN = environ.get("MATTERMOST_API_TOKEN")
 # Camille settings
 
 # Logfire configuration
-if "manage.py" in argv[0]:
-    service = argv[1]
+if argv[0].endswith("camille"):
+    try:
+        service = argv[1]
+    except IndexError:
+        service = "unknown-service"
 else:
     service = argv[0].split("/")[-1]
+
 
 logfire.configure(
     token=environ.get("LOGFIRE_TOKEN"),

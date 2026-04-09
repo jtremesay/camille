@@ -10,7 +10,7 @@ services:
 
   mattermost:
     image: "killruana/camille:main"
-    command: "manage.py mattermost"
+    command: "camille mattermost"
     environment:
       - "MATTERMOST_BASE_URL=https://mattermost.jtremesay.org"
       - "MATTERMOST_API_TOKEN_FILE=camille_mattermost_api_token"
