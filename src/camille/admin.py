@@ -28,7 +28,13 @@ class ThreadInline(admin.TabularInline):
 
 @admin.register(MMChannel)
 class MMChannelAdmin(admin.ModelAdmin):
-    list_display = ("id", "team__name", "type", "name", "display_name", "notes")
+    list_display = (
+        "id",
+        "team__name",
+        "type",
+        "name",
+        "display_name",
+    )
     inlines = [MembershipInline, ThreadInline]
 
 

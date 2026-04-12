@@ -38,8 +38,6 @@ class MMChannel(models.Model):
     header = models.TextField(null=True, blank=True)
     purpose = models.TextField(null=True, blank=True)
 
-    notes = models.TextField(blank=True)
-
     def __str__(self):
         return self.name or "Unnamed Channel"
 

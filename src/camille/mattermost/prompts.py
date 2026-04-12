@@ -21,7 +21,6 @@ Details of the current channel:
                 display_name=ctx.deps.channel.display_name,
                 header=ctx.deps.channel.header,
                 purpose=ctx.deps.channel.purpose,
-                notes=ctx.deps.channel.notes,
             ),
             indent=2,
         )
