@@ -15,7 +15,6 @@ dependencies = [
     "psycopg[binary]>=3.2.9",
     "pydantic-ai-slim[bedrock,duckduckgo,google,mistral,web-fetch]>=0.7.0",
     "python-dotenv>=1.1.1",
-    "mistralai>=2.0.0",
     "servestatic[brotli]>=4.2.0",
 ]
 
