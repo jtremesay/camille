@@ -1,12 +1,14 @@
 from json import dumps as json_dumps
 
+from asgiref.sync import sync_to_async
 from pydantic_ai import RunContext
 
 from camille.mattermost.deps import Dependency
 from camille.models import MMChannel
 
 
-async def mm_system_prompt(ctx: RunContext[Dependency]) -> str:
+@sync_to_async
+def mm_system_prompt(ctx: RunContext[Dependency]) -> str:
     return f"""\
 You are connected to a Mattermost server.
 

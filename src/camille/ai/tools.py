@@ -1,10 +1,12 @@
+from asgiref.sync import sync_to_async
 from pydantic_ai import RunContext
 from pydantic_ai.toolsets import FunctionToolset
 
 from camille.ai.deps import Dependency
 
 
-async def get_llm_model(ctx: RunContext[Dependency]) -> str:
+@sync_to_async
+def get_llm_model(ctx: RunContext[Dependency]) -> str:
     """Get the LLM model used by the agent of the current user.
     Returns:
         The LLM model
@@ -12,7 +14,8 @@ async def get_llm_model(ctx: RunContext[Dependency]) -> str:
     return ctx.deps.sender.model
 
 
-async def set_llm_model(ctx: RunContext[Dependency], model_name: str):
+@sync_to_async
+def set_llm_model(ctx: RunContext[Dependency], model_name: str):
     """Set the LLM model used by the agent of the current user.
 
     Known to work models:
@@ -26,8 +29,7 @@ async def set_llm_model(ctx: RunContext[Dependency], model_name: str):
     """
     user = ctx.deps.sender
     user.model = model_name
-
-    await user.asave()
+    user.save()
 
 
 model_toolset = FunctionToolset(
@@ -39,7 +41,8 @@ model_toolset = FunctionToolset(
 )
 
 
-async def list_personalities(
+@sync_to_async
+def list_personalities(
     ctx: RunContext[Dependency],
 ) -> list[str]:
     """List available personalities for the agent of the current user.
@@ -48,17 +51,11 @@ async def list_personalities(
         A list of available personalities
     """
     user = ctx.deps.sender
-    return [
-        n
-        async for n in user.personality_prompts.order_by("name").values_list(
-            "name", flat=True
-        )
-    ]
+    return list(user.personality_prompts.order_by("name").values_list("name", flat=True))
 
 
-async def describe_personality(
-    ctx: RunContext[Dependency], name: str
-) -> tuple[str, str, str]:
+@sync_to_async
+def describe_personality(ctx: RunContext[Dependency], name: str) -> tuple[str, str, str]:
     """Get the description of a personality available for the agent of the current user.
 
     Args:
@@ -68,11 +65,12 @@ async def describe_personality(
         A tuple of (name, description, prompt_template)
     """
     user = ctx.deps.sender
-    pp = await user.personality_prompts.aget(name=name)
+    pp = user.personality_prompts.get(name=name)
     return pp.name, pp.description, pp.prompt_template
 
 
-async def create_personality(
+@sync_to_async
+def create_personality(
     ctx: RunContext[Dependency],
     name: str,
     description: str,
@@ -93,7 +91,7 @@ async def create_personality(
     """
     user = ctx.deps.sender
     p = (
-        await user.personality_prompts.aupdate_or_create(
+        user.personality_prompts.update_or_create(
             name=name,
             defaults={
                 "description": description,
@@ -104,32 +102,35 @@ async def create_personality(
 
     if use:
         user.prompt = p
-        await user.asave()
+        user.save()
 
 
-async def delete_personality(ctx: RunContext[Dependency], name: str):
+@sync_to_async
+def delete_personality(ctx: RunContext[Dependency], name: str):
     """Delete a personality of the agent of the current user.
 
     Args:
         name: The name of the personality to delete.
     """
     user = ctx.deps.sender
-    await user.personality_prompts.filter(name=name).adelete()
+    user.personality_prompts.filter(name=name).delete()
 
 
-async def use_personality(ctx: RunContext[Dependency], name: str):
+@sync_to_async
+def use_personality(ctx: RunContext[Dependency], name: str):
     """Set the personality of the agent of the current user.
 
     Args:
         name: The name of the personality to use.
     """
     user = ctx.deps.sender
-    pp = await user.personality_prompts.aget(name=name)
+    pp = user.personality_prompts.get(name=name)
     user.prompt = pp
-    await user.asave()
+    user.save()
 
 
-async def get_personality(
+@sync_to_async
+def get_personality(
     ctx: RunContext[Dependency],
 ) -> tuple[str, str, str] | None:
     """Get the current personality of the agent for the current user.
@@ -158,7 +159,8 @@ prompt_toolset = FunctionToolset(
 )
 
 
-async def set_notes(ctx: RunContext[Dependency], notes: str):
+@sync_to_async
+def set_notes(ctx: RunContext[Dependency], notes: str):
     """Set your notes about the current user.
 
     Args:
@@ -166,11 +168,11 @@ async def set_notes(ctx: RunContext[Dependency], notes: str):
     """
     user = ctx.deps.sender
     user.notes = notes
+    user.save()
 
-    await user.asave()
 
-
-async def append_to_notes(ctx: RunContext[Dependency], additional_notes: str):
+@sync_to_async
+def append_to_notes(ctx: RunContext[Dependency], additional_notes: str):
     """Append to your notes about the current user.
 
     Args:
@@ -182,7 +184,7 @@ async def append_to_notes(ctx: RunContext[Dependency], additional_notes: str):
     else:
         user.notes = additional_notes
 
-    await user.asave()
+    user.save()
 
 
 note_toolset = FunctionToolset(
