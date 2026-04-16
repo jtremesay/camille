@@ -1,3 +1,4 @@
+from asyncio import create_task
 from datetime import datetime, timezone
 from json import dumps as json_dumps
 from json import loads as json_loads
@@ -81,7 +82,7 @@ class MattermostAgent(Mattermost):
     @logfire.instrument("event {kind=}")
     async def on_event(self, kind: str, data, broadcast, seq):
         await aclose_old_connections()
-        await super().on_event(kind, data, broadcast, seq)
+        create_task(super().on_event(kind, data, broadcast, seq))
 
     async def on_hello(self, data, broadcast, seq):
         await self.sync_db()
