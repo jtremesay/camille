@@ -165,6 +165,29 @@ STATIC_ROOT = BASE_DIR / "static"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+# Logging configuration
+# https://docs.djangoproject.com/en/6.0/topics/logging/#configuring-logging
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": "WARNING",
+    },
+    "loggers": {
+        "camille": {
+            "handlers": ["console"],
+            "level": environ.get("LOG_LEVEL", "INFO"),
+            "propagate": False,
+        },
+    },
+}
+
 # Mattermost settings
 MATTERMOST_BASE_URL = environ.get("MATTERMOST_BASE_URL")
 MATTERMOST_API_TOKEN = environ.get("MATTERMOST_API_TOKEN")
@@ -183,9 +206,12 @@ else:
 
 logfire.configure(
     token=environ.get("LOGFIRE_TOKEN"),
-    environment=environ.get("LOGFIRE_ENV", "production"),
+    environment=environ.get("LOGFIRE_ENVIRONMENT", "production"),
     service_name=service,
     send_to_logfire="if-token-present",
 )
+logfire.instrument_django()
 logfire.instrument_httpx(capture_all=True)
 logfire.instrument_pydantic_ai()
+logfire.instrument_psycopg()
+logfire.instrument_sqlite3()

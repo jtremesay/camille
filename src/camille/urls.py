@@ -18,6 +18,11 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
+from camille import views
+
 urlpatterns = [
+    path(
+        "mattermost/link/", views.MattermostLinkView.as_view(), name="mattermost_link"
+    ),
     path("admin/", admin.site.urls),
 ]
