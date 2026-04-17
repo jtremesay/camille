@@ -17,7 +17,8 @@ from httpx_ws import AsyncWebSocketSession, aconnect_ws
 from pydantic_ai import Agent, TextPart
 from pydantic_ai.capabilities import WebFetch, WebSearch
 
-from camille.models import MattermostConversation
+from camille.ai import NoCredentialsError, create_model_for_user
+from camille.models import AgentConfig, MattermostConversation
 
 
 class Mattermost:
@@ -98,17 +99,29 @@ class Mattermost:
                 )
                 return
 
-            # TODO: handle user agent model
-            # TODO: handle conversation history
+            agent_config = await AgentConfig.objects.aget(user=user)
+            if agent_config.model is None:
+                await self.send_message(
+                    channel_id,
+                    "Your agent is not configured with a model. Please set a model in your agent config.",
+                    root_id=root_id,
+                )
+                return
+
+            try:
+                model = await create_model_for_user(user, agent_config.model)
+            except NoCredentialsError:
+                await self.send_message(
+                    channel_id,
+                    "Your agent is not configured with the necessary credentials. Please set the credentials in your agent config.",
+                    root_id=root_id,
+                )
+                return
 
             conversation, _ = await MattermostConversation.objects.aget_or_create(
                 root_id=root_id,
                 defaults={"channel_id": channel_id},
             )
-
-            # model = "ollama:gemma4:e4b"
-            # model = "ollama:gemma4:e2b"
-            model = "ollama:qwen3.5:0.8b"
 
             async with self.agent.iter(
                 message,
