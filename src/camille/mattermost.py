@@ -15,6 +15,7 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from httpx import AsyncClient
 from httpx_ws import AsyncWebSocketSession, aconnect_ws
+from pydantic_ai import Agent, TextPart
 
 logger = logging.getLogger(__name__)
 
@@ -28,6 +29,7 @@ class Mattermost:
         self.client_ws: Optional[AsyncWebSocketSession] = None
         self.me_mm_id: Optional[str] = None
         self.current_seq = -1
+        self.agent = Agent()
 
     async def __aenter__(self):
         await self.client_htt.__aenter__()
@@ -78,35 +80,53 @@ class Mattermost:
         message = post_data["message"]
 
         try:
-            user = await User.objects.aget(mm_binding__mm_id=sender_mm_id)
-        except User.DoesNotExist:
-            user = None
+            try:
+                user = await User.objects.aget(mm_binding__mm_id=sender_mm_id)
+            except User.DoesNotExist:
+                user = None
 
-        # Handle commands
-        if await self.handle_commands(
-            channel_type,
-            message,
-            user,
-            channel_id,
-            root_id,
-            sender_mm_id,
-        ):
-            return
+            # Handle commands
+            if await self.handle_commands(
+                channel_type,
+                message,
+                user,
+                channel_id,
+                root_id,
+                sender_mm_id,
+            ):
+                return
 
-        if user is None:
+            if user is None:
+                await self.send_message(
+                    channel_id,
+                    "Your Mattermost account is not linked to any user account. Please send `!/link` in DM to link your account.",
+                    root_id=root_id,
+                )
+                return
+
+            # TODO: handle user agent model
+            # TODO: handle conversation history
+
+            async with self.agent.iter(
+                message,
+                model="ollama:qwen3.5:0.8b",
+            ) as run:
+                async for node in run:
+                    if self.agent.is_call_tools_node(node):
+                        for part in node.model_response.parts:
+                            if isinstance(part, TextPart):
+                                await self.send_message(
+                                    channel_id,
+                                    part.content,
+                                    root_id=root_id,
+                                )
+        except Exception as e:
+            logfire.exception(e)
             await self.send_message(
                 channel_id,
-                "Your Mattermost account is not linked to any user account. Please send `!/link` in DM to link your account.",
+                f"An error occurred while processing your message. Please try again later.\nError details: {e}",
                 root_id=root_id,
             )
-            return
-
-        await self.send_message(
-            channel_id,
-            "TODO",
-            root_id=root_id,
-        )
-        return
 
     async def send_message(
         self, channel_id: str, message: str, root_id: Optional[str] = None
