@@ -15,16 +15,8 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from httpx import AsyncClient
 from httpx_ws import AsyncWebSocketSession, aconnect_ws
-from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
-
-
-class MattermostUser(BaseModel):
-    id: str
-    username: str
-    first_name: str
-    last_name: str
 
 
 class Mattermost:
@@ -34,7 +26,7 @@ class Mattermost:
             headers={"Authorization": f"Bearer {settings.MATTERMOST_API_TOKEN}"},
         )
         self.client_ws: Optional[AsyncWebSocketSession] = None
-        self.me: Optional[MattermostUser] = None
+        self.me_mm_id: Optional[str] = None
         self.current_seq = -1
 
     async def __aenter__(self):
@@ -46,11 +38,10 @@ class Mattermost:
         await self.client_htt.__aexit__(exc_type, exc_val, exc_tb)
 
     async def run(self):
-        self.me = MattermostUser(**(await self.client_htt.get("/users/me")).json())
+        self.me_mm_id = (await self.client_htt.get("/users/me")).json()["id"]
         logger.info(
-            "Logged in as @%s (ID: %s)",
-            self.me.username,
-            self.me.id,
+            "Logged in as ID: %s",
+            self.me_mm_id,
         )
 
         async with aconnect_ws("websocket", self.client_htt) as ws:
@@ -69,14 +60,14 @@ class Mattermost:
     @logfire.instrument("on_posted")
     async def on_posted(self, data: Mapping[str, Any]):
         # Not mentioned, not a DM, not a group DM, so ignore
-        if self.me.id not in data.get("mentions", ""):
+        if self.me_mm_id not in data.get("mentions", ""):
             return
 
         post_data = loads(data["post"])
         sender_mm_id = post_data["user_id"]
 
         # Don't respond to our own messages
-        if sender_mm_id == self.me.id:
+        if sender_mm_id == self.me_mm_id:
             return
 
         logger.info("Received post from user ID %s", sender_mm_id)
