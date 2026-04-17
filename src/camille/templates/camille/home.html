@@ -42,7 +42,7 @@
     {% endif %}<br>
 
     AWS Bedrock:
-    {% if request.user.awsbedrock_credentials %}
+    {% if request.user.aws_bedrock_credentials %}
     <a href="{% url 'awsbedrock_credentials_update' %}">edit</a>
     -
     <a href="{% url 'awsbedrock_credentials_delete' %}">delete</a>

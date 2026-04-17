@@ -7,7 +7,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("camille", "0003_agentconfig"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
@@ -49,14 +48,7 @@ class Migration(migrations.Migration):
                         verbose_name="ID",
                     ),
                 ),
-                (
-                    "access_key_id",
-                    encrypted_fields.fields.EncryptedCharField(max_length=255),
-                ),
-                (
-                    "secret_access_key",
-                    encrypted_fields.fields.EncryptedCharField(max_length=255),
-                ),
+                ("api_key", encrypted_fields.fields.EncryptedCharField(max_length=255)),
                 ("region_name", models.CharField(default="eu-west-3", max_length=64)),
                 (
                     "user",

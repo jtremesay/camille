@@ -163,7 +163,7 @@ class AnthropicCredentialsDeleteView(LoginRequiredMixin, DeleteView):
 # AWSBedrock Credentials Views
 class AWSBedrockCredentialsCreateView(LoginRequiredMixin, CreateView):
     model = AWSBedrockCredentials
-    fields = ["access_key_id", "secret_access_key", "region_name"]
+    fields = ["api_key", "region_name"]
     success_url = reverse_lazy("home")
 
     def form_valid(self, form):
@@ -173,7 +173,7 @@ class AWSBedrockCredentialsCreateView(LoginRequiredMixin, CreateView):
 
 class AWSBedrockCredentialsUpdateView(LoginRequiredMixin, UpdateView):
     model = AWSBedrockCredentials
-    fields = ["access_key_id", "secret_access_key", "region_name"]
+    fields = ["api_key", "region_name"]
     success_url = reverse_lazy("home")
 
     def get_object(self, queryset=None):

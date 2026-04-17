@@ -80,8 +80,7 @@ class AWSBedrockCredentials(models.Model):
     user = models.OneToOneField(
         User, on_delete=models.CASCADE, related_name="aws_bedrock_credentials"
     )
-    access_key_id = EncryptedCharField(max_length=255)
-    secret_access_key = EncryptedCharField(max_length=255)
+    api_key = EncryptedCharField(max_length=255)
     region_name = models.CharField(max_length=64, default="eu-west-3")
 
 
