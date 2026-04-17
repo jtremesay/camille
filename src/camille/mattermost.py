@@ -8,8 +8,11 @@ from typing import Any, Optional
 import logfire
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.contrib.auth.tokens import default_token_generator
 from django.core.signing import TimestampSigner
 from django.urls import reverse
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
 from httpx import AsyncClient
 from httpx_ws import AsyncWebSocketSession, aconnect_ws
 from pydantic import BaseModel
@@ -93,6 +96,14 @@ class Mattermost:
             command = message[2:]
             match command:
                 case "link":
+                    if user is not None:
+                        await self.send_message(
+                            channel_id,
+                            "Your Mattermost account is already linked to a user account.",
+                            root_id=root_id,
+                        )
+                        return
+
                     token = TimestampSigner().sign_object({
                         "mm_id": sender_mm_id,
                         "nonce": random.randint(0, 2**64 - 1),
@@ -100,6 +111,26 @@ class Mattermost:
                     await self.send_message(
                         channel_id,
                         f"Please use the following link to link your Mattermost account: https://{settings.MAIN_HOST}{reverse('mattermost_bind')}?token={token}",
+                        root_id=root_id,
+                    )
+                    return
+
+                case "reset_password":
+                    if user is None:
+                        await self.send_message(
+                            channel_id,
+                            "Your Mattermost account is not linked to any user account. Please send `!/link` in DM to link your account.",
+                            root_id=root_id,
+                        )
+                        return
+
+                    uidb64 = urlsafe_base64_encode(
+                        force_bytes(User._meta.pk.value_to_string(user))
+                    )
+                    token = default_token_generator.make_token(user)
+                    await self.send_message(
+                        channel_id,
+                        f"Please use the following link to reset your password: https://{settings.MAIN_HOST}{reverse('password_reset_confirm', kwargs={'uidb64': uidb64, 'token': token})}",
                         root_id=root_id,
                     )
                     return
@@ -112,6 +143,8 @@ Available commands:
 
 - `!/help`: Show this message.
 - `!/link`: Link your Mattermost account to a user account.
+- `!/reset_password`: Generate a password reset link for your user account. Only works if your Mattermost account is linked to a user account.
+
 """,
                         root_id=root_id,
                     )
