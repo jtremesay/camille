@@ -1,3 +1,10 @@
 {% extends "camille/base.html" %}
+
 {% block content %}
+<h2>Profile - <a href="{% url 'profile_update' %}">edit</a></h2>
+<p>
+    username: {{ request.user.username }}<br>
+    first name: {{ request.user.first_name }}<br>
+    last name: {{ request.user.last_name }}<br>
+</p>
 {% endblock %}

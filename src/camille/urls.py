@@ -28,6 +28,11 @@ urlpatterns = [
         views.LogoutConfirmView.as_view(),
         name="logout_confirm",
     ),
+    path(
+        "accounts/update/",
+        views.ProfileUpdateView.as_view(),
+        name="profile_update",
+    ),
     path("accounts/", include("django.contrib.auth.urls")),
     path("admin/", admin.site.urls),
 ]
