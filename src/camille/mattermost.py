@@ -92,74 +92,27 @@ class Mattermost:
             user = None
 
         # Handle commands
-        if channel_type == "D" and message.startswith("!/"):
-            command = message[2:]
-            match command:
-                case "link":
-                    if user is not None:
-                        await self.send_message(
-                            channel_id,
-                            "Your Mattermost account is already linked to a user account.",
-                            root_id=root_id,
-                        )
-                        return
+        if await self.handle_commands(
+            channel_type,
+            message,
+            user,
+            channel_id,
+            root_id,
+            sender_mm_id,
+        ):
+            return
 
-                    token = TimestampSigner().sign_object({
-                        "mm_id": sender_mm_id,
-                        "nonce": random.randint(0, 2**64 - 1),
-                    })
-                    await self.send_message(
-                        channel_id,
-                        f"Please use the following link to link your Mattermost account: https://{settings.MAIN_HOST}{reverse('mattermost_bind')}?token={token}",
-                        root_id=root_id,
-                    )
-                    return
-
-                case "reset_password":
-                    if user is None:
-                        await self.send_message(
-                            channel_id,
-                            "Your Mattermost account is not linked to any user account. Please send `!/link` in DM to link your account.",
-                            root_id=root_id,
-                        )
-                        return
-
-                    uidb64 = urlsafe_base64_encode(
-                        force_bytes(User._meta.pk.value_to_string(user))
-                    )
-                    token = default_token_generator.make_token(user)
-                    await self.send_message(
-                        channel_id,
-                        f"Please use the following link to reset your password: https://{settings.MAIN_HOST}{reverse('password_reset_confirm', kwargs={'uidb64': uidb64, 'token': token})}",
-                        root_id=root_id,
-                    )
-                    return
-
-                case "help":
-                    await self.send_message(
-                        channel_id,
-                        """\
-Available commands:
-
-- `!/help`: Show this message.
-- `!/link`: Link your Mattermost account to a user account.
-- `!/reset_password`: Generate a password reset link for your user account. Only works if your Mattermost account is linked to a user account.
-
-""",
-                        root_id=root_id,
-                    )
-                    return
-
+        if user is None:
             await self.send_message(
                 channel_id,
-                f"Unknown command: `{command}`. Please send `!/help` for a list of available commands.",
+                "Your Mattermost account is not linked to any user account. Please send `!/link` in DM to link your account.",
                 root_id=root_id,
             )
             return
 
         await self.send_message(
             channel_id,
-            "Your Mattermost account is not linked to any user account. Please send `!/link` in DM to link your account.",
+            "TODO",
             root_id=root_id,
         )
         return
@@ -175,3 +128,79 @@ Available commands:
             "/posts",
             json=data,
         )
+
+    async def handle_commands(
+        self,
+        channel_type: str,
+        message: str,
+        user: Optional[User],
+        channel_id: str,
+        root_id: Optional[str],
+        sender_mm_id: str,
+    ) -> bool:
+        if channel_type != "D" or not message.startswith("!/"):
+            return False
+
+        command = message[2:]
+        match command:
+            case "link":
+                if user is not None:
+                    await self.send_message(
+                        channel_id,
+                        "Your Mattermost account is already linked to a user account.",
+                        root_id=root_id,
+                    )
+                    return True
+
+                token = TimestampSigner().sign_object({
+                    "mm_id": sender_mm_id,
+                    "nonce": random.randint(0, 2**64 - 1),
+                })
+                url = f"https://{settings.MAIN_HOST}{reverse('mattermost_bind')}?token={token}"
+                await self.send_message(
+                    channel_id,
+                    f"Please use the following link to link your Mattermost account: {url}",
+                    root_id=root_id,
+                )
+
+            case "reset_password":
+                if user is None:
+                    await self.send_message(
+                        channel_id,
+                        "Your Mattermost account is not linked to any user account. Please send `!/link` in DM to link your account.",
+                        root_id=root_id,
+                    )
+                    return True
+
+                uidb64 = urlsafe_base64_encode(
+                    force_bytes(User._meta.pk.value_to_string(user))
+                )
+                token = default_token_generator.make_token(user)
+                url = f"https://{settings.MAIN_HOST}{reverse('password_reset_confirm', kwargs={'uidb64': uidb64, 'token': token})}"
+                await self.send_message(
+                    channel_id,
+                    f"Please use the following link to reset your password: {url}",
+                    root_id=root_id,
+                )
+
+            case "help":
+                await self.send_message(
+                    channel_id,
+                    """\
+Available commands:
+
+- `!/help`: Show this message.
+- `!/link`: Link your Mattermost account to a user account.
+- `!/reset_password`: Generate a password reset link for your user account. Only works if your Mattermost account is linked to a user account.
+""",
+                    root_id=root_id,
+                )
+
+            case _:
+                await self.send_message(
+                    channel_id,
+                    f"Unknown command: `{command}`. Please send `!/help` for a list of available commands.",
+                    root_id=root_id,
+                )
+
+        return True
