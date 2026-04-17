@@ -10,13 +10,22 @@
 </p>
 
 <h2>Agent</h2>
-<h3>Personalities - <a href="{% url 'personality_create' %}">create</a></h3>
+<h3>Configuration - <a href="{% url 'agent_config_update' %}">edit</a></h3>
+<p>
+    model: {{ request.user.agent_config.model }}<br>
+    personality: {{ request.user.agent_config.personality.name|default:"None" }}<br>
+    instructions: {{ request.user.agent_config.instructions|default:"None" }}<br>
+    notes: {{ request.user.agent_config.notes|default:"None" }}<br>
+</p>
+
+
+<h3>Personalities - <a href="{% url 'agent_personality_create' %}">create</a></h3>
 <p>
 <ul>
     {% for personality in request.user.personalities.all|dictsort:"name" %}
     <li>{{ personality.name }} - {{ personality.description }} (<a
-            href="{% url 'personality_update' personality.id %}">edit</a> | <a
-            href="{% url 'personality_delete' personality.id %}">delete</a>)</li>
+            href="{% url 'agent_personality_update' personality.id %}">edit</a> | <a
+            href="{% url 'agent_personality_delete' personality.id %}">delete</a>)</li>
     {% endfor %}
 </ul>
 </p>

@@ -5,14 +5,24 @@ from django.core.signing import BadSignature, SignatureExpired, TimestampSigner
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DeleteView, TemplateView, UpdateView
 
-from camille.models import AgentPersonality, MattermostBinding
+from camille.models import AgentConfig, AgentPersonality, MattermostBinding
 
 
 class HomeView(LoginRequiredMixin, TemplateView):
     template_name = "camille/home.html"
 
 
-class PersonalityCreateView(LoginRequiredMixin, CreateView):
+class AgentConfigEditView(LoginRequiredMixin, UpdateView):
+    model = AgentConfig
+    fields = ["model", "personality", "instructions", "notes"]
+    # template_name = "camille/agent_config_form.html"
+    success_url = reverse_lazy("home")
+
+    def get_object(self, queryset=None):
+        return AgentConfig.objects.get(user=self.request.user)
+
+
+class AgentPersonalityCreateView(LoginRequiredMixin, CreateView):
     model = AgentPersonality
     fields = ["name", "description", "prompt_template"]
     success_url = reverse_lazy("home")
@@ -22,7 +32,7 @@ class PersonalityCreateView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-class PersonalityUpdateView(LoginRequiredMixin, UpdateView):
+class AgentPersonalityUpdateView(LoginRequiredMixin, UpdateView):
     model = AgentPersonality
     fields = ["name", "description", "prompt_template"]
     success_url = reverse_lazy("home")
@@ -31,7 +41,7 @@ class PersonalityUpdateView(LoginRequiredMixin, UpdateView):
         return AgentPersonality.objects.filter(user=self.request.user)
 
 
-class PersonalityDeleteView(LoginRequiredMixin, DeleteView):
+class AgentPersonalityDeleteView(LoginRequiredMixin, DeleteView):
     model = AgentPersonality
     success_url = reverse_lazy("home")
 
