@@ -16,13 +16,13 @@ Including another URLconf
 """
 
 from django.contrib import admin
-from django.urls import path
+from django.urls import include, path
 
 from camille import views
 
 urlpatterns = [
-    path(
-        "mattermost/link/", views.MattermostLinkView.as_view(), name="mattermost_link"
-    ),
+    path("", views.HomeView.as_view(), name="home"),
+    path("accents/register/", views.RegisterView.as_view(), name="register"),
+    path("accounts/", include("django.contrib.auth.urls")),
     path("admin/", admin.site.urls),
 ]
