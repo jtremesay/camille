@@ -7,4 +7,10 @@
     first name: {{ request.user.first_name }}<br>
     last name: {{ request.user.last_name }}<br>
 </p>
+
+<h2>Mattermost</h2>
+<p>
+    Linked user id: {{ request.user.mm_binding.mm_id|default:"None" }} {% if request.user.mm_binding %}(<a
+        href="{% url 'mattermost_unbind' %}">unbind</a>){% endif %}<br>
+</p>
 {% endblock %}

@@ -22,6 +22,17 @@ from camille import views
 
 urlpatterns = [
     path("", views.HomeView.as_view(), name="home"),
+    path(
+        "mattermost/bind/",
+        views.MattermostBindCreateView.as_view(),
+        name="mattermost_bind",
+    ),
+    path(
+        "mattermost/unbind/",
+        views.MattermostBindDeleteView.as_view(),
+        name="mattermost_unbind",
+    ),
+    # Account management
     path("accounts/register/", views.RegisterView.as_view(), name="register"),
     path(
         "accounts/logout_confirm/",
@@ -34,5 +45,6 @@ urlpatterns = [
         name="profile_update",
     ),
     path("accounts/", include("django.contrib.auth.urls")),
+    # Admin site
     path("admin/", admin.site.urls),
 ]

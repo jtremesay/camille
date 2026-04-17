@@ -1,0 +1,11 @@
+{% extends "camille/base.html" %}
+
+{% block content %}
+<h2>Mattermost Bind</h2>
+
+{% if error %}
+<p>{{ error }}</p>
+{% else %}
+<p>Your account has been successfully linked to a Mattermost account.</p>
+{% endif %}
+{% endblock %}

@@ -1,4 +1,5 @@
 import logging
+import random
 from asyncio import create_task
 from collections.abc import Mapping
 from json import loads
@@ -7,6 +8,8 @@ from typing import Any, Optional
 import logfire
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.core.signing import TimestampSigner
+from django.urls import reverse
 from httpx import AsyncClient
 from httpx_ws import AsyncWebSocketSession, aconnect_ws
 from pydantic import BaseModel
@@ -77,7 +80,7 @@ class Mattermost:
 
         channel_id = post_data["channel_id"]
         channel_type = data["channel_type"]
-        post_id = post_data["root_id"] or post_data["id"]
+        root_id = post_data["root_id"] or post_data["id"]
         message = post_data["message"]
 
         try:
@@ -90,10 +93,14 @@ class Mattermost:
             command = message[2:]
             match command:
                 case "link":
+                    token = TimestampSigner().sign_object({
+                        "mm_id": sender_mm_id,
+                        "nonce": random.randint(0, 2**64 - 1),
+                    })
                     await self.send_message(
                         channel_id,
-                        "TODO.",
-                        root_id=post_id,
+                        f"Please use the following link to link your Mattermost account: https://{settings.MAIN_HOST}{reverse('mattermost_bind')}?token={token}",
+                        root_id=root_id,
                     )
                     return
 
@@ -105,39 +112,22 @@ Available commands:
 
 - `!/help`: Show this message.
 - `!/link`: Link your Mattermost account to a user account.
-- `!/login`: Generate a login link for the web interface.
 """,
-                        root_id=post_id,
-                    )
-                    return
-
-                case "login":
-                    if user is None:
-                        await self.send_message(
-                            channel_id,
-                            "Your Mattermost account is not linked to any user account. Please send `!/link` in DM to link your account.",
-                            root_id=post_id,
-                        )
-                        return
-
-                    await self.send_message(
-                        channel_id,
-                        "TODO.",
-                        root_id=post_id,
+                        root_id=root_id,
                     )
                     return
 
             await self.send_message(
                 channel_id,
                 f"Unknown command: `{command}`. Please send `!/help` for a list of available commands.",
-                root_id=post_id,
+                root_id=root_id,
             )
             return
 
         await self.send_message(
             channel_id,
             "Your Mattermost account is not linked to any user account. Please send `!/link` in DM to link your account.",
-            root_id=post_id,
+            root_id=root_id,
         )
         return
 

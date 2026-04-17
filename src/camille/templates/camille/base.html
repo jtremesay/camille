@@ -8,7 +8,7 @@
     <title>Camille</title>
 </head>
 
-<body class="w-100 sans-serif">
+<body>
     <header>
         <nav>
             {% if user.is_authenticated %}
@@ -18,9 +18,8 @@
             <a href="{% url 'register' %}">Sign up</a>
             {% endif %}
         </nav>
-        <h1><a href="">Camille</a></h1>
+        <h1><a href="{% url 'home' %}">Camille</a></h1>
     </header>
-
 
     <div>
         {% block content %}
