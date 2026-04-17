@@ -50,6 +50,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = environ["SECRET_KEY"]
+SECRET_KEY_FALLBACKS = environ.get("SECRET_KEY_FALLBACKS", "").split(",")
+
+SALT_KEY = [environ["SALT_KEY"]]
+if salt_key_fallbacks := environ.get("SALT_KEY_FALLBACKS", ""):
+    SALT_KEY += salt_key_fallbacks.split(",")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = environ.get("DEBUG", "false").lower() in ["true", "1", "on"]

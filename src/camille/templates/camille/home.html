@@ -30,6 +30,63 @@
 </ul>
 </p>
 
+<h2>Credentials</h2>
+<p>
+    Anthropic:
+    {% if request.user.anthropic_credentials %}
+    <a href="{% url 'anthropic_credentials_update' %}">edit</a>
+    -
+    <a href="{% url 'anthropic_credentials_delete' %}">delete</a>
+    {% else %}
+    <a href="{% url 'anthropic_credentials_create' %}">create</a>
+    {% endif %}<br>
+
+    AWS Bedrock:
+    {% if request.user.awsbedrock_credentials %}
+    <a href="{% url 'awsbedrock_credentials_update' %}">edit</a>
+    -
+    <a href="{% url 'awsbedrock_credentials_delete' %}">delete</a>
+    {% else %}
+    <a href="{% url 'awsbedrock_credentials_create' %}">create</a>
+    {% endif %}<br>
+
+    Gateway:
+    {% if request.user.gateway_credentials %}
+    <a href="{% url 'gateway_credentials_update' %}">edit</a>
+    -
+    <a href="{% url 'gateway_credentials_delete' %}">delete</a>
+    {% else %}
+    <a href="{% url 'gateway_credentials_create' %}">create</a>
+    {% endif %}<br>
+
+    GoogleGLA:
+    {% if request.user.googlegla_credentials %}
+    <a href="{% url 'googlegla_credentials_update' %}">edit</a>
+    -
+    <a href="{% url 'googlegla_credentials_delete' %}">delete</a>
+    {% else %}
+    <a href="{% url 'googlegla_credentials_create' %}">create</a>
+    {% endif %}<br>
+
+    Mistral:
+    {% if request.user.mistral_credentials %}
+    <a href="{% url 'mistral_credentials_update' %}">edit</a>
+    -
+    <a href="{% url 'mistral_credentials_delete' %}">delete</a>
+    {% else %}
+    <a href="{% url 'mistral_credentials_create' %}">create</a>
+    {% endif %}<br>
+
+    OpenRouter:
+    {% if request.user.openrouter_credentials %}
+    <a href="{% url 'openrouter_credentials_update' %}">edit</a>
+    -
+    <a href="{% url 'openrouter_credentials_delete' %}">delete</a>
+    {% else %}
+    <a href="{% url 'openrouter_credentials_create' %}">create</a>
+    {% endif %}<br>
+</p>
+
 <h2>Mattermost</h2>
 <p>
     Linked user id: {{ request.user.mm_binding.mm_id|default:"None" }} {% if request.user.mm_binding %}(<a

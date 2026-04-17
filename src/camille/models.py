@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from encrypted_fields.fields import EncryptedCharField
 
 
 class MattermostBinding(models.Model):
@@ -65,3 +66,47 @@ def create_agent_config(sender, instance, created, **kwargs):
                 prompt_template=settings.DEFAULT_PROMPT_TEMPLATE,
             ),
         )
+
+
+class AnthropicCredentials(models.Model):
+    user = models.OneToOneField(
+        User, on_delete=models.CASCADE, related_name="anthropic_credentials"
+    )
+    api_key = EncryptedCharField(max_length=255)
+
+
+class AWSBedrockCredentials(models.Model):
+    user = models.OneToOneField(
+        User, on_delete=models.CASCADE, related_name="aws_bedrock_credentials"
+    )
+    access_key_id = EncryptedCharField(max_length=255)
+    secret_access_key = EncryptedCharField(max_length=255)
+    region_name = models.CharField(max_length=64, default="eu-west-3")
+
+
+class GatewayCredentials(models.Model):
+    user = models.OneToOneField(
+        User, on_delete=models.CASCADE, related_name="gateway_credentials"
+    )
+    api_key = EncryptedCharField(max_length=255)
+
+
+class GoogleGLACredentials(models.Model):
+    user = models.OneToOneField(
+        User, on_delete=models.CASCADE, related_name="google_gla_credentials"
+    )
+    api_key = EncryptedCharField(max_length=255)
+
+
+class MistralCredentials(models.Model):
+    user = models.OneToOneField(
+        User, on_delete=models.CASCADE, related_name="mistral_credentials"
+    )
+    api_key = EncryptedCharField(max_length=255)
+
+
+class OpenRouterCredentials(models.Model):
+    user = models.OneToOneField(
+        User, on_delete=models.CASCADE, related_name="openrouter_credentials"
+    )
+    api_key = EncryptedCharField(max_length=255)

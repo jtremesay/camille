@@ -5,7 +5,17 @@ from django.core.signing import BadSignature, SignatureExpired, TimestampSigner
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DeleteView, TemplateView, UpdateView
 
-from camille.models import AgentConfig, AgentPersonality, MattermostBinding
+from camille.models import (
+    AgentConfig,
+    AgentPersonality,
+    AnthropicCredentials,
+    AWSBedrockCredentials,
+    GatewayCredentials,
+    GoogleGLACredentials,
+    MattermostBinding,
+    MistralCredentials,
+    OpenRouterCredentials,
+)
 
 
 class HomeView(LoginRequiredMixin, TemplateView):
@@ -15,7 +25,6 @@ class HomeView(LoginRequiredMixin, TemplateView):
 class AgentConfigEditView(LoginRequiredMixin, UpdateView):
     model = AgentConfig
     fields = ["model", "personality", "instructions", "notes"]
-    # template_name = "camille/agent_config_form.html"
     success_url = reverse_lazy("home")
 
     def get_object(self, queryset=None):
@@ -121,3 +130,171 @@ class ProfileUpdateView(LoginRequiredMixin, UpdateView):
 
     def get_object(self, queryset=None):
         return self.request.user
+
+
+# Anthropic Credentials Views
+class AnthropicCredentialsCreateView(LoginRequiredMixin, CreateView):
+    model = AnthropicCredentials
+    fields = ["api_key"]
+    success_url = reverse_lazy("home")
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        return super().form_valid(form)
+
+
+class AnthropicCredentialsUpdateView(LoginRequiredMixin, UpdateView):
+    model = AnthropicCredentials
+    fields = ["api_key"]
+    success_url = reverse_lazy("home")
+
+    def get_object(self, queryset=None):
+        return AnthropicCredentials.objects.get(user=self.request.user)
+
+
+class AnthropicCredentialsDeleteView(LoginRequiredMixin, DeleteView):
+    model = AnthropicCredentials
+    success_url = reverse_lazy("home")
+
+    def get_object(self, queryset=None):
+        return AnthropicCredentials.objects.get(user=self.request.user)
+
+
+# AWSBedrock Credentials Views
+class AWSBedrockCredentialsCreateView(LoginRequiredMixin, CreateView):
+    model = AWSBedrockCredentials
+    fields = ["access_key_id", "secret_access_key", "region_name"]
+    success_url = reverse_lazy("home")
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        return super().form_valid(form)
+
+
+class AWSBedrockCredentialsUpdateView(LoginRequiredMixin, UpdateView):
+    model = AWSBedrockCredentials
+    fields = ["access_key_id", "secret_access_key", "region_name"]
+    success_url = reverse_lazy("home")
+
+    def get_object(self, queryset=None):
+        return AWSBedrockCredentials.objects.get(user=self.request.user)
+
+
+class AWSBedrockCredentialsDeleteView(LoginRequiredMixin, DeleteView):
+    model = AWSBedrockCredentials
+    success_url = reverse_lazy("home")
+
+    def get_object(self, queryset=None):
+        return AWSBedrockCredentials.objects.get(user=self.request.user)
+
+
+# Gateway Credentials Views
+class GatewayCredentialsCreateView(LoginRequiredMixin, CreateView):
+    model = GatewayCredentials
+    fields = ["api_key"]
+    success_url = reverse_lazy("home")
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        return super().form_valid(form)
+
+
+class GatewayCredentialsUpdateView(LoginRequiredMixin, UpdateView):
+    model = GatewayCredentials
+    fields = ["api_key"]
+    success_url = reverse_lazy("home")
+
+    def get_object(self, queryset=None):
+        return GatewayCredentials.objects.get(user=self.request.user)
+
+
+class GatewayCredentialsDeleteView(LoginRequiredMixin, DeleteView):
+    model = GatewayCredentials
+    success_url = reverse_lazy("home")
+
+    def get_object(self, queryset=None):
+        return GatewayCredentials.objects.get(user=self.request.user)
+
+
+# GoogleGLA Credentials Views
+class GoogleGLACredentialsCreateView(LoginRequiredMixin, CreateView):
+    model = GoogleGLACredentials
+    fields = ["api_key"]
+    success_url = reverse_lazy("home")
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        return super().form_valid(form)
+
+
+class GoogleGLACredentialsUpdateView(LoginRequiredMixin, UpdateView):
+    model = GoogleGLACredentials
+    fields = ["api_key"]
+    success_url = reverse_lazy("home")
+
+    def get_object(self, queryset=None):
+        return GoogleGLACredentials.objects.get(user=self.request.user)
+
+
+class GoogleGLACredentialsDeleteView(LoginRequiredMixin, DeleteView):
+    model = GoogleGLACredentials
+    success_url = reverse_lazy("home")
+
+    def get_object(self, queryset=None):
+        return GoogleGLACredentials.objects.get(user=self.request.user)
+
+
+# Mistral Credentials Views
+class MistralCredentialsCreateView(LoginRequiredMixin, CreateView):
+    model = MistralCredentials
+    fields = ["api_key"]
+    success_url = reverse_lazy("home")
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        return super().form_valid(form)
+
+
+class MistralCredentialsUpdateView(LoginRequiredMixin, UpdateView):
+    model = MistralCredentials
+    fields = ["api_key"]
+    success_url = reverse_lazy("home")
+
+    def get_object(self, queryset=None):
+        return MistralCredentials.objects.get(user=self.request.user)
+
+
+class MistralCredentialsDeleteView(LoginRequiredMixin, DeleteView):
+    model = MistralCredentials
+    success_url = reverse_lazy("home")
+
+    def get_object(self, queryset=None):
+        return MistralCredentials.objects.get(user=self.request.user)
+
+
+# OpenRouter Credentials Views
+class OpenRouterCredentialsCreateView(LoginRequiredMixin, CreateView):
+    model = OpenRouterCredentials
+    fields = ["api_key"]
+    success_url = reverse_lazy("home")
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        return super().form_valid(form)
+
+
+class OpenRouterCredentialsUpdateView(LoginRequiredMixin, UpdateView):
+    model = OpenRouterCredentials
+    fields = ["api_key"]
+    success_url = reverse_lazy("home")
+
+    def get_object(self, queryset=None):
+        return OpenRouterCredentials.objects.get(user=self.request.user)
+
+
+class OpenRouterCredentialsDeleteView(LoginRequiredMixin, DeleteView):
+    model = OpenRouterCredentials
+    success_url = reverse_lazy("home")
+
+    def get_object(self, queryset=None):
+        return OpenRouterCredentials.objects.get(user=self.request.user)
