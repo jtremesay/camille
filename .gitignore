@@ -5,3 +5,7 @@
 /.env
 /*.sqlite3
 /static/
+
+# Node modules
+/node_modules/
+/src/camille/static/dist/
