@@ -171,28 +171,6 @@ STATIC_ROOT = BASE_DIR / "static"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# Logging configuration
-# https://docs.djangoproject.com/en/6.0/topics/logging/#configuring-logging
-LOGGING = {
-    "version": 1,
-    "handlers": {
-        "console": {
-            "class": "logging.StreamHandler",
-        },
-    },
-    "root": {
-        "handlers": ["console"],
-        "level": "WARNING",
-    },
-    "loggers": {
-        "camille": {
-            "handlers": ["console"],
-            "level": environ.get("LOG_LEVEL", "INFO"),
-            "propagate": False,
-        },
-    },
-}
-
 # Login
 LOGIN_REDIRECT_URL = "home"
 LOGOUT_REDIRECT_URL = "home"

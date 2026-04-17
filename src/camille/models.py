@@ -4,6 +4,7 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from encrypted_fields.fields import EncryptedCharField
+from pydantic_ai.messages import ModelMessage, ModelMessagesTypeAdapter
 
 
 class MattermostBinding(models.Model):
@@ -110,3 +111,28 @@ class OpenRouterCredentials(models.Model):
         User, on_delete=models.CASCADE, related_name="openrouter_credentials"
     )
     api_key = EncryptedCharField(max_length=255)
+
+
+class MattermostConversation(models.Model):
+    root_id = models.CharField(max_length=26, unique=True)
+    channel_id = models.CharField(max_length=26)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    async def amessages(self) -> list[ModelMessage]:
+        messages = []
+        async for run in self.runs.order_by("created_at"):
+            messages.extend(run.messages())
+
+        return messages
+
+
+class MattermostConversationRun(models.Model):
+    conversation = models.ForeignKey(
+        MattermostConversation, on_delete=models.CASCADE, related_name="runs"
+    )
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    messages_json = models.BinaryField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def messages(self) -> list[ModelMessage]:
+        return ModelMessagesTypeAdapter.validate_json(self.messages_json)

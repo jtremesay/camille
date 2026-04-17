@@ -1,4 +1,3 @@
-import logging
 import random
 from asyncio import create_task
 from collections.abc import Mapping
@@ -16,8 +15,9 @@ from django.utils.http import urlsafe_base64_encode
 from httpx import AsyncClient
 from httpx_ws import AsyncWebSocketSession, aconnect_ws
 from pydantic_ai import Agent, TextPart
+from pydantic_ai.capabilities import WebFetch, WebSearch
 
-logger = logging.getLogger(__name__)
+from camille.models import MattermostConversation
 
 
 class Mattermost:
@@ -29,7 +29,7 @@ class Mattermost:
         self.client_ws: Optional[AsyncWebSocketSession] = None
         self.me_mm_id: Optional[str] = None
         self.current_seq = -1
-        self.agent = Agent()
+        self.agent = Agent(capabilities=[WebSearch(), WebFetch()])
 
     async def __aenter__(self):
         await self.client_htt.__aenter__()
@@ -41,11 +41,6 @@ class Mattermost:
 
     async def run(self):
         self.me_mm_id = (await self.client_htt.get("/users/me")).json()["id"]
-        logger.info(
-            "Logged in as ID: %s",
-            self.me_mm_id,
-        )
-
         async with aconnect_ws("websocket", self.client_htt) as ws:
             self.client_ws = ws
             while True:
@@ -72,13 +67,12 @@ class Mattermost:
         if sender_mm_id == self.me_mm_id:
             return
 
-        logger.info("Received post from user ID %s", sender_mm_id)
-
         channel_id = post_data["channel_id"]
         channel_type = data["channel_type"]
         root_id = post_data["root_id"] or post_data["id"]
         message = post_data["message"]
 
+        conversation = None
         try:
             try:
                 user = await User.objects.aget(mm_binding__mm_id=sender_mm_id)
@@ -107,9 +101,19 @@ class Mattermost:
             # TODO: handle user agent model
             # TODO: handle conversation history
 
+            conversation, _ = await MattermostConversation.objects.aget_or_create(
+                root_id=root_id,
+                defaults={"channel_id": channel_id},
+            )
+
+            # model = "ollama:gemma4:e4b"
+            # model = "ollama:gemma4:e2b"
+            model = "ollama:qwen3.5:0.8b"
+
             async with self.agent.iter(
                 message,
-                model="ollama:qwen3.5:0.8b",
+                model=model,
+                message_history=await conversation.amessages(),
             ) as run:
                 async for node in run:
                     if self.agent.is_call_tools_node(node):
@@ -120,13 +124,21 @@ class Mattermost:
                                     part.content,
                                     root_id=root_id,
                                 )
+
+                await conversation.runs.acreate(
+                    user=user,
+                    messages_json=run.new_messages_json(),
+                )
         except Exception as e:
-            logfire.exception(e)
             await self.send_message(
                 channel_id,
                 f"An error occurred while processing your message. Please try again later.\nError details: {e}",
                 root_id=root_id,
             )
+
+        # If the conversation has no runs, delete it to save space
+        if conversation and not await conversation.runs.aexists():
+            await conversation.adelete()
 
     async def send_message(
         self, channel_id: str, message: str, root_id: Optional[str] = None
