@@ -1,7 +1,8 @@
 {% extends "camille/base.html" %}
 
 {% block content %}
-<h2>Profile - <a href="{% url 'profile_update' %}">edit</a></h2>
+<h2>Profile - <a href="{% url 'profile_update' %}">edit</a> - <a href="{% url 'password_change' %}">change password</a>
+</h2>
 <p>
     username: {{ request.user.username }}<br>
     first name: {{ request.user.first_name }}<br>
