@@ -22,7 +22,12 @@ from camille import views
 
 urlpatterns = [
     path("", views.HomeView.as_view(), name="home"),
-    path("accents/register/", views.RegisterView.as_view(), name="register"),
+    path("accounts/register/", views.RegisterView.as_view(), name="register"),
+    path(
+        "accounts/logout_confirm/",
+        views.LogoutConfirmView.as_view(),
+        name="logout_confirm",
+    ),
     path("accounts/", include("django.contrib.auth.urls")),
     path("admin/", admin.site.urls),
 ]

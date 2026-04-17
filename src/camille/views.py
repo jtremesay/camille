@@ -8,6 +8,10 @@ class HomeView(LoginRequiredMixin, TemplateView):
     template_name = "camille/home.html"
 
 
+class LogoutConfirmView(LoginRequiredMixin, TemplateView):
+    template_name = "registration/logout_confirm.html"
+
+
 class RegisterView(CreateView):
     template_name = "registration/register.html"
     form_class = UserCreationForm
