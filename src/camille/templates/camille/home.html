@@ -9,6 +9,18 @@
     last name: {{ request.user.last_name }}<br>
 </p>
 
+<h2>Agent</h2>
+<h3>Personalities - <a href="{% url 'personality_create' %}">create</a></h3>
+<p>
+<ul>
+    {% for personality in request.user.personalities.all|dictsort:"name" %}
+    <li>{{ personality.name }} - {{ personality.description }} (<a
+            href="{% url 'personality_update' personality.id %}">edit</a> | <a
+            href="{% url 'personality_delete' personality.id %}">delete</a>)</li>
+    {% endfor %}
+</ul>
+</p>
+
 <h2>Mattermost</h2>
 <p>
     Linked user id: {{ request.user.mm_binding.mm_id|default:"None" }} {% if request.user.mm_binding %}(<a

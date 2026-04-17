@@ -22,6 +22,23 @@ from camille import views
 
 urlpatterns = [
     path("", views.HomeView.as_view(), name="home"),
+    # Personality management
+    path(
+        "personalities/create/",
+        views.PersonalityCreateView.as_view(),
+        name="personality_create",
+    ),
+    path(
+        "personalities/<int:pk>/update/",
+        views.PersonalityUpdateView.as_view(),
+        name="personality_update",
+    ),
+    path(
+        "personalities/<int:pk>/delete/",
+        views.PersonalityDeleteView.as_view(),
+        name="personality_delete",
+    ),
+    # Mattermost integration
     path(
         "mattermost/bind/",
         views.MattermostBindCreateView.as_view(),

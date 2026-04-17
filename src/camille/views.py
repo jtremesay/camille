@@ -5,11 +5,38 @@ from django.core.signing import BadSignature, SignatureExpired, TimestampSigner
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DeleteView, TemplateView, UpdateView
 
-from camille.models import MattermostBinding
+from camille.models import AgentPersonality, MattermostBinding
 
 
 class HomeView(LoginRequiredMixin, TemplateView):
     template_name = "camille/home.html"
+
+
+class PersonalityCreateView(LoginRequiredMixin, CreateView):
+    model = AgentPersonality
+    fields = ["name", "description", "prompt_template"]
+    success_url = reverse_lazy("home")
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        return super().form_valid(form)
+
+
+class PersonalityUpdateView(LoginRequiredMixin, UpdateView):
+    model = AgentPersonality
+    fields = ["name", "description", "prompt_template"]
+    success_url = reverse_lazy("home")
+
+    def get_queryset(self):
+        return AgentPersonality.objects.filter(user=self.request.user)
+
+
+class PersonalityDeleteView(LoginRequiredMixin, DeleteView):
+    model = AgentPersonality
+    success_url = reverse_lazy("home")
+
+    def get_queryset(self):
+        return AgentPersonality.objects.filter(user=self.request.user)
 
 
 class MattermostBindCreateView(LoginRequiredMixin, TemplateView):
