@@ -222,8 +222,8 @@ logfire.configure(
     service_name=service,
     send_to_logfire="if-token-present",
 )
-logfire.instrument_django()
+# logfire.instrument_django()
 logfire.instrument_httpx(capture_all=True)
 logfire.instrument_pydantic_ai()
-logfire.instrument_psycopg()
-logfire.instrument_sqlite3()
+# logfire.instrument_psycopg()
+# logfire.instrument_sqlite3()
