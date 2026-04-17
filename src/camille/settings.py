@@ -169,7 +169,6 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # https://docs.djangoproject.com/en/6.0/topics/logging/#configuring-logging
 LOGGING = {
     "version": 1,
-    "disable_existing_loggers": False,
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
@@ -187,6 +186,10 @@ LOGGING = {
         },
     },
 }
+
+# Login
+LOGIN_REDIRECT_URL = "home"
+LOGOUT_REDIRECT_URL = "home"
 
 # Mattermost settings
 MATTERMOST_BASE_URL = environ.get("MATTERMOST_BASE_URL")

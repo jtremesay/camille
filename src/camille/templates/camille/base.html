@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 
@@ -5,11 +6,34 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Camille{% if page_title %} - {{ page_title }}{% endif %}</title>
+    <link rel="stylesheet" href="{% static 'dist/pure-min.css' %}">
+    <link rel="stylesheet" href="{% static 'camille/style.css' %}">
 </head>
 
 <body>
-    {% block content %}
-    {% endblock %}
+
+    <div class="header">
+        <div class="home-menu pure-menu pure-menu-horizontal pure-menu-fixed">
+            <a class="pure-menu-heading" href="">Camille</a>
+
+            <ul class="pure-menu-list">
+                {% if user.is_authenticated %}
+                <form class="pure-menu-item" method="post" action="{% url 'logout' %}">
+                    {% csrf_token %}
+                    <button class="pure-button" type="submit">logout</button>
+                </form>
+                {% else %}
+                <li class="pure-menu-item"><a href="{% url 'login' %}" class="pure-menu-link">Sign in</a></li>
+                <li class="pure-menu-item"><a href="{% url 'register' %}" class="pure-menu-link">Sign up</a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+
+    <div class="content">
+        {% block content %}
+        {% endblock %}
+    </div>
 </body>
 
 </html>

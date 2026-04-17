@@ -1,36 +1,15 @@
 {% extends "camille/base.html" %}
 
 {% block content %}
+<h2 class="content-head is-center">Sign in</h2>
 
-{% if form.errors %}
-<p>Your username and password didn't match. Please try again.</p>
-{% endif %}
-
-{% if next %}
-{% if user.is_authenticated %}
-<p>Your account doesn't have access to this page. To proceed,
-    please login with an account that has access.</p>
-{% else %}
-<p>Please login to see this page.</p>
-{% endif %}
-{% endif %}
-
-<form method="post" action="{% url 'login' %}">
-    {% csrf_token %}
-    <table>
-        <tr>
-            <td>{{ form.username.label_tag }}</td>
-            <td>{{ form.username }}</td>
-        </tr>
-        <tr>
-            <td>{{ form.password.label_tag }}</td>
-            <td>{{ form.password }}</td>
-        </tr>
-    </table>
-
-    <input type="submit" value="login">
-    <input type="hidden" name="next" value="{{ next }}">
-</form>
-
-<a href="{% url 'register' %}">Sign Up</a>
+<div class="pure-g">
+    <div class="l-box-lrg pure-u-1 pure-u-md-2-5">
+        <form class="pure-form pure-form-stacked" method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="pure-button">Sign in</button>
+        </form>
+    </div>
+</div>
 {% endblock %}
