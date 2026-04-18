@@ -29,6 +29,13 @@ class AgentConfigEditView(LoginRequiredMixin, UpdateView):
     def get_object(self, queryset=None):
         return AgentConfig.objects.get(user=self.request.user)
 
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        form.fields["personality"].queryset = AgentPersonality.objects.filter(
+            user=self.request.user
+        )
+        return form
+
 
 class AgentPersonalityCreateView(LoginRequiredMixin, CreateView):
     model = AgentPersonality
