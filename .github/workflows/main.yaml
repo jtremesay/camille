@@ -28,13 +28,14 @@ jobs:
       - 
         name: Collect static files
         run: uv run camille collectstatic --noinput
+        env:
+          SECRET_KEY: test-secret-key
+          SALT_KEY: test-salt-key
       -
         name: Run tests
         env:
           SECRET_KEY: test-secret-key
-          SECRET_KEY_FALLBACKS: ""
           SALT_KEY: test-salt-key
-          DEBUG: "true"
         run: uv run pytest tests/
 
   build:
