@@ -1,7 +1,8 @@
 import random
 from asyncio import create_task
 from collections.abc import Mapping
-from json import loads
+from datetime import datetime
+from json import dumps, loads
 from typing import Any, Optional
 
 import logfire
@@ -173,7 +174,13 @@ class Mattermost:
             )
 
             async with self.agent.iter(
-                message,
+                dumps({
+                    "user_id": user.id,
+                    "message": message,
+                    "datetime": datetime.fromtimestamp(
+                        post_data["create_at"] / 1000
+                    ).isoformat(),
+                }),
                 deps=deps,
                 model=model,
                 message_history=await conversation.amessages(),
