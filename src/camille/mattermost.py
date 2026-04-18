@@ -52,8 +52,8 @@ class Mattermost:
                 InstructionsCapability(),
                 MemoryCapability(),
                 CurrentTimeCapability(),
-                WebSearch(),
-                WebFetch(),
+                WebSearch(builtin=False),
+                WebFetch(builtin=False),
             ],
         )
 
