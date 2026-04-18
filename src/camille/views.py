@@ -120,6 +120,12 @@ class RegisterView(CreateView):
     form_class = UserCreationForm
     success_url = reverse_lazy("login")
 
+    def post(self, request, *args, **kwargs):
+        # Disable registration by returning a 403 Forbidden response
+        from django.http import HttpResponseForbidden
+
+        return HttpResponseForbidden("Registration is currently disabled.")
+
 
 class ProfileUpdateView(LoginRequiredMixin, UpdateView):
     model = User
