@@ -14,7 +14,10 @@ from camille.models import (
 
 
 class Command(BaseCommand):
-    help = "Mattermost agent"
+    # I'm really good at trashing the db and losing my credentials, so this is
+    # a nice way to quickly reimport them from env vars
+
+    help = "Credentials importer"
 
     def add_arguments(self, parser: ArgumentParser):
         parser.add_argument("username")
