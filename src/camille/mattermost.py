@@ -17,32 +17,58 @@ from httpx_ws import AsyncWebSocketSession, aconnect_ws
 from pydantic_ai import Agent, TextPart
 from pydantic_ai.capabilities import WebFetch, WebSearch
 
-from camille.ai import NoCredentialsError, create_model_for_user
+from camille.ai.capabilities.conversation import ConversationCapability
+from camille.ai.capabilities.current_time import CurrentTimeCapability
+from camille.ai.capabilities.instructions import InstructionsCapability
+from camille.ai.capabilities.mattermost import MattermostCapability
+from camille.ai.capabilities.memory import MemoryCapability
+from camille.ai.capabilities.personality import PersonalityCapability
+from camille.ai.deps import MattermostDeps
+from camille.ai.models import NoCredentialsError, create_model_for_user
 from camille.models import AgentConfig, MattermostConversation
+
+
+def get_client() -> AsyncClient:
+    return AsyncClient(
+        base_url=settings.MATTERMOST_BASE_URL + "/api/v4",
+        headers={"Authorization": f"Bearer {settings.MATTERMOST_API_TOKEN}"},
+    )
 
 
 class Mattermost:
     def __init__(self):
-        self.client_htt = AsyncClient(
-            base_url=settings.MATTERMOST_BASE_URL + "/api/v4",
-            headers={"Authorization": f"Bearer {settings.MATTERMOST_API_TOKEN}"},
-        )
+        self.client_http = get_client()
         self.client_ws: Optional[AsyncWebSocketSession] = None
         self.me_mm_id: Optional[str] = None
+        self.me_name: Optional[str] = None
         self.current_seq = -1
-        self.agent = Agent(capabilities=[WebSearch(), WebFetch()])
+        self.agent = Agent(
+            deps_type=MattermostDeps,
+            capabilities=[
+                PersonalityCapability(),
+                ConversationCapability(),
+                MattermostCapability(),
+                InstructionsCapability(),
+                MemoryCapability(),
+                CurrentTimeCapability(),
+                WebSearch(),
+                WebFetch(),
+            ],
+        )
 
     async def __aenter__(self):
-        await self.client_htt.__aenter__()
+        await self.client_http.__aenter__()
 
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
-        await self.client_htt.__aexit__(exc_type, exc_val, exc_tb)
+        await self.client_http.__aexit__(exc_type, exc_val, exc_tb)
 
     async def run(self):
-        self.me_mm_id = (await self.client_htt.get("/users/me")).json()["id"]
-        async with aconnect_ws("websocket", self.client_htt) as ws:
+        me = (await self.client_http.get("/users/me")).json()
+        self.me_mm_id = me["id"]
+        self.me_name = me["first_name"] or me["username"]
+        async with aconnect_ws("websocket", self.client_http) as ws:
             self.client_ws = ws
             while True:
                 event = await ws.receive_json()
@@ -59,6 +85,10 @@ class Mattermost:
     async def on_posted(self, data: Mapping[str, Any]):
         # Not mentioned, not a DM, not a group DM, so ignore
         if self.me_mm_id not in data.get("mentions", ""):
+            return
+
+        # Ignore messages from non-users (like "System")
+        if not data["sender_name"].startswith("@"):
             return
 
         post_data = loads(data["post"])
@@ -118,6 +148,25 @@ class Mattermost:
                 )
                 return
 
+            deps = MattermostDeps(
+                agent_name=self.me_name,
+                current_user=user,
+                all_users=[
+                    user
+                    async for user in User.objects.filter(
+                        mm_binding__mm_id__in=[
+                            m["user_id"]
+                            for m in (
+                                await self.client_http.get(
+                                    f"/channels/{channel_id}/members"
+                                )
+                            ).json()
+                        ]
+                    )
+                ],
+                channel_name=data["channel_display_name"],
+            )
+
             conversation, _ = await MattermostConversation.objects.aget_or_create(
                 root_id=root_id,
                 defaults={"channel_id": channel_id},
@@ -125,6 +174,7 @@ class Mattermost:
 
             async with self.agent.iter(
                 message,
+                deps=deps,
                 model=model,
                 message_history=await conversation.amessages(),
             ) as run:
@@ -160,7 +210,7 @@ class Mattermost:
         if root_id is not None:
             data["root_id"] = root_id
 
-        await self.client_htt.post(
+        await self.client_http.post(
             "/posts",
             json=data,
         )

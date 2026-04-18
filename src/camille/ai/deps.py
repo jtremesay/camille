@@ -10,3 +10,8 @@ class Deps:
     all_users: list[
         User
     ]  # All users in the conversation, used for context and permissions
+
+
+@dataclass
+class MattermostDeps(Deps):
+    channel_name: str
