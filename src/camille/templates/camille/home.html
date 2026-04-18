@@ -50,15 +50,6 @@
     <a href="{% url 'awsbedrock_credentials_create' %}">create</a>
     {% endif %}<br>
 
-    Gateway:
-    {% if request.user.gateway_credentials %}
-    <a href="{% url 'gateway_credentials_update' %}">edit</a>
-    -
-    <a href="{% url 'gateway_credentials_delete' %}">delete</a>
-    {% else %}
-    <a href="{% url 'gateway_credentials_create' %}">create</a>
-    {% endif %}<br>
-
     GoogleGLA:
     {% if request.user.googlegla_credentials %}
     <a href="{% url 'googlegla_credentials_update' %}">edit</a>

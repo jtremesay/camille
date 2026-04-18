@@ -75,21 +75,6 @@ urlpatterns = [
         name="awsbedrock_credentials_delete",
     ),
     path(
-        "credentials/gateway/create/",
-        views.GatewayCredentialsCreateView.as_view(),
-        name="gateway_credentials_create",
-    ),
-    path(
-        "credentials/gateway/edit/",
-        views.GatewayCredentialsUpdateView.as_view(),
-        name="gateway_credentials_update",
-    ),
-    path(
-        "credentials/gateway/delete/",
-        views.GatewayCredentialsDeleteView.as_view(),
-        name="gateway_credentials_delete",
-    ),
-    path(
         "credentials/googlegla/create/",
         views.GoogleGLACredentialsCreateView.as_view(),
         name="googlegla_credentials_create",

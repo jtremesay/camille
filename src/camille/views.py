@@ -10,7 +10,6 @@ from camille.models import (
     AgentPersonality,
     AnthropicCredentials,
     AWSBedrockCredentials,
-    GatewayCredentials,
     GoogleGLACredentials,
     MattermostBinding,
     MistralCredentials,
@@ -186,34 +185,6 @@ class AWSBedrockCredentialsDeleteView(LoginRequiredMixin, DeleteView):
 
     def get_object(self, queryset=None):
         return AWSBedrockCredentials.objects.get(user=self.request.user)
-
-
-# Gateway Credentials Views
-class GatewayCredentialsCreateView(LoginRequiredMixin, CreateView):
-    model = GatewayCredentials
-    fields = ["api_key"]
-    success_url = reverse_lazy("home")
-
-    def form_valid(self, form):
-        form.instance.user = self.request.user
-        return super().form_valid(form)
-
-
-class GatewayCredentialsUpdateView(LoginRequiredMixin, UpdateView):
-    model = GatewayCredentials
-    fields = ["api_key"]
-    success_url = reverse_lazy("home")
-
-    def get_object(self, queryset=None):
-        return GatewayCredentials.objects.get(user=self.request.user)
-
-
-class GatewayCredentialsDeleteView(LoginRequiredMixin, DeleteView):
-    model = GatewayCredentials
-    success_url = reverse_lazy("home")
-
-    def get_object(self, queryset=None):
-        return GatewayCredentials.objects.get(user=self.request.user)
 
 
 # GoogleGLA Credentials Views

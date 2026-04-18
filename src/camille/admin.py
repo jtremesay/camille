@@ -35,12 +35,6 @@ class AWSBedrockCredentialsAdmin(admin.ModelAdmin):
     list_filter = ("user__username",)
 
 
-@admin.register(models.GatewayCredentials)
-class GatewayCredentialsAdmin(admin.ModelAdmin):
-    list_display = ("user",)
-    list_filter = ("user__username",)
-
-
 @admin.register(models.GoogleGLACredentials)
 class GoogleGLACredentialsAdmin(admin.ModelAdmin):
     list_display = ("user",)

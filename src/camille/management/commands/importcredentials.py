@@ -7,7 +7,6 @@ from django.core.management.base import BaseCommand
 from camille.models import (
     AnthropicCredentials,
     AWSBedrockCredentials,
-    GatewayCredentials,
     GoogleGLACredentials,
     MistralCredentials,
     OpenRouterCredentials,
@@ -44,17 +43,6 @@ class Command(BaseCommand):
             )
             self.stdout.write(
                 self.style.SUCCESS("AWS Bedrock credentials imported successfully.")
-            )
-
-        if api_key := environ.get("GATEWAY_API_KEY"):
-            GatewayCredentials.objects.update_or_create(
-                user=user,
-                defaults={
-                    "api_key": api_key,
-                },
-            )
-            self.stdout.write(
-                self.style.SUCCESS("Gateway credentials imported successfully.")
             )
 
         if api_key := environ.get("GOOGLE_GLA_API_KEY"):

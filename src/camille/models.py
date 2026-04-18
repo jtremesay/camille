@@ -84,13 +84,6 @@ class AWSBedrockCredentials(models.Model):
     region_name = models.CharField(max_length=64, default="eu-west-3")
 
 
-class GatewayCredentials(models.Model):
-    user = models.OneToOneField(
-        User, on_delete=models.CASCADE, related_name="gateway_credentials"
-    )
-    api_key = EncryptedCharField(max_length=255)
-
-
 class GoogleGLACredentials(models.Model):
     user = models.OneToOneField(
         User, on_delete=models.CASCADE, related_name="google_gla_credentials"
