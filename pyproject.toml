@@ -3,21 +3,21 @@ name = "camille"
 version = "6.0.0"
 description = "An AI assistant for Mattermost"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.12"
 dependencies = [
-    "channels[daphne]>=4.3.1",
-    "daphne>=4.2.1",
-    "dj-database-url>=3.0.1",
-    "django>=5.2.5",
-    "django-fernet-encrypted-fields>=0.4.0",
-    "httpx-ws>=0.7.2",
-    "httpx[brotli,http2,zstd]>=0.28.1",
-    "logfire[httpx]>=4.3.1",
-    "psycopg[binary]>=3.2.9",
-    "pydantic-ai-slim[anthropic,bedrock,duckduckgo,google,mistral,openrouter,web-fetch]>=0.7.0",
-    "python-dotenv>=1.1.1",
-    "servestatic[brotli]>=4.2.0",
-    "tzdata>=2026.1",
+    "channels[daphne]",
+    "daphne",
+    "dj-database-url",
+    "django",
+    "django-fernet-encrypted-fields",
+    "httpx-ws",
+    "httpx[brotli,http2,zstd]",
+    "logfire[httpx]",
+    "psycopg[binary]",
+    "pydantic-ai-slim[anthropic,bedrock,duckduckgo,google,mistral,openrouter,web-fetch]",
+    "python-dotenv",
+    "servestatic[brotli]",
+    "tzdata",
 ]
 
 [project.scripts]
