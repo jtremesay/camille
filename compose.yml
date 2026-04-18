@@ -24,6 +24,7 @@ services:
       - "camille_secret_key"
       - "camille_logfire_token"
     networks:
+      - default
       - traefik_public
     deploy:
       labels:
