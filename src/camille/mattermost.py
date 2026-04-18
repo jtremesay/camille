@@ -42,7 +42,7 @@ class Mattermost:
         self.client_ws: Optional[AsyncWebSocketSession] = None
         self.me_mm_id: Optional[str] = None
         self.me_name: Optional[str] = None
-        self.current_seq = -1
+        self.current_seq = 0
         self.agent = Agent(
             deps_type=MattermostDeps,
             capabilities=[
@@ -73,10 +73,9 @@ class Mattermost:
             self.client_ws = ws
             while True:
                 event = await ws.receive_json()
-                self.current_seq = max(self.current_seq, event["seq"])
-
-                # Concurrently handle events
-                create_task(self.handle_event(event["event"], event["data"]))
+                if kind := event.get("event"):
+                    # Concurrently handle events
+                    create_task(self.handle_event(kind, event["data"]))
 
     async def handle_event(self, kind: str, data: Mapping[str, Any]):
         if (handler := getattr(self, f"on_{kind.replace(' ', '_')}", None)) is not None:
@@ -172,6 +171,8 @@ class Mattermost:
                 root_id=root_id,
                 defaults={"channel_id": channel_id},
             )
+
+            await self.user_typing(channel_id)
 
             async with self.agent.iter(
                 dumps({
@@ -297,3 +298,14 @@ Available commands:
                 )
 
         return True
+
+    async def ws_send(self, action: str, data: dict) -> None:
+        self.current_seq += 1
+        await self.client_ws.send_json({
+            "action": action,
+            "data": data,
+            "seq": self.current_seq,
+        })
+
+    async def user_typing(self, channel_id: str) -> None:
+        await self.ws_send("user_typing", {"channel_id": channel_id})
