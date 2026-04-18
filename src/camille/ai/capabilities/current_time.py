@@ -1,8 +1,8 @@
-from datetime import datetime, timezone
 from typing import Any
 
 from asgiref.sync import sync_to_async
 from django.template.loader import render_to_string
+from django.utils import timezone
 from pydantic_ai import RunContext
 from pydantic_ai.capabilities import AbstractCapability
 
@@ -16,7 +16,7 @@ class CurrentTimeCapability(AbstractCapability):
             return render_to_string(
                 "camille/ai/instructions/current_time.md",
                 {
-                    "current_time": datetime.now(timezone.utc),
+                    "current_time": timezone.now(),
                 },
             )
 

@@ -4,6 +4,7 @@ from collections.abc import Mapping
 from datetime import datetime
 from json import dumps, loads
 from typing import Any, Optional
+from zoneinfo import ZoneInfo
 
 import logfire
 from asgiref.sync import sync_to_async
@@ -182,7 +183,7 @@ class Mattermost:
                     "user_id": user.id,
                     "message": message,
                     "datetime": datetime.fromtimestamp(
-                        post_data["create_at"] / 1000
+                        post_data["create_at"] / 1000, tz=ZoneInfo(settings.TIME_ZONE)
                     ).isoformat(),
                 }),
                 deps=deps,
