@@ -27,6 +27,7 @@ ENV UV_NO_SYNC=1
 # Collect static files
 RUN \
     SECRET_KEY="empty" \
+    SALT_KEY="empty" \
     uv run camille collectstatic --noinput
 
 # Expose port and run
