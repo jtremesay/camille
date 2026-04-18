@@ -6,10 +6,12 @@ from json import dumps, loads
 from typing import Any, Optional
 
 import logfire
+from asgiref.sync import sync_to_async
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
 from django.core.signing import TimestampSigner
+from django.db import close_old_connections
 from django.urls import reverse
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
@@ -79,6 +81,7 @@ class Mattermost:
 
     async def handle_event(self, kind: str, data: Mapping[str, Any]):
         if (handler := getattr(self, f"on_{kind.replace(' ', '_')}", None)) is not None:
+            await sync_to_async(close_old_connections)()
             await handler(data)
 
     @logfire.instrument("on_posted")
