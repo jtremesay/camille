@@ -1,11 +1,10 @@
-/.venv/
-*.pyc
+/.coverage
 /*.egg-info/
-
 /.env
+/htmlcov/
+*.pyc
+/.pytest_cache/
+/.ruff_cache/
 /*.sqlite3
 /static/
-
-# Node modules
-/node_modules/
-/src/camille/static/dist/
+/.venv/
