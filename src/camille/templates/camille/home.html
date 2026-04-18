@@ -51,7 +51,7 @@
     {% endif %}<br>
 
     GoogleGLA:
-    {% if request.user.googlegla_credentials %}
+    {% if request.user.google_gla_credentials %}
     <a href="{% url 'googlegla_credentials_update' %}">edit</a>
     -
     <a href="{% url 'googlegla_credentials_delete' %}">delete</a>
