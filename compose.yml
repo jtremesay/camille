@@ -7,10 +7,11 @@ services:
       POSTGRES_PASSWORD: "camille"
     volumes:
       - "pg_data:/var/lib/postgresql"
+    networks:
+      - default
   
   web:
     image: "killruana/camille:v6"
-    command: "camille mattermost"
     environment:
       - "MATTERMOST_BASE_URL=https://mattermost.jtremesay.org"
       - "ALLOWED_HOSTS=camille.jtremesay.org"
@@ -48,8 +49,11 @@ services:
       - "camille_salt_key"
       - "camille_secret_key"
       - "camille_logfire_token"
+    networks:
+      - default
 
 networks:
+  default:
   traefik_public:
     external: true
 
