@@ -227,6 +227,8 @@ dependencies = [
 dev = [
     { name = "ipython" },
     { name = "pydantic-ai-slim", extra = ["cli"] },
+]
+test = [
     { name = "pytest" },
     { name = "pytest-asyncio" },
     { name = "pytest-cov" },
@@ -254,6 +256,8 @@ requires-dist = [
 dev = [
     { name = "ipython", specifier = ">=9.4.0" },
     { name = "pydantic-ai-slim", extras = ["cli"], specifier = ">=1.84.0" },
+]
+test = [
     { name = "pytest", specifier = ">=8.3.0" },
     { name = "pytest-asyncio", specifier = ">=0.24.0" },
     { name = "pytest-cov", specifier = ">=6.0.0" },

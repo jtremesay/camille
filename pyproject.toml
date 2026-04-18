@@ -27,6 +27,8 @@ camille = "camille.manage:main"
 dev = [
     "ipython>=9.4.0",
     "pydantic-ai-slim[cli]>=1.84.0",
+]
+test = [
     "pytest>=8.3.0",
     "pytest-django>=4.9.0",
     "pytest-asyncio>=0.24.0",
