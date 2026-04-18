@@ -1,11 +1,20 @@
 {% extends "camille/base.html" %}
 
+{% block title %}Unbind Mattermost - Camille{% endblock %}
+
 {% block content %}
-<h2>Confirm unbind Mattermost account</h2>
-<p>Are you sure you want to unbind your Mattermost account <strong>{{ request.user.mm_binding.mm_id }}</strong> from
-    your user account <strong>{{ request.user.username }}</strong>?</p>
-<form method="post">
-    {% csrf_token %}
-    <button type="submit">Confirm unbind</button>
-</form>
+<div class="form-container">
+    <div class="form-card delete-confirm">
+        <div class="warning-icon">!</div>
+        <h1>Unbind Mattermost</h1>
+        <p>Are you sure you want to unlink your Mattermost account <strong>{{ request.user.mm_binding.mm_id }}</strong>?</p>
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-actions" style="justify-content: center;">
+                <a href="{% url 'home' %}" class="btn btn-ghost">Cancel</a>
+                <button type="submit" class="btn btn-danger">Unbind</button>
+            </div>
+        </form>
+    </div>
+</div>
 {% endblock %}

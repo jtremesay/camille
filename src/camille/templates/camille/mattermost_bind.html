@@ -1,11 +1,20 @@
 {% extends "camille/base.html" %}
 
-{% block content %}
-<h2>Mattermost Bind</h2>
+{% block title %}Mattermost Bind - Camille{% endblock %}
 
-{% if error %}
-<p>{{ error }}</p>
-{% else %}
-<p>Your account has been successfully linked to a Mattermost account.</p>
-{% endif %}
+{% block content %}
+<div class="form-container">
+    <div class="form-card bind-result">
+        {% if error %}
+        <div class="result-icon error">!</div>
+        <h1>Binding Failed</h1>
+        <p>{{ error }}</p>
+        {% else %}
+        <div class="result-icon success">&#10003;</div>
+        <h1>Account Linked</h1>
+        <p>Your account has been successfully linked to Mattermost.</p>
+        {% endif %}
+        <a href="{% url 'home' %}" class="btn btn-primary">Back to Dashboard</a>
+    </div>
+</div>
 {% endblock %}
