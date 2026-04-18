@@ -34,6 +34,7 @@ test = [
 
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "camille.settings"
+testpaths = ["tests"]
 python_files = ["test_*.py"]
 asyncio_mode = "auto"
 addopts = "--cov=camille --cov-report=term-missing --cov-report=html"
