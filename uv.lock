@@ -220,6 +220,7 @@ dependencies = [
     { name = "pydantic-ai-slim", extra = ["anthropic", "bedrock", "duckduckgo", "google", "mistral", "openrouter", "web-fetch"] },
     { name = "python-dotenv" },
     { name = "servestatic", extra = ["brotli"] },
+    { name = "tzdata" },
 ]
 
 [package.dev-dependencies]
@@ -242,6 +243,7 @@ requires-dist = [
     { name = "pydantic-ai-slim", extras = ["anthropic", "bedrock", "duckduckgo", "google", "mistral", "openrouter", "web-fetch"], specifier = ">=0.7.0" },
     { name = "python-dotenv", specifier = ">=1.1.1" },
     { name = "servestatic", extras = ["brotli"], specifier = ">=4.2.0" },
+    { name = "tzdata", specifier = ">=2026.1" },
 ]
 
 [package.metadata.requires-dev]
