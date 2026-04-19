@@ -96,4 +96,8 @@ Deployment is automated via GitHub Actions on push to the `v6` branch: tests run
 
 ## License
 
-See the project repository for license information.
+Copyright (C) Jonathan Tremesaygues <jonathan.tremesaygues@slaanesh.org>
+
+This program is free software: you can redistribute it and/or modify it under the terms of the [GNU Affero General Public License](LICENSE) as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+See [LICENSE](LICENSE) for the full text.
