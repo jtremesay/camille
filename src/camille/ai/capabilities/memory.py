@@ -18,7 +18,7 @@ class MemoryToolset(FunctionToolset):
             """Set your memory notes for the current user."""
             config = ctx.deps.current_user.agent_config
             config.notes = notes
-            config.save()
+            config.save(update_fields=["notes"])
 
         @self.tool()
         @sync_to_async
@@ -26,7 +26,7 @@ class MemoryToolset(FunctionToolset):
             """Append to your memory notes for the current user."""
             config = ctx.deps.current_user.agent_config
             config.notes += "\n" + notes
-            config.save()
+            config.save(update_fields=["notes"])
 
         @self.tool()
         @sync_to_async
@@ -40,7 +40,7 @@ class MemoryToolset(FunctionToolset):
             """
             config = ctx.deps.current_user.agent_config
             config.notes = config.notes.replace(search, replace)
-            config.save()
+            config.save(update_fields=["notes"])
 
 
 class MemoryCapability(AbstractCapability):
