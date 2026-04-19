@@ -28,6 +28,20 @@ class MemoryToolset(FunctionToolset):
             config.notes += "\n" + notes
             config.save()
 
+        @self.tool()
+        @sync_to_async
+        def search_and_replace_memory_for_current_user(
+            ctx: RunContext[Deps], search: str, replace: str
+        ) -> None:
+            """Search and replace in your memory notes for the current user.
+
+            :param search: The string to search for in the memory notes.
+            :param replace: The string to replace the search string with in the memory notes.
+            """
+            config = ctx.deps.current_user.agent_config
+            config.notes = config.notes.replace(search, replace)
+            config.save()
+
 
 class MemoryCapability(AbstractCapability):
     def get_toolset(self) -> MemoryToolset:
