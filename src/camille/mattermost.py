@@ -204,6 +204,7 @@ class Mattermost:
                         ]
                     )
                 ],
+                channel_id=channel_id,
                 channel_name=data["channel_display_name"],
                 mattermost_client=self.client_http,
             )
@@ -229,7 +230,9 @@ class Mattermost:
                                     channel_id,
                                     part.content,
                                     root_id=root_id,
+                                    file_ids=deps.generated_files_ids,
                                 )
+                                deps.generated_files_ids.clear()
 
                 await conversation.runs.acreate(
                     user=user,
@@ -247,11 +250,18 @@ class Mattermost:
             await conversation.adelete()
 
     async def send_message(
-        self, channel_id: str, message: str, root_id: Optional[str] = None
+        self,
+        channel_id: str,
+        message: str,
+        root_id: Optional[str] = None,
+        file_ids: Optional[list[str]] = None,
     ):
         data = {"channel_id": channel_id, "message": message}
         if root_id is not None:
             data["root_id"] = root_id
+
+        if file_ids:
+            data["file_ids"] = file_ids
 
         await self.client_http.post(
             "/posts",

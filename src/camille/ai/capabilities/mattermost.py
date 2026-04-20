@@ -42,6 +42,24 @@ class MattermostToolset(FunctionToolset):
                 media_type=r.headers.get("Content-Type", "application/octet-stream"),
             )
 
+        @self.tool()
+        async def add_file_to_mattermost_post(
+            ctx: RunContext[MattermostDeps], filename: str, content: bytes | str
+        ) -> None:
+            """Add a file to the post you are writing."""
+            r = await ctx.deps.mattermost_client.post(
+                "/files",
+                content=content,
+                params={
+                    "channel_id": ctx.deps.channel_id,
+                    "filename": filename,
+                },
+            )
+            r.raise_for_status()
+
+            file_id = r.json()["file_infos"][0]["id"]
+            ctx.deps.generated_files_ids.append(file_id)
+
 
 class MattermostCapability(AbstractCapability):
     def get_toolset(self) -> MattermostToolset:
