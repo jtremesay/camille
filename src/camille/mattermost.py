@@ -168,6 +168,26 @@ class Mattermost:
                 )
                 return
 
+            user_prompt = {
+                "user_id": user.id,
+                "message": message,
+                "datetime": datetime.fromtimestamp(
+                    post_data["create_at"] / 1000, tz=ZoneInfo(settings.TIME_ZONE)
+                ).isoformat(),
+            }
+
+            post_metadata = post_data.get("metadata", {})
+            if files_data := post_metadata.get("files", []):
+                files = []
+                for file in files_data:
+                    files.append({
+                        "id": file["id"],
+                        "name": file["name"],
+                        "size": file["size"],
+                        "mime_type": file["mime_type"],
+                    })
+                user_prompt["files"] = files
+
             deps = MattermostDeps(
                 agent_name=self.me_name,
                 current_user=user,
@@ -185,6 +205,7 @@ class Mattermost:
                     )
                 ],
                 channel_name=data["channel_display_name"],
+                mattermost_client=self.client_http,
             )
 
             conversation, _ = await MattermostConversation.objects.aget_or_create(
@@ -195,13 +216,7 @@ class Mattermost:
             await self.user_typing(channel_id)
 
             async with self.agent.iter(
-                dumps({
-                    "user_id": user.id,
-                    "message": message,
-                    "datetime": datetime.fromtimestamp(
-                        post_data["create_at"] / 1000, tz=ZoneInfo(settings.TIME_ZONE)
-                    ).isoformat(),
-                }),
+                dumps(user_prompt),
                 deps=deps,
                 model=model,
                 message_history=await conversation.amessages(),

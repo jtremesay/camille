@@ -17,6 +17,7 @@
 from dataclasses import dataclass
 
 from django.contrib.auth.models import User
+from httpx import AsyncClient
 
 
 @dataclass
@@ -31,3 +32,4 @@ class Deps:
 @dataclass
 class MattermostDeps(Deps):
     channel_name: str
+    mattermost_client: AsyncClient

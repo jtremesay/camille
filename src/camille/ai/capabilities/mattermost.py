@@ -18,13 +18,35 @@ from typing import Any
 
 from asgiref.sync import sync_to_async
 from django.template.loader import render_to_string
-from pydantic_ai import RunContext
+from pydantic_ai import FunctionToolset, RunContext
 from pydantic_ai.capabilities import AbstractCapability
+from pydantic_ai.messages import BinaryContent
 
 from camille.ai.deps import MattermostDeps
 
 
+class MattermostToolset(FunctionToolset):
+    def __init__(self):
+        super().__init__(id="mattermost")
+
+        @self.tool()
+        async def get_mattermost_file(
+            ctx: RunContext[MattermostDeps], file_id: str
+        ) -> BinaryContent:
+            """Get the contents of a Mattermost file by its ID."""
+            r = await ctx.deps.mattermost_client.get(f"/files/{file_id}")
+            r.raise_for_status()
+
+            return BinaryContent(
+                r.content,
+                media_type=r.headers.get("Content-Type", "application/octet-stream"),
+            )
+
+
 class MattermostCapability(AbstractCapability):
+    def get_toolset(self) -> MattermostToolset:
+        return MattermostToolset()
+
     def get_instructions(self) -> Any:
         @sync_to_async
         def inner(ctx: RunContext[MattermostDeps]) -> str:
