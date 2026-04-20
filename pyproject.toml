@@ -24,7 +24,7 @@ dependencies = [
 camille = "camille.manage:main"
 
 [dependency-groups]
-dev = ["ipython>=9.4.0", "pydantic-ai-slim[cli]>=1.84.0"]
+dev = ["ipython>=9.4.0", "pydantic-ai-slim[cli]>=1.84.1"]
 test = [
     "pytest>=8.3.0",
     "pytest-django>=4.9.0",
