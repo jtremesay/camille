@@ -322,6 +322,25 @@ class Mattermost:
                     root_id=root_id,
                 )
 
+            case "connect":
+                if user is None:
+                    await self.send_message(
+                        channel_id,
+                        "Your Mattermost account is not linked to any user account. Please send `!/link` in DM to link your account.",
+                        root_id=root_id,
+                    )
+                    return True
+
+                token = TimestampSigner().sign_object({
+                    "user_id": user.id,
+                })
+                url = f"https://{settings.MAIN_HOST}{reverse('passwordless_login')}?token={token}"
+                await self.send_message(
+                    channel_id,
+                    f"Click here to connect: {url}",
+                    root_id=root_id,
+                )
+
             case "help":
                 await self.send_message(
                     channel_id,
@@ -330,6 +349,7 @@ Available commands:
 
 - `!/help`: Show this message.
 - `!/link`: Link your Mattermost account to a user account.
+- `!/connect`: Generate a passwordless login link.
 - `!/reset_password`: Generate a password reset link for your user account. Only works if your Mattermost account is linked to a user account.
 """,
                     root_id=root_id,

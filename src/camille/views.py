@@ -14,12 +14,14 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+from django.contrib.auth import login
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
 from django.core.signing import BadSignature, SignatureExpired, TimestampSigner
+from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, DeleteView, TemplateView, UpdateView
+from django.views.generic import CreateView, DeleteView, TemplateView, UpdateView, View
 
 from camille.models import (
     AgentConfig,
@@ -298,3 +300,30 @@ class OpenRouterCredentialsDeleteView(LoginRequiredMixin, DeleteView):
 
     def get_object(self, queryset=None):
         return OpenRouterCredentials.objects.get(user=self.request.user)
+
+
+class PasswordlessLoginView(View):
+    def get(self, request):
+        # Get token from query parameters
+        token = request.GET.get("token")
+        if token is None:
+            return HttpResponseRedirect(reverse_lazy("login"))
+
+        # Validate token
+        signer = TimestampSigner()
+        try:
+            user_id = signer.unsign_object(token, max_age=60 * 15)["user_id"]
+        except SignatureExpired:
+            return HttpResponseRedirect(reverse_lazy("login"))
+        except BadSignature:
+            return HttpResponseRedirect(reverse_lazy("login"))
+
+        # Get user
+        try:
+            user = User.objects.get(pk=user_id)
+        except User.DoesNotExist:
+            return HttpResponseRedirect(reverse_lazy("login"))
+
+        # Login user
+        login(request, user, backend="django.contrib.auth.backends.ModelBackend")
+        return HttpResponseRedirect(reverse_lazy("home"))

@@ -146,6 +146,11 @@ urlpatterns = [
         views.MattermostBindDeleteView.as_view(),
         name="mattermost_unbind",
     ),
+    path(
+        "auth/passwordless/",
+        views.PasswordlessLoginView.as_view(),
+        name="passwordless_login",
+    ),
     # Account management
     path("accounts/register/", views.RegisterView.as_view(), name="register"),
     path(

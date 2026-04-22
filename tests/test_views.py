@@ -14,10 +14,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-import pytest
-from django.contrib.auth.models import User
 from django.core.signing import TimestampSigner
-from django.test import Client
 from django.urls import reverse
 
 from camille.models import (
@@ -197,3 +194,32 @@ class TestCredentialsCRUD:
         assert not AnthropicCredentials.objects.filter(
             pk=anthropic_credentials.pk
         ).exists()
+
+
+class TestPasswordlessLoginView:
+    def test_no_token(self, client):
+        response = client.get(reverse("passwordless_login"))
+        assert response.status_code == 302
+        assert response.url == reverse("login")
+
+    def test_invalid_token(self, client):
+        response = client.get(f"{reverse('passwordless_login')}?token=invalid_token")
+        assert response.status_code == 302
+        assert response.url == reverse("login")
+
+    def test_valid_token_logs_in_user(self, client, user):
+        signer = TimestampSigner()
+        token = signer.sign_object({"user_id": user.id})
+        response = client.get(f"{reverse('passwordless_login')}?token={token}")
+        assert response.status_code == 302
+        assert response.url == reverse("home")
+        # Verify user is logged in
+        response = client.get(reverse("home"))
+        assert response.status_code == 200
+
+    def test_nonexistent_user(self, client, db):
+        signer = TimestampSigner()
+        token = signer.sign_object({"user_id": 99999})
+        response = client.get(f"{reverse('passwordless_login')}?token={token}")
+        assert response.status_code == 302
+        assert response.url == reverse("login")
