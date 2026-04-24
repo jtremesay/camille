@@ -272,7 +272,7 @@ requires-dist = [
 [package.metadata.requires-dev]
 dev = [
     { name = "ipython", specifier = ">=9.4.0" },
-    { name = "pydantic-ai-slim", extras = ["cli"], specifier = ">=1.85.1" },
+    { name = "pydantic-ai-slim", extras = ["cli"], specifier = ">=1.86.0" },
 ]
 test = [
     { name = "pytest", specifier = ">=8.3.0" },
