@@ -234,7 +234,7 @@ dependencies = [
     { name = "httpx-ws" },
     { name = "logfire", extra = ["httpx"] },
     { name = "psycopg", extra = ["binary"] },
-    { name = "pydantic-ai-slim", extra = ["anthropic", "bedrock", "duckduckgo", "google", "mistral", "openrouter", "web-fetch"] },
+    { name = "pydantic-ai-slim", extra = ["anthropic", "bedrock", "duckduckgo", "google", "mistral", "openrouter", "retries", "web-fetch"] },
     { name = "python-dotenv" },
     { name = "servestatic", extra = ["brotli"] },
     { name = "tzdata" },
@@ -263,7 +263,7 @@ requires-dist = [
     { name = "httpx-ws" },
     { name = "logfire", extras = ["httpx"] },
     { name = "psycopg", extras = ["binary"] },
-    { name = "pydantic-ai-slim", extras = ["anthropic", "bedrock", "duckduckgo", "google", "mistral", "openrouter", "web-fetch"] },
+    { name = "pydantic-ai-slim", extras = ["anthropic", "bedrock", "duckduckgo", "google", "mistral", "openrouter", "retries", "web-fetch"] },
     { name = "python-dotenv" },
     { name = "servestatic", extras = ["brotli"] },
     { name = "tzdata" },
@@ -1769,6 +1769,9 @@ mistral = [
 ]
 openrouter = [
     { name = "openai" },
+]
+retries = [
+    { name = "tenacity" },
 ]
 web-fetch = [
     { name = "markdownify" },

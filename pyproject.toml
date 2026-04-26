@@ -14,7 +14,7 @@ dependencies = [
     "httpx[brotli,http2,zstd]",
     "logfire[httpx]",
     "psycopg[binary]",
-    "pydantic-ai-slim[anthropic,bedrock,duckduckgo,google,mistral,openrouter,web-fetch]",
+    "pydantic-ai-slim[anthropic,bedrock,duckduckgo,google,mistral,openrouter,retries,web-fetch]",
     "python-dotenv",
     "servestatic[brotli]",
     "tzdata",

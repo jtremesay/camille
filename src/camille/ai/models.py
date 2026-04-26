@@ -15,6 +15,7 @@
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 from django.contrib.auth.models import User
+from httpx import AsyncClient, HTTPStatusError
 from pydantic_ai.models import Model
 from pydantic_ai.models.anthropic import AnthropicModel
 from pydantic_ai.models.bedrock import BedrockConverseModel
@@ -26,6 +27,8 @@ from pydantic_ai.providers.bedrock import BedrockProvider
 from pydantic_ai.providers.google import GoogleProvider
 from pydantic_ai.providers.mistral import MistralProvider
 from pydantic_ai.providers.openrouter import OpenRouterProvider
+from pydantic_ai.retries import AsyncTenacityTransport, RetryConfig, wait_retry_after
+from tenacity import retry_if_exception_type, stop_after_attempt, wait_exponential
 
 from camille.models import (
     AnthropicCredentials,
@@ -34,6 +37,32 @@ from camille.models import (
     MistralCredentials,
     OpenRouterCredentials,
 )
+
+
+def create_retrying_client():
+    """Create a client with smart retry handling for multiple error types."""
+
+    def should_retry_status(response):
+        """Raise exceptions for retryable HTTP status codes."""
+        if response.status_code in (429, 502, 503, 504):
+            response.raise_for_status()  # This will raise HTTPStatusError
+
+    transport = AsyncTenacityTransport(
+        config=RetryConfig(
+            # Retry on HTTP errors and connection issues
+            retry=retry_if_exception_type((HTTPStatusError, ConnectionError)),
+            # Smart waiting: respects Retry-After headers, falls back to exponential backoff
+            wait=wait_retry_after(
+                fallback_strategy=wait_exponential(multiplier=1, max=60), max_wait=300
+            ),
+            # Stop after 5 attempts
+            stop=stop_after_attempt(5),
+            # Re-raise the last exception if all retries fail
+            reraise=True,
+        ),
+        validate_response=should_retry_status,
+    )
+    return AsyncClient(transport=transport, timeout=300)
 
 
 class NoCredentialsError(ValueError):
@@ -50,7 +79,9 @@ async def create_anthropic_model_for_user(user: User, model_name: str) -> Model:
 
     return AnthropicModel(
         model_name,
-        provider=AnthropicProvider(api_key=credentials.api_key),
+        provider=AnthropicProvider(
+            api_key=credentials.api_key, http_client=create_retrying_client()
+        ),
     )
 
 
@@ -80,7 +111,9 @@ async def create_google_model_for_user(user: User, model_name: str) -> Model:
 
     return GoogleModel(
         model_name,
-        provider=GoogleProvider(api_key=credentials.api_key),
+        provider=GoogleProvider(
+            api_key=credentials.api_key, http_client=create_retrying_client()
+        ),
     )
 
 
@@ -94,7 +127,9 @@ async def create_mistral_model_for_user(user: User, model_name: str) -> Model:
 
     return MistralModel(
         model_name,
-        provider=MistralProvider(api_key=credentials.api_key),
+        provider=MistralProvider(
+            api_key=credentials.api_key, http_client=create_retrying_client()
+        ),
     )
 
 
@@ -108,7 +143,9 @@ async def create_openrouter_model_for_user(user: User, model_name: str) -> Model
 
     return OpenRouterModel(
         model_name,
-        provider=OpenRouterProvider(api_key=credentials.api_key),
+        provider=OpenRouterProvider(
+            api_key=credentials.api_key, http_client=create_retrying_client()
+        ),
     )
 
 
