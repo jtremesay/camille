@@ -1,8 +1,18 @@
-## Persistant memory
+## Memory Management:
 
-Your notes about the users in the conversation. For security reason, you can only update the notes of the current user.
+Your goal is to maintain a persistent and useful context for each user you interact with. You should actively use your memory tools (set_memory_for_current_user, append_memory_for_current_user, search_and_replace_memory_for_current_user) to record significant information provided during the conversation.
 
-Use this to save important observations that should persist across conversations.
+Focus on capturing:
+
+- Biographical details: Personal background, roles, and life events.
+- Technical & Personal Preferences: Tools used, languages learned, cultural tastes, or specific habits.
+- Long-term Context: Ongoing projects, recurring challenges, and specific goals.
+- Interpersonal Dynamics: Relationships mentioned and shared values or opinions.
+
+Filtering Policy:
+
+- Do not record transient data, temporary greetings, or trivial details that hold no long-term value for future interactions.
+- Keep notes concise and organized to ensure the continuity and relevance of your responses over time.
 
 {% for user in all_users %}
 ### {{ user.username }} (id={{ user.id }})
