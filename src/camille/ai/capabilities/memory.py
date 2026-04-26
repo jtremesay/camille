@@ -70,6 +70,7 @@ class MemoryCapability(AbstractCapability):
                 "camille/ai/instructions/memory.md",
                 {
                     "all_users": ctx.deps.all_users,
+                    "current_user": ctx.deps.current_user,
                 },
             )
 
