@@ -180,12 +180,14 @@ class Mattermost:
             if files_data := post_metadata.get("files", []):
                 files = []
                 for file in files_data:
-                    files.append({
-                        "id": file["id"],
-                        "name": file["name"],
-                        "size": file["size"],
-                        "mime_type": file["mime_type"],
-                    })
+                    files.append(
+                        {
+                            "id": file["id"],
+                            "name": file["name"],
+                            "size": file["size"],
+                            "mime_type": file["mime_type"],
+                        }
+                    )
                 user_prompt["files"] = files
 
             deps = MattermostDeps(
@@ -291,10 +293,12 @@ class Mattermost:
                     )
                     return True
 
-                token = TimestampSigner().sign_object({
-                    "mm_id": sender_mm_id,
-                    "nonce": random.randint(0, 2**64 - 1),
-                })
+                token = TimestampSigner().sign_object(
+                    {
+                        "mm_id": sender_mm_id,
+                        "nonce": random.randint(0, 2**64 - 1),
+                    }
+                )
                 url = f"https://{settings.MAIN_HOST}{reverse('mattermost_bind')}?token={token}"
                 await self.send_message(
                     channel_id,
@@ -331,9 +335,11 @@ class Mattermost:
                     )
                     return True
 
-                token = TimestampSigner().sign_object({
-                    "user_id": user.id,
-                })
+                token = TimestampSigner().sign_object(
+                    {
+                        "user_id": user.id,
+                    }
+                )
                 url = f"https://{settings.MAIN_HOST}{reverse('passwordless_login')}?token={token}"
                 await self.send_message(
                     channel_id,
@@ -366,11 +372,13 @@ Available commands:
 
     async def ws_send(self, action: str, data: dict) -> None:
         self.current_seq += 1
-        await self.client_ws.send_json({
-            "action": action,
-            "data": data,
-            "seq": self.current_seq,
-        })
+        await self.client_ws.send_json(
+            {
+                "action": action,
+                "data": data,
+                "seq": self.current_seq,
+            }
+        )
 
     async def user_typing(self, channel_id: str) -> None:
         await self.ws_send("user_typing", {"channel_id": channel_id})

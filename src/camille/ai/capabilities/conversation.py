@@ -33,12 +33,14 @@ class ConversationCapability(AbstractCapability):
                 "camille/ai/instructions/conversation.md",
                 {
                     "all_users": [
-                        dumps({
-                            "id": u.id,
-                            "username": u.username,
-                            "first_name": u.first_name,
-                            "last_name": u.last_name,
-                        })
+                        dumps(
+                            {
+                                "id": u.id,
+                                "username": u.username,
+                                "first_name": u.first_name,
+                                "last_name": u.last_name,
+                            }
+                        )
                         for u in ctx.deps.all_users
                     ],
                     "current_user": ctx.deps.current_user,

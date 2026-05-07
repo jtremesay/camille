@@ -24,6 +24,8 @@ from pydantic_ai.messages import ModelMessage, ModelMessagesTypeAdapter
 
 
 class MattermostBinding(models.Model):
+    """Bind a Django user to a Mattermost user for conversation tracking."""
+
     user = models.OneToOneField(
         User, on_delete=models.CASCADE, related_name="mm_binding"
     )
@@ -34,6 +36,8 @@ class MattermostBinding(models.Model):
 
 
 class AgentPersonality(models.Model):
+    """Defines a personality for the AI agent, including a prompt template and description."""
+
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="personalities"
     )
@@ -49,6 +53,8 @@ class AgentPersonality(models.Model):
 
 
 class AgentConfig(models.Model):
+    """Configuration for the AI agent, including model, personality, and instructions."""
+
     user = models.OneToOneField(
         User, on_delete=models.CASCADE, related_name="agent_config"
     )
@@ -61,7 +67,6 @@ class AgentConfig(models.Model):
     instructions = models.TextField(
         blank=True
     )  # Additional instructions to the agent, appended to the personality prompt
-    notes = models.TextField(blank=True)  # Managed by the agent
 
     def clean(self):
         if self.personality and self.personality.user != self.user:
@@ -83,6 +88,14 @@ def create_agent_config(sender, instance, created, **kwargs):
                 prompt_template=settings.DEFAULT_PROMPT_TEMPLATE,
             ),
         )
+
+
+class AgentMemory(models.Model):
+    """Memory entries for the AI agent, associated with a user and timestamped."""
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="memories")
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
 
 
 class AnthropicCredentials(models.Model):

@@ -18,5 +18,9 @@ Filtering Policy:
 {% for user in all_users %}
 ### {{ user.username }} (id={{ user.id }}){% if user == current_user %} - current user{% endif %}
 
-{% if user.agent_config.notes %}{{ user.agent_config.notes }}{% else %}No notes{% endif %}
+{% for memory in user.memories.all|dictsort:'created_at' %}
+#### Memory id `{{ memory.id }}` - {{ memory.created_at }}
+{{ memory.content }}
+{% endfor %}
+
 {% endfor %}

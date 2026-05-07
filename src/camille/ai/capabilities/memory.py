@@ -22,6 +22,7 @@ from pydantic_ai import FunctionToolset, RunContext
 from pydantic_ai.capabilities import AbstractCapability
 
 from camille.ai.deps import Deps
+from camille.models import AgentMemory
 
 
 class MemoryToolset(FunctionToolset):
@@ -29,34 +30,35 @@ class MemoryToolset(FunctionToolset):
         super().__init__(id="memory")
 
         @self.tool()
-        @sync_to_async
-        def set_memory_for_current_user(ctx: RunContext[Deps], notes: str) -> None:
-            """Set your memory notes for the current user."""
-            config = ctx.deps.current_user.agent_config
-            config.notes = notes
-            config.save(update_fields=["notes"])
+        async def create_memory(ctx: RunContext[Deps], content: str) -> None:
+            """Create a new memory for the current user with the given content.
 
-        @self.tool()
-        @sync_to_async
-        def append_memory_for_current_user(ctx: RunContext[Deps], notes: str) -> None:
-            """Append to your memory notes for the current user."""
-            config = ctx.deps.current_user.agent_config
-            config.notes += "\n" + notes
-            config.save(update_fields=["notes"])
-
-        @self.tool()
-        @sync_to_async
-        def search_and_replace_memory_for_current_user(
-            ctx: RunContext[Deps], search: str, replace: str
-        ) -> None:
-            """Search and replace in your memory notes for the current user.
-
-            :param search: The string to search for in the memory notes.
-            :param replace: The string to replace the search string with in the memory notes.
+            :param content: The content of the memory to create.
             """
-            config = ctx.deps.current_user.agent_config
-            config.notes = config.notes.replace(search, replace)
-            config.save(update_fields=["notes"])
+
+            await AgentMemory.objects.acreate(
+                user=ctx.deps.current_user, content=content
+            )
+
+        @self.tool()
+        async def update_memory(ctx: RunContext[Deps], id: int, content: str) -> None:
+            """Update the content of an existing memory for the current user.
+
+            :param id: The ID of the memory to update.
+            :param content: The new content for the memory.
+            """
+            memory = await AgentMemory.objects.aget(id=id, user=ctx.deps.current_user)
+            memory.content = content
+            await memory.asave(update_fields=["content"])
+
+        @self.tool()
+        async def delete_memory(ctx: RunContext[Deps], id: int) -> None:
+            """Delete an existing memory for the current user.
+
+            :param id: The ID of the memory to delete.
+            """
+            memory = await AgentMemory.objects.aget(id=id, user=ctx.deps.current_user)
+            await memory.adelete()
 
 
 class MemoryCapability(AbstractCapability):

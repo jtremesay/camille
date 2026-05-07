@@ -25,6 +25,7 @@ from django.views.generic import CreateView, DeleteView, TemplateView, UpdateVie
 
 from camille.models import (
     AgentConfig,
+    AgentMemory,
     AgentPersonality,
     AnthropicCredentials,
     AWSBedrockCredentials,
@@ -41,11 +42,11 @@ class HomeView(LoginRequiredMixin, TemplateView):
 
 class AgentConfigEditView(LoginRequiredMixin, UpdateView):
     model = AgentConfig
-    fields = ["model", "personality", "instructions", "notes"]
+    fields = ["model", "personality", "instructions"]
     success_url = reverse_lazy("home")
 
     def get_object(self, queryset=None):
-        return AgentConfig.objects.get(user=self.request.user)
+        return self.model.objects.get(user=self.request.user)
 
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
@@ -71,7 +72,7 @@ class AgentPersonalityUpdateView(LoginRequiredMixin, UpdateView):
     success_url = reverse_lazy("home")
 
     def get_queryset(self):
-        return AgentPersonality.objects.filter(user=self.request.user)
+        return self.model.objects.filter(user=self.request.user)
 
 
 class AgentPersonalityDeleteView(LoginRequiredMixin, DeleteView):
@@ -79,7 +80,24 @@ class AgentPersonalityDeleteView(LoginRequiredMixin, DeleteView):
     success_url = reverse_lazy("home")
 
     def get_queryset(self):
-        return AgentPersonality.objects.filter(user=self.request.user)
+        return self.model.objects.filter(user=self.request.user)
+
+
+class AgentMemoryUpdateView(LoginRequiredMixin, UpdateView):
+    model = AgentMemory
+    fields = ["content"]
+    success_url = reverse_lazy("home")
+
+    def get_queryset(self):
+        return self.model.objects.filter(user=self.request.user)
+
+
+class AgentMemoryDeleteView(LoginRequiredMixin, DeleteView):
+    model = AgentMemory
+    success_url = reverse_lazy("home")
+
+    def get_queryset(self):
+        return self.model.objects.filter(user=self.request.user)
 
 
 class MattermostBindCreateView(LoginRequiredMixin, TemplateView):
@@ -133,7 +151,7 @@ class MattermostBindDeleteView(LoginRequiredMixin, DeleteView):
     success_url = reverse_lazy("home")
 
     def get_object(self, queryset=None):
-        return MattermostBinding.objects.get(user=self.request.user)
+        return self.model.objects.get(user=self.request.user)
 
 
 class LogoutConfirmView(LoginRequiredMixin, TemplateView):
@@ -179,7 +197,7 @@ class AnthropicCredentialsUpdateView(LoginRequiredMixin, UpdateView):
     success_url = reverse_lazy("home")
 
     def get_object(self, queryset=None):
-        return AnthropicCredentials.objects.get(user=self.request.user)
+        return self.model.objects.get(user=self.request.user)
 
 
 class AnthropicCredentialsDeleteView(LoginRequiredMixin, DeleteView):
@@ -187,7 +205,7 @@ class AnthropicCredentialsDeleteView(LoginRequiredMixin, DeleteView):
     success_url = reverse_lazy("home")
 
     def get_object(self, queryset=None):
-        return AnthropicCredentials.objects.get(user=self.request.user)
+        return self.model.objects.get(user=self.request.user)
 
 
 # AWSBedrock Credentials Views
@@ -207,7 +225,7 @@ class AWSBedrockCredentialsUpdateView(LoginRequiredMixin, UpdateView):
     success_url = reverse_lazy("home")
 
     def get_object(self, queryset=None):
-        return AWSBedrockCredentials.objects.get(user=self.request.user)
+        return self.model.objects.get(user=self.request.user)
 
 
 class AWSBedrockCredentialsDeleteView(LoginRequiredMixin, DeleteView):
@@ -215,7 +233,7 @@ class AWSBedrockCredentialsDeleteView(LoginRequiredMixin, DeleteView):
     success_url = reverse_lazy("home")
 
     def get_object(self, queryset=None):
-        return AWSBedrockCredentials.objects.get(user=self.request.user)
+        return self.model.objects.get(user=self.request.user)
 
 
 # GoogleGLA Credentials Views
@@ -235,7 +253,7 @@ class GoogleGLACredentialsUpdateView(LoginRequiredMixin, UpdateView):
     success_url = reverse_lazy("home")
 
     def get_object(self, queryset=None):
-        return GoogleGLACredentials.objects.get(user=self.request.user)
+        return self.model.objects.get(user=self.request.user)
 
 
 class GoogleGLACredentialsDeleteView(LoginRequiredMixin, DeleteView):
@@ -243,7 +261,7 @@ class GoogleGLACredentialsDeleteView(LoginRequiredMixin, DeleteView):
     success_url = reverse_lazy("home")
 
     def get_object(self, queryset=None):
-        return GoogleGLACredentials.objects.get(user=self.request.user)
+        return self.model.objects.get(user=self.request.user)
 
 
 # Mistral Credentials Views
@@ -263,7 +281,7 @@ class MistralCredentialsUpdateView(LoginRequiredMixin, UpdateView):
     success_url = reverse_lazy("home")
 
     def get_object(self, queryset=None):
-        return MistralCredentials.objects.get(user=self.request.user)
+        return self.model.objects.get(user=self.request.user)
 
 
 class MistralCredentialsDeleteView(LoginRequiredMixin, DeleteView):
@@ -271,7 +289,7 @@ class MistralCredentialsDeleteView(LoginRequiredMixin, DeleteView):
     success_url = reverse_lazy("home")
 
     def get_object(self, queryset=None):
-        return MistralCredentials.objects.get(user=self.request.user)
+        return self.model.objects.get(user=self.request.user)
 
 
 # OpenRouter Credentials Views
@@ -291,7 +309,7 @@ class OpenRouterCredentialsUpdateView(LoginRequiredMixin, UpdateView):
     success_url = reverse_lazy("home")
 
     def get_object(self, queryset=None):
-        return OpenRouterCredentials.objects.get(user=self.request.user)
+        return self.model.objects.get(user=self.request.user)
 
 
 class OpenRouterCredentialsDeleteView(LoginRequiredMixin, DeleteView):
@@ -299,7 +317,7 @@ class OpenRouterCredentialsDeleteView(LoginRequiredMixin, DeleteView):
     success_url = reverse_lazy("home")
 
     def get_object(self, queryset=None):
-        return OpenRouterCredentials.objects.get(user=self.request.user)
+        return self.model.objects.get(user=self.request.user)
 
 
 class PasswordlessLoginView(View):

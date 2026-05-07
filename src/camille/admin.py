@@ -39,6 +39,13 @@ class AgentConfigAdmin(admin.ModelAdmin):
     search_fields = ("user__username", "model", "personality__name")
 
 
+@admin.register(models.AgentMemory)
+class AgentMemoryAdmin(admin.ModelAdmin):
+    list_display = ("user", "created_at", "content")
+    list_filter = ("user__username", "created_at")
+    search_fields = ("user__username", "content")
+
+
 @admin.register(models.AnthropicCredentials)
 class AnthropicCredentialsAdmin(admin.ModelAdmin):
     list_display = ("user",)

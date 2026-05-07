@@ -59,6 +59,16 @@ urlpatterns = [
         views.AgentPersonalityDeleteView.as_view(),
         name="agent_personality_delete",
     ),
+    path(
+        "agent/memories/<int:pk>/edit/",
+        views.AgentMemoryUpdateView.as_view(),
+        name="agent_memory_update",
+    ),
+    path(
+        "agent/memories/<int:pk>/delete/",
+        views.AgentMemoryDeleteView.as_view(),
+        name="agent_memory_delete",
+    ),
     # Credentials management
     path(
         "credentials/anthropic/create/",
