@@ -17,10 +17,9 @@ Filtering Policy:
 
 {% for user in all_users %}
 ### {{ user.username }} (id={{ user.id }}){% if user == current_user %} - current user{% endif %}
-
 {% for memory in user.memories.all|dictsort:'created_at' %}
-#### Memory id `{{ memory.id }}` - {{ memory.created_at }}
+#### Memory id `{{ memory.id }}` - Created at {{ memory.created_at }}{% if memory.updated_at != memory.created_at %} - Updated at {{ memory.updated_at }}{% endif %}
+
 {{ memory.content }}
 {% endfor %}
-
 {% endfor %}
