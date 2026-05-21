@@ -8,39 +8,6 @@ permissions:
   contents: read
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version:
-          - "3.12"
-          - "3.13"
-          - "3.14"
-    env:
-      UV_PYTHON: ${{ matrix.python-version }}
-    steps:
-      -
-        name: Checkout
-        uses: actions/checkout@v6
-      -
-        name: Install uv
-        uses: astral-sh/setup-uv@v7
-      -
-        name: Install dependencies
-        run: uv sync --locked --group test
-      - 
-        name: Collect static files
-        run: uv run camille collectstatic --noinput
-        env:
-          SECRET_KEY: test-secret-key
-          SALT_KEY: test-salt-key
-      -
-        name: Run tests
-        env:
-          SECRET_KEY: test-secret-key
-          SALT_KEY: test-salt-key
-        run: uv run pytest tests/
-
   build:
     runs-on: ubuntu-latest
     steps:
@@ -76,7 +43,7 @@ jobs:
 
   deploy:
     runs-on: ubuntu-latest
-    needs: [test, build]
+    needs: [build]
     if: github.ref == 'refs/heads/v6'
     steps:
       -

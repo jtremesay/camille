@@ -69,13 +69,6 @@ uv run camille runserver
 uv run camille mattermost
 ```
 
-## Testing
-
-```bash
-uv sync --group test
-uv run pytest tests/
-```
-
 ## Docker
 
 ### Build

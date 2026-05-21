@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # Camille - An AI assistant
 # Copyright (C) Jonathan Tremesaygues <jonathan.tremesaygues@slaanesh.org>
 #
@@ -14,7 +15,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#!/usr/bin/env python
 """Django's command-line utility for administrative tasks."""
 
 import os
