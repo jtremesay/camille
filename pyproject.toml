@@ -24,7 +24,7 @@ dependencies = [
 camille = "camille.manage:main"
 
 [dependency-groups]
-dev = ["ipython>=9.4.0", "pre-commit>=4.6.0", "pydantic-ai-slim[cli]>=1.97.0"]
+dev = ["ipython>=9.4.0", "pre-commit>=4.6.0", "pydantic-ai-slim[cli]>=1.100.0"]
 
 [build-system]
 requires = ["uv_build>=0.11.14,<0.12"]
