@@ -5,7 +5,6 @@ description = "An AI assistant for Mattermost"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "channels[daphne]",
     "daphne",
     "dj-database-url",
     "django",
