@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("camille", "0006_delete_gatewaycredentials"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
