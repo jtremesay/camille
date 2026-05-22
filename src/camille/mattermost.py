@@ -34,8 +34,9 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from httpx import AsyncClient
 from httpx_ws import AsyncWebSocketSession, aconnect_ws
-from pydantic_ai import Agent, TextPart
-from pydantic_ai.capabilities import WebFetch, WebSearch
+from pydantic_ai import Agent, TextPart, ToolCallPart
+from pydantic_ai.common_tools.duckduckgo import duckduckgo_search_tool
+from pydantic_ai.common_tools.web_fetch import web_fetch_tool
 
 from camille.ai.capabilities.conversation import ConversationCapability
 from camille.ai.capabilities.current_time import CurrentTimeCapability
@@ -71,9 +72,8 @@ class Mattermost:
                 InstructionsCapability(),
                 MemoryCapability(),
                 CurrentTimeCapability(),
-                WebSearch(local="duckduckgo"),
-                WebFetch(local=True),
             ],
+            tools=[duckduckgo_search_tool(), web_fetch_tool()],
         )
 
     async def __aenter__(self):
@@ -227,7 +227,13 @@ class Mattermost:
                 async for node in run:
                     if self.agent.is_call_tools_node(node):
                         for part in node.model_response.parts:
-                            if isinstance(part, TextPart):
+                            if isinstance(part, ToolCallPart):
+                                await self.send_message(
+                                    channel_id,
+                                    f"(calling tool `{part.tool_name}` with args: `{dumps(part.args)}`)",
+                                    root_id=root_id,
+                                )
+                            elif isinstance(part, TextPart):
                                 await self.send_message(
                                     channel_id,
                                     part.content,
