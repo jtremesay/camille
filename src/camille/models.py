@@ -68,6 +68,13 @@ class AgentConfig(models.Model):
         blank=True
     )  # Additional instructions to the agent, appended to the personality prompt
 
+    debug_tools = models.BooleanField(
+        default=True, help_text="Whether to include tool calls in the debug output."
+    )
+    debug_usage = models.BooleanField(
+        default=True, help_text="Whether to include model usage in the debug output."
+    )
+
     def clean(self):
         if self.personality and self.personality.user != self.user:
             raise ValueError("Personality must belong to the same user.")
