@@ -42,7 +42,7 @@ class HomeView(LoginRequiredMixin, TemplateView):
 
 class AgentConfigEditView(LoginRequiredMixin, UpdateView):
     model = AgentConfig
-    fields = ["model", "personality", "instructions", "debug_tools", "debug_usage"]
+    fields = ["model", "personality", "instructions", "debug_tools"]
     success_url = reverse_lazy("home")
 
     def get_object(self, queryset=None):

@@ -32,7 +32,6 @@ from django.db import close_old_connections
 from django.urls import reverse
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
-from genai_prices import calc_price
 from httpx import AsyncClient
 from httpx_ws import AsyncWebSocketSession, aconnect_ws
 from pydantic_ai import Agent, TextPart, ToolCallPart
@@ -219,7 +218,6 @@ class Mattermost:
 
             await self.user_typing(channel_id)
 
-            usage = None
             async with self.agent.iter(
                 dumps(user_prompt),
                 deps=deps,
@@ -246,9 +244,6 @@ class Mattermost:
                                 )
                                 deps.generated_files_ids.clear()
 
-                    if agent_config.debug_usage:
-                        usage = run.usage
-
                 await conversation.runs.acreate(
                     user=user,
                     messages_json=run.new_messages_json(),
@@ -263,19 +258,6 @@ class Mattermost:
         # If the conversation has no runs, delete it to save space
         if conversation and not await conversation.runs.aexists():
             await conversation.adelete()
-
-        if agent_config.debug_usage and usage is not None:
-            try:
-                cost = calc_price(usage, model_ref=model.model_name)
-            except Exception:
-                price = "N/A"
-            else:
-                price = cost.total_price
-            await self.send_message(
-                channel_id,
-                f"(input tokens: {usage.input_tokens}, output tokens: {usage.output_tokens}, cost: {price}$)",
-                root_id=root_id,
-            )
 
     async def send_message(
         self,

@@ -44,8 +44,6 @@
         <span class="kv-value {% if not request.user.agent_config.instructions %}muted{% endif %}">{{ request.user.agent_config.instructions|default:'None' }}</span>
         <span class="kv-label">Debug Tools</span>
         <span class="kv-value {% if not request.user.agent_config.debug_tools %}muted{% endif %}">{{ request.user.agent_config.debug_tools|yesno:'Enabled,Disabled' }}</span>
-        <span class="kv-label">Debug Usage</span>
-        <span class="kv-value {% if not request.user.agent_config.debug_usage %}muted{% endif %}">{{ request.user.agent_config.debug_usage|yesno:'Enabled,Disabled' }}</span>
       </div>
     </div>
 
