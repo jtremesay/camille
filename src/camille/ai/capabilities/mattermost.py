@@ -37,9 +37,14 @@ class MattermostToolset(FunctionToolset):
             r = await ctx.deps.mattermost_client.get(f"/files/{file_id}")
             r.raise_for_status()
 
+            if content_type := r.headers.get("Content-Type", None):
+                content_type = content_type.split(";")[0]
+            else:
+                content_type = "application/octet-stream"
+
             return BinaryContent(
                 r.content,
-                media_type=r.headers.get("Content-Type", "application/octet-stream"),
+                media_type=content_type,
             )
 
         @self.tool()
