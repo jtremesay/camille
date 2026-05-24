@@ -38,6 +38,7 @@ from pydantic_ai import Agent, TextPart, ToolCallPart
 from pydantic_ai.common_tools.duckduckgo import duckduckgo_search_tool
 from pydantic_ai.common_tools.web_fetch import web_fetch_tool
 
+from camille.ai.capabilities.agpl import AGPLCapability
 from camille.ai.capabilities.conversation import ConversationCapability
 from camille.ai.capabilities.current_time import CurrentTimeCapability
 from camille.ai.capabilities.instructions import InstructionsCapability
@@ -67,6 +68,7 @@ class Mattermost:
             deps_type=MattermostDeps,
             capabilities=[
                 PersonalityCapability(),
+                AGPLCapability(),
                 ConversationCapability(),
                 MattermostCapability(),
                 InstructionsCapability(),
