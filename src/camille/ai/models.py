@@ -55,8 +55,8 @@ def create_retrying_client():
             wait=wait_retry_after(
                 fallback_strategy=wait_exponential(multiplier=1, max=60), max_wait=300
             ),
-            # Stop after 5 attempts
-            stop=stop_after_attempt(5),
+            # Stop after 10 attempts
+            stop=stop_after_attempt(10),
             # Re-raise the last exception if all retries fail
             reraise=True,
         ),
