@@ -23,8 +23,8 @@ dependencies = [
 camille = "camille.manage:main"
 
 [dependency-groups]
-dev = ["ipython>=9.4.0", "pre-commit>=4.6.0"]
+dev = ["ipython", "pre-commit"]
 
 [build-system]
-requires = ["uv_build>=0.11.16,<0.12"]
+requires = ["uv_build"]
 build-backend = "uv_build"
