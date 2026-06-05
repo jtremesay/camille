@@ -37,6 +37,7 @@ from httpx_ws import AsyncWebSocketSession, aconnect_ws
 from pydantic_ai import Agent, TextPart, ToolCallPart
 from pydantic_ai.common_tools.duckduckgo import duckduckgo_search_tool
 from pydantic_ai.common_tools.web_fetch import web_fetch_tool
+from pydantic_ai_harness import CodeMode
 
 from camille.ai.capabilities.agpl import AGPLCapability
 from camille.ai.capabilities.conversation import ConversationCapability
@@ -74,6 +75,7 @@ class Mattermost:
                 InstructionsCapability(),
                 MemoryCapability(),
                 CurrentTimeCapability(),
+                CodeMode(),
             ],
             tools=[duckduckgo_search_tool(), web_fetch_tool()],
         )
