@@ -14,41 +14,41 @@ services:
     image: "killruana/camille:v6"
     environment:
       - "MATTERMOST_BASE_URL=https://mattermost.jtremesay.org"
-      - "ALLOWED_HOSTS=camille.jtremesay.org"
+      - "ALLOWED_HOSTS=alix.jtremesay.org"
       - "DATABASE_URL=postgres://camille:camille@pg18/camille"
-      - "SALT_KEY_FILE=camille_salt_key"
-      - "SECRET_KEY_FILE=camille_secret_key"
-      - "LOGFIRE_TOKEN_FILE=camille_logfire_token"
+      - "SALT_KEY_FILE=alix_salt_key"
+      - "SECRET_KEY_FILE=alix_secret_key"
+      - "LOGFIRE_TOKEN_FILE=alix_logfire_token"
     secrets:
-      - "camille_mattermost_api_token"
-      - "camille_salt_key"
-      - "camille_secret_key"
-      - "camille_logfire_token"
+      - "alix_mattermost_api_token"
+      - "alix_salt_key"
+      - "alix_secret_key"
+      - "alix_logfire_token"
     networks:
       - default
       - traefik_public
     deploy:
       labels:
         - "traefik.enable=true"
-        - "traefik.http.routers.camille.rule=Host(`camille.jtremesay.org`)"
-        - "traefik.http.services.camille.loadBalancer.server.port=8000"
+        - "traefik.http.routers.alix.rule=Host(`alix.jtremesay.org`)"
+        - "traefik.http.services.alix.loadBalancer.server.port=8000"
 
   mattermost:
     image: "killruana/camille:v6"
     command: "camille mattermost"
     environment:
       - "MATTERMOST_BASE_URL=https://mattermost.jtremesay.org"
-      - "MATTERMOST_API_TOKEN_FILE=camille_mattermost_api_token"
-      - "ALLOWED_HOSTS=camille.jtremesay.org"
+      - "MATTERMOST_API_TOKEN_FILE=alix_mattermost_api_token"
+      - "ALLOWED_HOSTS=alix.jtremesay.org"
       - "DATABASE_URL=postgres://camille:camille@pg18/camille"
-      - "SALT_KEY_FILE=camille_salt_key"
-      - "SECRET_KEY_FILE=camille_secret_key"
-      - "LOGFIRE_TOKEN_FILE=camille_logfire_token"
+      - "SALT_KEY_FILE=alix_salt_key"
+      - "SECRET_KEY_FILE=alix_secret_key"
+      - "LOGFIRE_TOKEN_FILE=alix_logfire_token"
     secrets:
-      - "camille_mattermost_api_token"
-      - "camille_salt_key"
-      - "camille_secret_key"
-      - "camille_logfire_token"
+      - "alix_mattermost_api_token"
+      - "alix_salt_key"
+      - "alix_secret_key"
+      - "alix_logfire_token"
     networks:
       - default
 
@@ -61,11 +61,11 @@ volumes:
   pg_data:
 
 secrets:
-  camille_mattermost_api_token:
+  alix_mattermost_api_token:
     external: true
-  camille_salt_key:
+  alix_salt_key:
     external: true
-  camille_secret_key:
+  alix_secret_key:
     external: true
-  camille_logfire_token:
+  alix_logfire_token:
     external: true
