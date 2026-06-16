@@ -55,5 +55,5 @@ jobs:
           remote_host: jtremesay.org
           remote_user: github-ci
           ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
-          stack_name: camille
+          stack_name: alix
 
