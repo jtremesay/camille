@@ -1,5 +1,9 @@
 FROM alpine:latest
 
+# Install GCC and other dependencies
+RUN apk add --no-cache \
+    build-base
+
 # Install uv
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
@@ -15,6 +19,9 @@ ENV UV_FROZEN=1
 ENV UV_NO_DEV=1
 COPY pyproject.toml uv.lock ./
 RUN uv sync --no-install-project
+
+# Remove build dependencies
+RUN apk del build-base
 
 # Copy source
 COPY entrypoint.sh README.md ./
