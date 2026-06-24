@@ -13,12 +13,12 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
-
 from django.contrib.auth.models import User
+from google.genai.types import HarmBlockThreshold, HarmCategory
 from pydantic_ai.models import Model
 from pydantic_ai.models.anthropic import AnthropicModel
 from pydantic_ai.models.bedrock import BedrockConverseModel
-from pydantic_ai.models.google import GoogleModel
+from pydantic_ai.models.google import GoogleModel, GoogleModelSettings
 from pydantic_ai.models.mistral import MistralModel
 from pydantic_ai.models.openrouter import OpenRouterModel
 from pydantic_ai.providers.anthropic import AnthropicProvider
@@ -81,6 +81,21 @@ async def create_google_model_for_user(user: User, model_name: str) -> Model:
     return GoogleModel(
         model_name,
         provider=GoogleProvider(api_key=credentials.api_key),
+        settings=GoogleModelSettings(
+            google_safety_settings=[
+                {
+                    "category": category,
+                    "threshold": HarmBlockThreshold.BLOCK_NONE,
+                }
+                for category in (
+                    HarmCategory.HARM_CATEGORY_CIVIC_INTEGRITY,
+                    HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+                    HarmCategory.HARM_CATEGORY_HARASSMENT,
+                    HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+                    HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+                )
+            ]
+        ),
     )
 
 
