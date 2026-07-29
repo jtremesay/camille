@@ -26,5 +26,5 @@ camille = "camille.manage:main"
 dev = ["ipython", "pre-commit"]
 
 [build-system]
-requires = ["uv_build<0.12"]
+requires = ["uv_build<0.13"]
 build-backend = "uv_build"
