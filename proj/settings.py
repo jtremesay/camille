@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django_rls_tenants",
     "camille",
 ]
 
@@ -50,6 +51,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "django_rls_tenants.RLSTenantMiddleware",
 ]
 
 ROOT_URLCONF = "proj.urls"
@@ -126,4 +128,10 @@ MAILERS = {
     "default": {
         "BACKEND": "django.core.mail.backends.console.EmailBackend",
     },
+}
+
+# RLS Tenants
+# https://dvoraj75.github.io/django-rls-tenants/getting-started/configuration/
+RLS_TENANTS = {
+    "TENANT_MODEL": "camille.Organization",
 }
