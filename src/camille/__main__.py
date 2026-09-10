@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # Camille - An AI assistant
 # Copyright (C) Jonathan Tremesaygues <jonathan.tremesaygues@slaanesh.org>
 #
@@ -14,8 +15,23 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-from django.apps import AppConfig
+import os
+import sys
 
 
-class CamilleConfig(AppConfig):
-    name = "camille"
+def main():
+    """Run administrative tasks."""
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "camille.settings")
+    try:
+        from django.core.management import execute_from_command_line
+    except ImportError as exc:
+        raise ImportError(
+            "Couldn't import Django. Are you sure it's installed and "
+            "available on your PYTHONPATH environment variable? Did you "
+            "forget to activate a virtual environment?"
+        ) from exc
+    execute_from_command_line(sys.argv)
+
+
+if __name__ == "__main__":
+    main()
