@@ -4,13 +4,13 @@ version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 authors = [
-    { name = "Jonathan Tremesaygues", email = "jonathan.tremesaygues@slaanesh.org" }
+    { name = "Jonathan Tremesaygues", email = "jonathan.tremesaygues@slaanesh.org" },
 ]
 requires-python = ">=3.14"
-dependencies = []
+dependencies = ["django>=6.1.1"]
 
 [project.scripts]
-camille = "camille:main"
+camille = "camille.manage:main"
 
 [build-system]
 requires = ["uv_build>=0.12.10,<0.13.0"]
