@@ -26,7 +26,8 @@ BASE_DIR = Path.cwd().resolve()
 # See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-g=o1b1kp9cfx@kmo+wa(4)#-81%=u77!#+2&@n^b3^+@cotxe6"
+SECRET_KEY = "sk-camille-secret-insecure-key"
+SALT_KEY = "sk-camille-salt-insecure-key"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -43,6 +44,9 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django_rls_tenants",
+    "auditlog",
+    "camille",
 ]
 
 MIDDLEWARE = [
@@ -51,6 +55,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django_rls_tenants.RLSTenantMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -127,4 +132,19 @@ MAILERS = {
     "default": {
         "BACKEND": "django.core.mail.backends.console.EmailBackend",
     },
+}
+
+# RLS Tenants
+AUTH_USER_MODEL = "camille.User"
+RLS_TENANTS = {
+    # Required: dotted path to your tenant model
+    "TENANT_MODEL": "camille.Tenant",
+    # Optional (shown with defaults):
+    "TENANT_FK_FIELD": "tenant",  # FK field name on protected models
+    "GUC_PREFIX": "rls",  # PostgreSQL GUC variable prefix
+    "USER_PARAM_NAME": "as_user",  # Parameter name for @with_rls_context
+    "TENANT_PK_TYPE": "uuid",  # SQL cast type: "int", "bigint", or "uuid"
+    "USE_LOCAL_SET": False,  # Use SET LOCAL (for connection pooling)
+    "DATABASES": ["default"],  # Database aliases to set GUCs on
+    "STRICT_MODE": False,  # Raise on queries without tenant context
 }
