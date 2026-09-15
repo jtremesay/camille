@@ -130,6 +130,21 @@ urlpatterns = [
         views.MistralCredentialsDeleteView.as_view(),
         name="mistral_credentials_delete",
     ),
+    path(
+        "credentials/custom/create/",
+        views.CustomCredentialsCreateView.as_view(),
+        name="custom_credentials_create",
+    ),
+    path(
+        "credentials/custom/edit/",
+        views.CustomCredentialsUpdateView.as_view(),
+        name="custom_credentials_update",
+    ),
+    path(
+        "credentials/custom/delete/",
+        views.CustomCredentialsDeleteView.as_view(),
+        name="custom_credentials_delete",
+    ),
     # Mattermost integration
     path(
         "mattermost/bind/",

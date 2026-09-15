@@ -68,3 +68,9 @@ class GoogleGLACredentialsAdmin(admin.ModelAdmin):
 class MistralCredentialsAdmin(admin.ModelAdmin):
     list_display = ("user",)
     list_filter = ("user__username",)
+
+
+@admin.register(models.CustomCredentials)
+class CustomCredentialsAdmin(admin.ModelAdmin):
+    list_display = ("user",)
+    list_filter = ("user__username",)

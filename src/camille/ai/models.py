@@ -20,14 +20,17 @@ from pydantic_ai.models.anthropic import AnthropicModel
 from pydantic_ai.models.bedrock import BedrockConverseModel
 from pydantic_ai.models.google import GoogleModel, GoogleModelSettings
 from pydantic_ai.models.mistral import MistralModel
+from pydantic_ai.models.openai import OpenAIChatModel
 from pydantic_ai.providers.anthropic import AnthropicProvider
 from pydantic_ai.providers.bedrock import BedrockProvider
 from pydantic_ai.providers.google import GoogleProvider
 from pydantic_ai.providers.mistral import MistralProvider
+from pydantic_ai.providers.openai import OpenAIProvider
 
 from camille.models import (
     AnthropicCredentials,
     AWSBedrockCredentials,
+    CustomCredentials,
     GoogleGLACredentials,
     MistralCredentials,
 )
@@ -110,6 +113,20 @@ async def create_mistral_model_for_user(user: User, model_name: str) -> Model:
     )
 
 
+async def create_custom_model_for_user(user: User, model_name: str) -> Model:
+    try:
+        credentials = await CustomCredentials.objects.aget(user=user)
+    except CustomCredentials.DoesNotExist:
+        raise NoCredentialsError(
+            f"User {user.username} does not have Custom credentials"
+        )
+
+    return OpenAIChatModel(
+        model_name,
+        provider=OpenAIProvider(base_url=credentials.url, api_key=credentials.api_key),
+    )
+
+
 async def create_model_for_user(user: User, model: str) -> Model:
     model_provider, model_name = model.split(":", 1)
 
@@ -125,6 +142,9 @@ async def create_model_for_user(user: User, model: str) -> Model:
 
         case "mistral":
             return await create_mistral_model_for_user(user, model_name)
+
+        case "custom":
+            return await create_custom_model_for_user(user, model_name)
 
         case _:
             raise ValueError(f"Unsupported model provider: {model_provider}")

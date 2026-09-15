@@ -190,6 +190,22 @@
           <a href="{% url 'mistral_credentials_create' %}" class="badge badge-warning">+ Add</a>
         {% endif %}
       </div>
+
+      <div class="credential-row">
+        <span class="credential-name">
+          <span class="provider-icon">C</span>
+          Custom
+        </span>
+        {% if request.user.custom_credentials %}
+          <div class="card-actions">
+            <span class="badge badge-success">Configured</span>
+            <a href="{% url 'custom_credentials_update' %}">Edit</a>
+            <a href="{% url 'custom_credentials_delete' %}" class="danger">Delete</a>
+          </div>
+        {% else %}
+          <a href="{% url 'custom_credentials_create' %}" class="badge badge-warning">+ Add</a>
+        {% endif %}
+      </div>
     </div>
   </div>
 {% endblock %}

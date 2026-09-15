@@ -29,6 +29,7 @@ from camille.models import (
     AgentPersonality,
     AnthropicCredentials,
     AWSBedrockCredentials,
+    CustomCredentials,
     GoogleGLACredentials,
     MattermostBinding,
     MistralCredentials,
@@ -285,6 +286,34 @@ class MistralCredentialsUpdateView(LoginRequiredMixin, UpdateView):
 
 class MistralCredentialsDeleteView(LoginRequiredMixin, DeleteView):
     model = MistralCredentials
+    success_url = reverse_lazy("home")
+
+    def get_object(self, queryset=None):
+        return self.model.objects.get(user=self.request.user)
+
+
+# Custom Credentials Views
+class CustomCredentialsCreateView(LoginRequiredMixin, CreateView):
+    model = CustomCredentials
+    fields = ["url", "api_key"]
+    success_url = reverse_lazy("home")
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        return super().form_valid(form)
+
+
+class CustomCredentialsUpdateView(LoginRequiredMixin, UpdateView):
+    model = CustomCredentials
+    fields = ["url", "api_key"]
+    success_url = reverse_lazy("home")
+
+    def get_object(self, queryset=None):
+        return self.model.objects.get(user=self.request.user)
+
+
+class CustomCredentialsDeleteView(LoginRequiredMixin, DeleteView):
+    model = CustomCredentials
     success_url = reverse_lazy("home")
 
     def get_object(self, queryset=None):

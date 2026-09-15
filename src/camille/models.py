@@ -132,6 +132,14 @@ class MistralCredentials(models.Model):
     api_key = EncryptedCharField(max_length=255)
 
 
+class CustomCredentials(models.Model):
+    user = models.OneToOneField(
+        User, on_delete=models.CASCADE, related_name="custom_credentials"
+    )
+    url = models.URLField(max_length=255, default="http://localhost:11434/v1")
+    api_key = EncryptedCharField(max_length=255, null=True, blank=True)
+
+
 class MattermostConversation(models.Model):
     root_id = models.CharField(max_length=26, unique=True)
     channel_id = models.CharField(max_length=26)
