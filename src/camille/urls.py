@@ -130,21 +130,6 @@ urlpatterns = [
         views.MistralCredentialsDeleteView.as_view(),
         name="mistral_credentials_delete",
     ),
-    path(
-        "credentials/openrouter/create/",
-        views.OpenRouterCredentialsCreateView.as_view(),
-        name="openrouter_credentials_create",
-    ),
-    path(
-        "credentials/openrouter/edit/",
-        views.OpenRouterCredentialsUpdateView.as_view(),
-        name="openrouter_credentials_update",
-    ),
-    path(
-        "credentials/openrouter/delete/",
-        views.OpenRouterCredentialsDeleteView.as_view(),
-        name="openrouter_credentials_delete",
-    ),
     # Mattermost integration
     path(
         "mattermost/bind/",

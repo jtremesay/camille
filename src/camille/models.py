@@ -132,13 +132,6 @@ class MistralCredentials(models.Model):
     api_key = EncryptedCharField(max_length=255)
 
 
-class OpenRouterCredentials(models.Model):
-    user = models.OneToOneField(
-        User, on_delete=models.CASCADE, related_name="openrouter_credentials"
-    )
-    api_key = EncryptedCharField(max_length=255)
-
-
 class MattermostConversation(models.Model):
     root_id = models.CharField(max_length=26, unique=True)
     channel_id = models.CharField(max_length=26)

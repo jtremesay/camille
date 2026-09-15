@@ -32,7 +32,6 @@ from camille.models import (
     GoogleGLACredentials,
     MattermostBinding,
     MistralCredentials,
-    OpenRouterCredentials,
 )
 
 
@@ -286,34 +285,6 @@ class MistralCredentialsUpdateView(LoginRequiredMixin, UpdateView):
 
 class MistralCredentialsDeleteView(LoginRequiredMixin, DeleteView):
     model = MistralCredentials
-    success_url = reverse_lazy("home")
-
-    def get_object(self, queryset=None):
-        return self.model.objects.get(user=self.request.user)
-
-
-# OpenRouter Credentials Views
-class OpenRouterCredentialsCreateView(LoginRequiredMixin, CreateView):
-    model = OpenRouterCredentials
-    fields = ["api_key"]
-    success_url = reverse_lazy("home")
-
-    def form_valid(self, form):
-        form.instance.user = self.request.user
-        return super().form_valid(form)
-
-
-class OpenRouterCredentialsUpdateView(LoginRequiredMixin, UpdateView):
-    model = OpenRouterCredentials
-    fields = ["api_key"]
-    success_url = reverse_lazy("home")
-
-    def get_object(self, queryset=None):
-        return self.model.objects.get(user=self.request.user)
-
-
-class OpenRouterCredentialsDeleteView(LoginRequiredMixin, DeleteView):
-    model = OpenRouterCredentials
     success_url = reverse_lazy("home")
 
     def get_object(self, queryset=None):

@@ -6,7 +6,7 @@ An AI-powered assistant (chatbot) for [Mattermost](https://mattermost.com/). Cam
 
 - **Language:** Python 3.14
 - **Framework:** Django 5.2 (ASGI via Daphne/Channels)
-- **AI:** pydantic-ai with support for Anthropic, AWS Bedrock, Google, Mistral, and OpenRouter
+- **AI:** pydantic-ai with support for Anthropic, AWS Bedrock, Google, Mistral
 - **Database:** PostgreSQL (production), SQLite (development)
 - **Containerization:** Docker, Docker Compose / Swarm
 - **CI/CD:** GitHub Actions

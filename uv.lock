@@ -235,7 +235,7 @@ dependencies = [
     { name = "httpx-ws" },
     { name = "logfire", extra = ["httpx"] },
     { name = "psycopg", extra = ["binary"] },
-    { name = "pydantic-ai-slim", extra = ["anthropic", "bedrock", "duckduckgo", "google", "mistral", "openrouter", "retries", "web-fetch"] },
+    { name = "pydantic-ai-slim", extra = ["anthropic", "bedrock", "duckduckgo", "google", "mistral", "retries", "web-fetch"] },
     { name = "python-dotenv" },
     { name = "servestatic", extra = ["brotli"] },
     { name = "tzdata" },
@@ -257,7 +257,7 @@ requires-dist = [
     { name = "httpx-ws" },
     { name = "logfire", extras = ["httpx"] },
     { name = "psycopg", extras = ["binary"] },
-    { name = "pydantic-ai-slim", extras = ["anthropic", "bedrock", "duckduckgo", "google", "mistral", "openrouter", "retries", "web-fetch"] },
+    { name = "pydantic-ai-slim", extras = ["anthropic", "bedrock", "duckduckgo", "google", "mistral", "retries", "web-fetch"] },
     { name = "python-dotenv" },
     { name = "servestatic", extras = ["brotli"] },
     { name = "tzdata" },
@@ -1429,23 +1429,6 @@ wheels = [
 ]
 
 [[package]]
-name = "openai"
-version = "3.14.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "anyio" },
-    { name = "httpx2" },
-    { name = "jiter" },
-    { name = "pydantic" },
-    { name = "sniffio" },
-    { name = "typing-extensions" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/d0/88/472211fbaee888238d2e0657bcfdba5f64f3d38899dbfdada5e632a9758f/openai-3.14.0.tar.gz", hash = "sha256:714ba70b91ee1e78e75263694bebfeaca004432032685333a46d0e0206114bf9", size = 1635622, upload-time = "2026-09-14T23:29:10.961Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/77/e9/53504fbb21b2b765f77f972d34f86a80e5b98ec274b503a8e3d557df2aac/openai-3.14.0-py3-none-any.whl", hash = "sha256:232a85a1c0ff6820534630fbfdb99313990ed80e66f39892a3abcff4130e2b16", size = 2010880, upload-time = "2026-09-14T23:29:08.978Z" },
-]
-
-[[package]]
 name = "opentelemetry-api"
 version = "1.44.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1869,9 +1852,6 @@ google = [
 ]
 mistral = [
     { name = "mistralai" },
-]
-openrouter = [
-    { name = "openai" },
 ]
 retries = [
     { name = "httpx" },

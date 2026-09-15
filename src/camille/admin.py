@@ -68,9 +68,3 @@ class GoogleGLACredentialsAdmin(admin.ModelAdmin):
 class MistralCredentialsAdmin(admin.ModelAdmin):
     list_display = ("user",)
     list_filter = ("user__username",)
-
-
-@admin.register(models.OpenRouterCredentials)
-class OpenRouterCredentialsAdmin(admin.ModelAdmin):
-    list_display = ("user",)
-    list_filter = ("user__username",)

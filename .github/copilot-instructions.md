@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-Camille is an AI-powered chatbot for Mattermost, built with Django 6.0 (ASGI) and pydantic-ai. It connects via WebSocket, listens to conversations, and responds using LLMs (Anthropic, AWS Bedrock, Google, Mistral, OpenRouter).
+Camille is an AI-powered chatbot for Mattermost, built with Django 6.0 (ASGI) and pydantic-ai. It connects via WebSocket, listens to conversations, and responds using LLMs (Anthropic, AWS Bedrock, Google, Mistral).
 
 ## Tech Stack
 

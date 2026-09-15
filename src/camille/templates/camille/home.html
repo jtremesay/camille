@@ -190,22 +190,6 @@
           <a href="{% url 'mistral_credentials_create' %}" class="badge badge-warning">+ Add</a>
         {% endif %}
       </div>
-
-      <div class="credential-row">
-        <span class="credential-name">
-          <span class="provider-icon">O</span>
-          OpenRouter
-        </span>
-        {% if request.user.openrouter_credentials %}
-          <div class="card-actions">
-            <span class="badge badge-success">Configured</span>
-            <a href="{% url 'openrouter_credentials_update' %}">Edit</a>
-            <a href="{% url 'openrouter_credentials_delete' %}" class="danger">Delete</a>
-          </div>
-        {% else %}
-          <a href="{% url 'openrouter_credentials_create' %}" class="badge badge-warning">+ Add</a>
-        {% endif %}
-      </div>
     </div>
   </div>
 {% endblock %}
