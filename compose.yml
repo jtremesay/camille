@@ -9,12 +9,12 @@ services:
       - "pg_data:/var/lib/postgresql"
     networks:
       - default
-  
+
   web:
     image: "killruana/camille:v6"
     environment:
-      - "MATTERMOST_BASE_URL=https://mattermost.jtremesay.org"
-      - "ALLOWED_HOSTS=alix.jtremesay.org"
+      - "MATTERMOST_BASE_URL=https://mattermost.jtremesay.eu"
+      - "ALLOWED_HOSTS=alix.jtremesay.eu"
       - "DATABASE_URL=postgres://camille:camille@pg18/camille"
       - "SALT_KEY_FILE=alix_salt_key"
       - "SECRET_KEY_FILE=alix_secret_key"
@@ -30,16 +30,16 @@ services:
     deploy:
       labels:
         - "traefik.enable=true"
-        - "traefik.http.routers.alix.rule=Host(`alix.jtremesay.org`)"
+        - "traefik.http.routers.alix.rule=Host(`alix.jtremesay.eu`) || Host(`alix.jtremesay.org`)"
         - "traefik.http.services.alix.loadBalancer.server.port=8000"
 
   mattermost:
     image: "killruana/camille:v6"
     command: "camille mattermost"
     environment:
-      - "MATTERMOST_BASE_URL=https://mattermost.jtremesay.org"
+      - "MATTERMOST_BASE_URL=https://mattermost.jtremesay.eu"
       - "MATTERMOST_API_TOKEN_FILE=alix_mattermost_api_token"
-      - "ALLOWED_HOSTS=alix.jtremesay.org"
+      - "ALLOWED_HOSTS=alix.jtremesay.eu"
       - "DATABASE_URL=postgres://camille:camille@pg18/camille"
       - "SALT_KEY_FILE=alix_salt_key"
       - "SECRET_KEY_FILE=alix_secret_key"
