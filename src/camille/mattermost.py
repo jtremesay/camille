@@ -19,11 +19,12 @@ from asyncio import create_task
 from collections.abc import Mapping
 from datetime import datetime
 from json import dumps, loads
-from typing import Any, Optional
+from typing import Any
 from zoneinfo import ZoneInfo
 
 import logfire
 from asgiref.sync import sync_to_async
+from ddgs.ddgs import DDGS, DDGSException
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
@@ -57,12 +58,22 @@ def get_client() -> AsyncClient:
     )
 
 
+class MyDDGS(DDGS):
+    def _search_sync(self, *args, **kwargs):
+        # https://github.com/pydantic/pydantic-ai/issues/9820
+        try:
+            return super()._search_sync(*args, **kwargs)
+        except DDGSException as e:
+            logfire.error(f"DDGS search failed: {e}")
+            return []
+
+
 class Mattermost:
     def __init__(self):
         self.client_http = get_client()
-        self.client_ws: Optional[AsyncWebSocketSession] = None
-        self.me_mm_id: Optional[str] = None
-        self.me_name: Optional[str] = None
+        self.client_ws: AsyncWebSocketSession | None = None
+        self.me_mm_id: str | None = None
+        self.me_name: str | None = None
         self.current_seq = 0
         self.agent = Agent(
             deps_type=MattermostDeps,
@@ -75,7 +86,7 @@ class Mattermost:
                 MemoryCapability(),
                 CurrentTimeCapability(),
             ],
-            tools=[duckduckgo_search_tool(), web_fetch_tool()],
+            tools=[duckduckgo_search_tool(MyDDGS()), web_fetch_tool()],
         )
 
     async def __aenter__(self):
@@ -265,8 +276,8 @@ class Mattermost:
         self,
         channel_id: str,
         message: str,
-        root_id: Optional[str] = None,
-        file_ids: Optional[list[str]] = None,
+        root_id: str | None = None,
+        file_ids: list[str] | None = None,
     ):
         data = {"channel_id": channel_id, "message": message}
         if root_id is not None:
@@ -284,9 +295,9 @@ class Mattermost:
         self,
         channel_type: str,
         message: str,
-        user: Optional[User],
+        user: User | None,
         channel_id: str,
-        root_id: Optional[str],
+        root_id: str | None,
         sender_mm_id: str,
     ) -> bool:
         if channel_type != "D" or not message.startswith("!/"):
