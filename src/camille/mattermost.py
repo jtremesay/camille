@@ -20,11 +20,11 @@ from collections.abc import Mapping
 from datetime import datetime
 from json import dumps, loads
 from typing import Any
+from uuid import uuid4
 from zoneinfo import ZoneInfo
 
 import logfire
 from asgiref.sync import sync_to_async
-from ddgs.ddgs import DDGS, DDGSException
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
@@ -35,17 +35,11 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from httpx import AsyncClient
 from httpx_ws import AsyncWebSocketSession, aconnect_ws
-from pydantic_ai import Agent, TextPart, ToolCallPart
-from pydantic_ai.common_tools.duckduckgo import duckduckgo_search_tool
-from pydantic_ai.common_tools.web_fetch import web_fetch_tool
+from pydantic_ai import TextPart, ToolCallPart
+from pydantic_ai.messages import BinaryContent, FilePart, ToolReturnPart
 
-from camille.ai.capabilities.agpl import AGPLCapability
-from camille.ai.capabilities.conversation import ConversationCapability
-from camille.ai.capabilities.current_time import CurrentTimeCapability
-from camille.ai.capabilities.instructions import InstructionsCapability
+from camille.ai.agent import IMAGE_GENERATION_TOOL_NAME, create_agent_from_config
 from camille.ai.capabilities.mattermost import MattermostCapability
-from camille.ai.capabilities.memory import MemoryCapability
-from camille.ai.capabilities.personality import PersonalityCapability
 from camille.ai.deps import MattermostDeps
 from camille.ai.models import NoCredentialsError, create_model_for_user
 from camille.models import AgentConfig, MattermostConversation
@@ -58,16 +52,6 @@ def get_client() -> AsyncClient:
     )
 
 
-class MyDDGS(DDGS):
-    def _search_sync(self, *args, **kwargs):
-        # https://github.com/pydantic/pydantic-ai/issues/9820
-        try:
-            return super()._search_sync(*args, **kwargs)
-        except DDGSException as e:
-            logfire.error(f"DDGS search failed: {e}")
-            return []
-
-
 class Mattermost:
     def __init__(self):
         self.client_http = get_client()
@@ -75,19 +59,6 @@ class Mattermost:
         self.me_mm_id: str | None = None
         self.me_name: str | None = None
         self.current_seq = 0
-        self.agent = Agent(
-            deps_type=MattermostDeps,
-            capabilities=[
-                PersonalityCapability(),
-                AGPLCapability(),
-                ConversationCapability(),
-                MattermostCapability(),
-                InstructionsCapability(),
-                MemoryCapability(),
-                CurrentTimeCapability(),
-            ],
-            tools=[duckduckgo_search_tool(MyDDGS()), web_fetch_tool()],
-        )
 
     async def __aenter__(self):
         await self.client_http.__aenter__()
@@ -162,7 +133,9 @@ class Mattermost:
                 )
                 return
 
-            agent_config = await AgentConfig.objects.aget(user=user)
+            agent_config = await AgentConfig.objects.select_related("user").aget(
+                user=user
+            )
             if agent_config.model is None:
                 await self.send_message(
                     channel_id,
@@ -173,6 +146,9 @@ class Mattermost:
 
             try:
                 model = await create_model_for_user(user, agent_config.model)
+                agent = await create_agent_from_config(
+                    agent_config, capabilities=[MattermostCapability()]
+                )
             except NoCredentialsError:
                 await self.send_message(
                     channel_id,
@@ -231,14 +207,36 @@ class Mattermost:
 
             await self.user_typing(channel_id)
 
-            async with self.agent.iter(
+            async with agent.iter(
                 dumps(user_prompt),
                 deps=deps,
                 model=model,
                 message_history=await conversation.amessages(),
             ) as run:
                 async for node in run:
-                    if self.agent.is_call_tools_node(node):
+                    if agent.is_model_request_node(node):
+                        # Generated images are returned by the tool, not by the
+                        # model response, grab them from the tool returns
+                        for part in node.request.parts:
+                            if (
+                                isinstance(part, ToolReturnPart)
+                                and part.tool_name == IMAGE_GENERATION_TOOL_NAME
+                            ):
+                                await self.upload_generated_files(
+                                    deps, self.extract_files(part.content)
+                                )
+                    elif agent.is_call_tools_node(node):
+                        # Upload the files first so they can be attached to the
+                        # message, whatever their position in the response
+                        await self.upload_generated_files(
+                            deps,
+                            [
+                                part.content
+                                for part in node.model_response.parts
+                                if isinstance(part, FilePart)
+                            ],
+                        )
+
                         for part in node.model_response.parts:
                             if agent_config.debug_tools and isinstance(
                                 part, ToolCallPart
@@ -257,6 +255,16 @@ class Mattermost:
                                 )
                                 deps.generated_files_ids.clear()
 
+                # Files that were not attached to any message
+                if deps.generated_files_ids:
+                    await self.send_message(
+                        channel_id,
+                        "",
+                        root_id=root_id,
+                        file_ids=deps.generated_files_ids,
+                    )
+                    deps.generated_files_ids.clear()
+
                 await conversation.runs.acreate(
                     user=user,
                     messages_json=run.new_messages_json(),
@@ -271,6 +279,34 @@ class Mattermost:
         # If the conversation has no runs, delete it to save space
         if conversation and not await conversation.runs.aexists():
             await conversation.adelete()
+
+    @staticmethod
+    def extract_files(content: Any) -> list[BinaryContent]:
+        """Collect the binary contents held by a tool return."""
+        if isinstance(content, BinaryContent):
+            return [content]
+
+        if isinstance(content, (list, tuple)):
+            return [item for item in content if isinstance(item, BinaryContent)]
+
+        return []
+
+    async def upload_generated_files(
+        self, deps: MattermostDeps, contents: list[BinaryContent]
+    ) -> None:
+        """Upload files generated by the agent so they can be attached to a post."""
+        for content in contents:
+            r = await self.client_http.post(
+                "/files",
+                content=content.data,
+                params={
+                    "channel_id": deps.channel_id,
+                    "filename": f"{uuid4().hex}.{content.format}",
+                },
+            )
+            r.raise_for_status()
+
+            deps.generated_files_ids.append(r.json()["file_infos"][0]["id"])
 
     async def send_message(
         self,

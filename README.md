@@ -21,7 +21,9 @@ src/camille/
   mattermost.py        # Mattermost WebSocket/API client
   views.py             # Web views
   ai/
+    agent.py           # Per-user agent factory
     models.py          # AI model definitions
+    image_models.py    # Image generation model definitions
     deps.py            # AI dependency injection
     capabilities/      # Pluggable AI capabilities (memory, personality, tools)
   management/commands/

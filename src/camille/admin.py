@@ -34,9 +34,9 @@ class AgentPersonalityAdmin(admin.ModelAdmin):
 
 @admin.register(models.AgentConfig)
 class AgentConfigAdmin(admin.ModelAdmin):
-    list_display = ("user", "model", "personality")
-    list_filter = ("user__username", "model")
-    search_fields = ("user__username", "model", "personality__name")
+    list_display = ("user", "model", "model_image", "personality")
+    list_filter = ("user__username", "model", "model_image")
+    search_fields = ("user__username", "model", "model_image", "personality__name")
 
 
 @admin.register(models.AgentMemory)

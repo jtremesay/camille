@@ -61,6 +61,13 @@ class AgentConfig(models.Model):
     model = models.CharField(
         max_length=64, help_text="https://pydantic.dev/docs/ai/models/overview/"
     )
+    model_image = models.CharField(
+        max_length=64,
+        blank=True,
+        help_text="Optional image generation model (e.g. `google-gla:gemini-3.1-flash-image`). "
+        "Leave empty to disable image generation. "
+        "https://pydantic.dev/docs/ai/capabilities/image-generation/",
+    )
     personality = models.ForeignKey(
         AgentPersonality, on_delete=models.SET_NULL, null=True, blank=True
     )
