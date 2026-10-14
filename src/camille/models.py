@@ -58,8 +58,29 @@ class Agent(models.Model):
         related_name="agents",
         related_query_name="agent",
     )
+    name = models.CharField(max_length=255, default="Default")
     slug = AutoSlugField(populate_from="name", max_length=255)
-    name = models.CharField(max_length=255, default="default")
+
+    class Meta:
+        unique_together = ("user", "slug")
+
+
+class AgentPersonality(models.Model):
+    uuid = models.UUIDField(primary_key=True, default=uuid7, editable=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="agent_personalities",
+        related_query_name="agent_personality",
+    )
+
+    name = models.CharField(max_length=255, default="Default")
+    slug = AutoSlugField(populate_from="name", max_length=255)
+
+    template = models.TextField(blank=True, default="You are {agent_name}")
 
     class Meta:
         unique_together = ("user", "slug")

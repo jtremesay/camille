@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Agent, Profile
+from .models import Agent, AgentPersonality, Profile
 
 
 @admin.register(Profile)
@@ -11,5 +11,11 @@ class ProfileAdmin(admin.ModelAdmin):
 
 @admin.register(Agent)
 class AgentAdmin(admin.ModelAdmin):
+    list_display = ("uuid", "user", "slug", "name", "created_at", "updated_at")
+    search_fields = ("uuid", "user__username", "slug", "name")
+
+
+@admin.register(AgentPersonality)
+class AgentPersonalityAdmin(admin.ModelAdmin):
     list_display = ("uuid", "user", "slug", "name", "created_at", "updated_at")
     search_fields = ("uuid", "user__username", "slug", "name")
