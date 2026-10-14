@@ -111,5 +111,7 @@ uv run camille test tests.test_ai
 - Run the narrowest relevant tests first, then `just test` for changes that
   affect shared models, settings, persistence, or agent construction.
 - Keep migrations and their tests in the same change as model updates.
-- Update this file when the architecture or standard workflow materially
-  changes.
+- Regularly compare this file with the codebase while working. If its
+  architecture, invariants, commands, or stated project direction have
+  materially diverged from the implementation, update `AGENTS.md` in the same
+  change instead of preserving stale guidance.
