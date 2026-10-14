@@ -36,6 +36,7 @@ class AgentAdmin(admin.ModelAdmin):
         "model",
         "personality",
         "ddg_enable",
+        "webfetch_enable",
         "created_at",
         "updated_at",
     )

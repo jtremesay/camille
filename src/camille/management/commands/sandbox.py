@@ -46,5 +46,9 @@ class Command(BaseCommand):
 
         pai_agent = create_pai_agent(agent)
 
-        r = pai_agent.run_sync("bonjour. quel est ton nom ?")
+        return
+
+        r = pai_agent.run_sync(
+            "Tu en penses quoi ? https://raw.githubusercontent.com/jtremesay/camille/refs/heads/v7/src/camille/models.py"
+        )
         print(r.output)

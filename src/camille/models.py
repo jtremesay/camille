@@ -107,7 +107,10 @@ class Agent(models.Model):
     )
 
     ddg_enable = models.BooleanField(
-        default=False, help_text="Enable DuckDuckGo search integration"
+        default=False, help_text="Enable DuckDuckGo search"
+    )
+    webfetch_enable = models.BooleanField(
+        default=False, help_text="Enable fetching web content"
     )
 
     class Meta:

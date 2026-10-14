@@ -1,10 +1,26 @@
+from logging import getLogger
 from typing import cast
 
+from ddgs.ddgs import DDGS, DDGSException
 from pydantic_ai import Agent as PAIAgent
 from pydantic_ai.common_tools.duckduckgo import duckduckgo_search_tool
+from pydantic_ai.common_tools.web_fetch import web_fetch_tool
 
 from .capabilities.personality import PersonalityCapability
 from .models import Agent, AgentPersonality
+
+logger = getLogger(__name__)
+
+
+class MyDDGS(DDGS):
+    def _search_sync(self, *args, **kwargs):
+        # https://github.com/pydantic/pydantic-ai/issues/9820
+        try:
+            return super()._search_sync(*args, **kwargs)
+        except DDGSException as e:
+            logger.error(f"DDGS search failed: {e}")
+
+            return []
 
 
 def create_pai_agent(agent: Agent, name: str = "Camille") -> PAIAgent:
@@ -21,7 +37,11 @@ def create_pai_agent(agent: Agent, name: str = "Camille") -> PAIAgent:
 
     # Add DuckDuckGo search tool if enabled
     if agent.ddg_enable:
-        tools.append(duckduckgo_search_tool)
+        tools.append(duckduckgo_search_tool(duckduckgo_client=MyDDGS()))
+
+    # Add web fetch tool if enabled
+    if agent.webfetch_enable:
+        tools.append(web_fetch_tool())
 
     pai_agent = PAIAgent(
         model=agent.get_model_instance(),
