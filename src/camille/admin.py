@@ -31,28 +31,28 @@ class AgentAdmin(admin.ModelAdmin):
     list_display = (
         "uuid",
         "user",
-        "slug",
         "name",
         "model",
         "personality",
-        "ddg_enable",
-        "webfetch_enable",
+        "ddg_enabled",
+        "webfetch_enabled",
+        "tavily_enabled",
         "created_at",
         "updated_at",
     )
-    search_fields = ("uuid", "user__username", "slug", "name")
+    search_fields = ("uuid", "user__username", "name")
 
 
 @admin.register(AgentPersonality)
 class AgentPersonalityAdmin(admin.ModelAdmin):
-    list_display = ("uuid", "user", "slug", "name", "created_at", "updated_at")
-    search_fields = ("uuid", "user__username", "slug", "name")
+    list_display = ("uuid", "user", "name", "created_at", "updated_at")
+    search_fields = ("uuid", "user__username", "name")
 
 
 @admin.register(AIProvider)
 class AIProviderAdmin(admin.ModelAdmin):
-    list_display = ("uuid", "user", "slug", "name", "created_at", "updated_at")
-    search_fields = ("uuid", "user__username", "slug", "name")
+    list_display = ("uuid", "user", "name", "created_at", "updated_at")
+    search_fields = ("uuid", "user__username", "name")
 
 
 @admin.register(AIModel)
@@ -63,14 +63,14 @@ class AIModelAdmin(admin.ModelAdmin):
 
 @admin.register(GoogleAIProvider)
 class GoogleAIProviderAdmin(admin.ModelAdmin):
-    list_display = ("uuid", "user", "slug", "name", "created_at", "updated_at")
-    search_fields = ("uuid", "user__username", "slug", "name")
+    list_display = ("uuid", "user", "name", "created_at", "updated_at")
+    search_fields = ("uuid", "user__username", "name")
 
 
 @admin.register(OpenAIAIProvider)
 class OpenAIAIProviderAdmin(admin.ModelAdmin):
-    list_display = ("uuid", "user", "slug", "name", "created_at", "updated_at")
-    search_fields = ("uuid", "user__username", "slug", "name")
+    list_display = ("uuid", "user", "name", "created_at", "updated_at")
+    search_fields = ("uuid", "user__username", "name")
 
 
 @admin.register(GoogleAIModel)

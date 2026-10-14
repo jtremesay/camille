@@ -4,6 +4,7 @@ from typing import cast
 from ddgs.ddgs import DDGS, DDGSException
 from pydantic_ai import Agent as PAIAgent
 from pydantic_ai.common_tools.duckduckgo import duckduckgo_search_tool
+from pydantic_ai.common_tools.tavily import tavily_search_tool
 from pydantic_ai.common_tools.web_fetch import web_fetch_tool
 
 from .capabilities.personality import PersonalityCapability
@@ -36,12 +37,16 @@ def create_pai_agent(agent: Agent, name: str = "Camille") -> PAIAgent:
         )
 
     # Add DuckDuckGo search tool if enabled
-    if agent.ddg_enable:
+    if agent.ddg_enabled:
         tools.append(duckduckgo_search_tool(duckduckgo_client=MyDDGS()))
 
     # Add web fetch tool if enabled
-    if agent.webfetch_enable:
+    if agent.webfetch_enabled:
         tools.append(web_fetch_tool())
+
+    # Add Tavily search tool if enabled
+    if agent.tavily_enabled:
+        tools.append(tavily_search_tool())
 
     pai_agent = PAIAgent(
         model=agent.get_model_instance(),

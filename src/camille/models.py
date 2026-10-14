@@ -6,7 +6,6 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from django_extensions.db.models import AutoSlugField
 from encrypted_fields.fields import EncryptedCharField
 from polymorphic.models import PolymorphicModel
 from pydantic_ai.models import Model as PAIModel
@@ -62,6 +61,9 @@ class Profile(models.Model):
         ):
             raise ValidationError("The default model must belong to the same user.")
 
+    def __str__(self) -> str:
+        return cast(str, cast(User, self.user).username)
+
 
 @receiver(post_save, sender=User)
 def create_user_profile(
@@ -85,8 +87,8 @@ class Agent(models.Model):
         related_name="agents",
         related_query_name="agent",
     )
-    name = models.CharField(max_length=255, default="Default")
-    slug = AutoSlugField(populate_from="name", max_length=255)
+
+    name = models.CharField(max_length=255, default="default")
 
     model = models.ForeignKey(
         "AIModel",
@@ -106,18 +108,21 @@ class Agent(models.Model):
         related_query_name="agent",
     )
 
-    ddg_enable = models.BooleanField(
+    ddg_enabled = models.BooleanField(
         default=False, help_text="Enable DuckDuckGo search"
     )
-    webfetch_enable = models.BooleanField(
+    tavily_enabled = models.BooleanField(
+        default=False, help_text="Enable Tavily integration"
+    )
+    webfetch_enabled = models.BooleanField(
         default=False, help_text="Enable fetching web content"
     )
 
     class Meta:
-        unique_together = ("user", "slug")
+        unique_together = ("user", "name")
 
     def __str__(self) -> str:
-        return f"{self.name} ({cast(User, self.user).username})"
+        return cast(str, self.name)
 
     def clean(self):
         super().clean()
@@ -132,13 +137,21 @@ class Agent(models.Model):
             raise ValidationError("The model must belong to the same user.")
 
     def get_model_instance(self) -> PAIModel:
-        if self.model is None:
-            if (default_model := self.user.profile.default_model) is not None:
-                return default_model.get_instance()
+        # Try to get the model assigned to the agent first
+        if (model := cast(AIModel | None, self.model)) is not None:
+            return model.get_instance()
 
-            raise ValueError("The agent does not have a model assigned.")
+        # If no model is assigned to the agent, try to get the default model from the user's profile
+        if (
+            default_model := cast(
+                AIModel | None,
+                cast(Profile, cast(User, self.user).profile).default_model,
+            )
+        ) is not None:
+            return default_model.get_instance()
 
-        return cast(AIModel, self.model).get_instance()
+        # If no model is assigned to the agent and no default model is set in the user's profile, raise an error
+        raise ValueError("The agent does not have a model assigned.")
 
 
 class AgentPersonality(models.Model):
@@ -153,16 +166,15 @@ class AgentPersonality(models.Model):
         related_query_name="agent_personality",
     )
 
-    name = models.CharField(max_length=255, default="Default")
-    slug = AutoSlugField(populate_from="name", max_length=255)
+    name = models.CharField(max_length=255, default="default")
 
     template = models.TextField(blank=True, default="You are {agent_name}")
 
     class Meta:
-        unique_together = ("user", "slug")
+        unique_together = ("user", "name")
 
     def __str__(self) -> str:
-        return f"{self.name} ({cast(User, self.user).username})"
+        return cast(str, self.name)
 
 
 class AIProvider(PolymorphicModel):
@@ -177,11 +189,10 @@ class AIProvider(PolymorphicModel):
         related_query_name="ai_provider",
     )
 
-    name = models.CharField(max_length=255, default="Default")
-    slug = AutoSlugField(populate_from="name", max_length=255)
+    name = models.CharField(max_length=255, default="default")
 
     class Meta:
-        unique_together = ("user", "slug")
+        unique_together = ("user", "name")
 
     def __str__(self) -> str:
         return self.name
@@ -191,6 +202,8 @@ class AIProvider(PolymorphicModel):
 
 
 class GoogleAIProvider(AIProvider):
+    default_name = "google"
+
     api_key = EncryptedCharField(max_length=255)
 
     def get_instance(self) -> PAIGoogleProvider:
@@ -198,6 +211,8 @@ class GoogleAIProvider(AIProvider):
 
 
 class OpenAIAIProvider(AIProvider):
+    default_name = "openai"
+
     api_key = EncryptedCharField(max_length=255)
     base_url = models.URLField(null=True, blank=True)
 
@@ -219,19 +234,19 @@ class AIModel(PolymorphicModel):
         related_query_name="ai_model",
     )
 
-    name = models.CharField(max_length=255)
     provider = models.ForeignKey(
         AIProvider,
         on_delete=models.CASCADE,
         related_name="ai_models",
         related_query_name="ai_model",
     )
+    name = models.CharField(max_length=255)
 
     class Meta:
         unique_together = ("user", "provider", "name")
 
     def __str__(self) -> str:
-        return f"{self.provider.name}: {cast(str, self.name)}"
+        return f"{self.provider.name}:{cast(str, self.name)}"
 
     def clean(self) -> None:
         if cast(AIProvider, self.provider).user != self.user:
@@ -275,3 +290,23 @@ class OpenAIModel(AIModel):
             model_name=cast(str, self.name),
             provider=cast(OpenAIAIProvider, self.provider).get_instance(),
         )
+
+
+class TavilyApiKey(models.Model):
+    uuid = models.UUIDField(primary_key=True, default=uuid7, editable=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="tavily_api_keys",
+        related_query_name="tavily_api_key",
+    )
+
+    name = models.CharField(max_length=255)
+
+    key = models.CharField(max_length=255)
+
+    class Meta:
+        unique_together = ("user", "key")
