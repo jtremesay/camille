@@ -106,6 +106,10 @@ class Agent(models.Model):
         related_query_name="agent",
     )
 
+    ddg_enable = models.BooleanField(
+        default=False, help_text="Enable DuckDuckGo search integration"
+    )
+
     class Meta:
         unique_together = ("user", "slug")
 

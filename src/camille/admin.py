@@ -35,6 +35,7 @@ class AgentAdmin(admin.ModelAdmin):
         "name",
         "model",
         "personality",
+        "ddg_enable",
         "created_at",
         "updated_at",
     )
