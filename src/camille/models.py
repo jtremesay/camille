@@ -1,72 +1,28 @@
-from uuid import uuid7
-
+from django.contrib.auth.models import User
 from django.db import models
-
-# from encrypted_fields.fields import EncryptedCharField
-from polymorphic.models import PolymorphicModel
-
-# from pydantic_ai.models.google import GoogleModel
-# from pydantic_ai.models.openai import OpenAIChatModel
-
-# from pydantic_ai.providers.google import GoogleProvider
-# from pydantic_ai.providers.openai import OpenAIProvider
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 
-class AIProvider(PolymorphicModel):
-    uuid = models.UUIDField(primary_key=True, editable=False, default=uuid7)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    deleted_at = models.DateTimeField(null=True, blank=True)
-
-    user = models.ForeignKey("auth.User", on_delete=models.CASCADE)
-    name = models.CharField(max_length=255)
-
-    # def get_provider_instance(self) -> Provider:
-    #     raise NotImplementedError
-
-    # def get_model_instance(self, model: AIModel) -> Model:
-    #     raise NotImplementedError
-
-    def save(self, *args, **kwargs):
-        if type(self) is AIProvider:
-            raise ValueError(
-                "Cannot save an instance of the base AIProvider class directly."
-            )
-
-        super().save(*args, **kwargs)
+class Profile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
 
 
-# class AIProviderGoogle(AIProvider):
+@receiver(post_save, sender=User)
+def create_user_profile(
+    sender: type[User], instance: User, created: bool, **kwargs
+) -> None:
+    """Create a Profile instance whenever a new User is created."""
+    if not created:
+        return
+
+    Profile.objects.create(user=instance)
+
+
+# class AgentConfig(models.Model):
+#     user = models.OneToOneField(User, on_delete=models.CASCADE)
 #     api_key = EncryptedCharField(max_length=255)
-
-#     def get_provider_instance(self) -> GoogleProvider:
-#         return GoogleProvider(api_key=self.api_key)
-
-#     def get_model_instance(self, model: AIModel) -> Model:
-#         return GoogleModel(model_name=model.name, provider=self.get_provider_instance())
-
-
-# class AIProviderOpenAICompatible(AIProvider):
-#     base_url = models.URLField(max_length=255)
-#     api_key = EncryptedCharField(max_length=255, null=True, blank=True)
-
-#     def get_provider_instance(self) -> OpenAIProvider:
-#         return OpenAIProvider(base_url=self.base_url, api_key=self.api_key)
-
-#     def get_model_instance(self, model: AIModel) -> OpenAIChatModel:
-#         return OpenAIChatModel(
-#             model_name=model.name, provider=self.get_provider_instance()
-#         )
-
-
-# class AIModel(models.Model):
-#     provider = models.ForeignKey(AIProvider, on_delete=models.CASCADE)
-#     name = models.CharField(max_length=255)
-
-#     def get_model_instance(self) -> Model:
-#         return self.provider.get_model_instance(self)
-
-
-# class Agent(models.Model):
-#     model = models.ForeignKey(AIModel, on_delete=models.CASCADE)
+#     model_name = models.CharField(max_length=255)
 #     personality = models.TextField()
+
+#     ddg_enabled = models.BooleanField(default=False)
