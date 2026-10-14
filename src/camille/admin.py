@@ -11,7 +11,15 @@ class ProfileAdmin(admin.ModelAdmin):
 
 @admin.register(Agent)
 class AgentAdmin(admin.ModelAdmin):
-    list_display = ("uuid", "user", "slug", "name", "created_at", "updated_at")
+    list_display = (
+        "uuid",
+        "user",
+        "slug",
+        "name",
+        "personality",
+        "created_at",
+        "updated_at",
+    )
     search_fields = ("uuid", "user__username", "slug", "name")
 
 

@@ -61,8 +61,23 @@ class Agent(models.Model):
     name = models.CharField(max_length=255, default="Default")
     slug = AutoSlugField(populate_from="name", max_length=255)
 
+    personality = models.ForeignKey(
+        "AgentPersonality",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="agents",
+        related_query_name="agent",
+    )
+
     class Meta:
         unique_together = ("user", "slug")
+
+    def clean(self):
+        super().clean()
+
+        if self.personality is not None and self.personality.user != self.user:
+            raise ValidationError("The personality must belong to the same user.")
 
 
 class AgentPersonality(models.Model):
