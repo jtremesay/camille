@@ -1,0 +1,6 @@
+/.venv/
+*.pyc
+/*.egg-info/
+/.env
+/*.sqlite3
+/static/
