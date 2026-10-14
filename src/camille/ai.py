@@ -2,13 +2,15 @@ from logging import getLogger
 from typing import cast
 
 from ddgs.ddgs import DDGS, DDGSException
+from exa_py import AsyncExa
 from pydantic_ai import Agent as PAIAgent
 from pydantic_ai.common_tools.duckduckgo import duckduckgo_search_tool
 from pydantic_ai.common_tools.tavily import tavily_search_tool
 from pydantic_ai.common_tools.web_fetch import web_fetch_tool
+from pydantic_ai_harness import ExaSearch
 
 from .capabilities.personality import PersonalityCapability
-from .models import Agent, AgentPersonality, TavilyApiKey
+from .models import Agent, AgentPersonality, ExaApiKey, TavilyApiKey
 
 logger = getLogger(__name__)
 
@@ -43,6 +45,15 @@ def create_pai_agent(agent: Agent, name: str = "Camille") -> PAIAgent:
     # Add web fetch tool if enabled
     if agent.webfetch_enabled:
         tools.append(web_fetch_tool())
+
+    # Add Exa search tool if enabled
+    if agent.exa_enabled:
+        if (exa_api_key := cast(ExaApiKey | None, agent.exa_api_key)) is not None:
+            capabilities.append(
+                ExaSearch(client=AsyncExa(api_key=cast(str, exa_api_key.key)))
+            )
+        else:
+            raise ValueError("Exa search tool is enabled but no API key is set.")
 
     # Add Tavily search tool if enabled
     if agent.tavily_enabled:

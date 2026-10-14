@@ -111,6 +111,15 @@ class Agent(models.Model):
     ddg_enabled = models.BooleanField(
         default=False, help_text="Enable DuckDuckGo search"
     )
+    exa_enabled = models.BooleanField(default=False, help_text="Enable Exa search")
+    exa_api_key = models.ForeignKey(
+        "ExaApiKey",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="agents",
+        related_query_name="agent",
+    )
     tavily_enabled = models.BooleanField(
         default=False, help_text="Enable Tavily integration"
     )
@@ -142,6 +151,11 @@ class Agent(models.Model):
 
         if (model := self.model) is not None and cast(AIModel, model).user != self.user:
             raise ValidationError("The model must belong to the same user.")
+
+        if (exa_api_key := self.exa_api_key) is not None and cast(
+            ExaApiKey, exa_api_key
+        ).user != self.user:
+            raise ValidationError("The Exa API key must belong to the same user.")
 
         if (tavily_api_key := self.tavily_api_key) is not None and cast(
             TavilyApiKey, tavily_api_key
@@ -304,6 +318,28 @@ class OpenAIModel(AIModel):
         )
 
 
+class ExaApiKey(models.Model):
+    uuid = models.UUIDField(primary_key=True, default=uuid7, editable=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="exa_api_keys",
+        related_query_name="exa_api_key",
+    )
+
+    name = models.CharField(max_length=255, default="default")
+    key = models.CharField(max_length=255)
+
+    class Meta:
+        unique_together = ("user", "name")
+
+    def __str__(self) -> str:
+        return cast(str, self.name)
+
+
 class TavilyApiKey(models.Model):
     uuid = models.UUIDField(primary_key=True, default=uuid7, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -316,12 +352,11 @@ class TavilyApiKey(models.Model):
         related_query_name="tavily_api_key",
     )
 
-    name = models.CharField(max_length=255)
-
+    name = models.CharField(max_length=255, default="default")
     key = models.CharField(max_length=255)
 
     class Meta:
-        unique_together = ("user", "key")
+        unique_together = ("user", "name")
 
     def __str__(self) -> str:
         return cast(str, self.name)

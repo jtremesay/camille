@@ -55,6 +55,7 @@ dependencies = [
     { name = "django-extensions" },
     { name = "django-fernet-encrypted-fields" },
     { name = "django-polymorphic" },
+    { name = "pydantic-ai-harness", extra = ["exa"] },
     { name = "pydantic-ai-slim", extra = ["duckduckgo", "google", "logfire", "openai", "tavily", "web-fetch"] },
     { name = "python-dotenv" },
 ]
@@ -74,6 +75,7 @@ requires-dist = [
     { name = "django-extensions", specifier = ">=4.1" },
     { name = "django-fernet-encrypted-fields", specifier = ">=0.4.0" },
     { name = "django-polymorphic", specifier = ">=4.11.7" },
+    { name = "pydantic-ai-harness", extras = ["exa"], specifier = ">=0.56.0" },
     { name = "pydantic-ai-slim", extras = ["duckduckgo", "google", "logfire", "openai", "tavily", "web-fetch"], specifier = ">=2.56.0" },
     { name = "python-dotenv", specifier = ">=1.2.4" },
 ]
@@ -482,6 +484,24 @@ wheels = [
 ]
 
 [[package]]
+name = "exa-py"
+version = "2.25.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "httpcore" },
+    { name = "httpx" },
+    { name = "openai" },
+    { name = "pydantic" },
+    { name = "python-dotenv" },
+    { name = "requests" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/26/f7/89382f6adfb180b879ba6b71e25df857e093d38726d98688652a0c67482f/exa_py-2.25.0.tar.gz", hash = "sha256:4d171a4e099c0af18a725e4f64db6792a5874c3d08cf695334a6ae66f4ca5a92", size = 83644, upload-time = "2026-10-01T21:33:43.817Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/1a/36/5b467bcb4bd0612404784779252ccdef98b424d12b3e0e1d472f754e6dce/exa_py-2.25.0-py3-none-any.whl", hash = "sha256:8d44cc80cbb591952a37a186e2af2130a99f00b0e67954139cd5e2fdfda1f561", size = 113156, upload-time = "2026-10-01T21:33:42.514Z" },
+]
+
+[[package]]
 name = "executing"
 version = "2.3.0"
 source = { registry = "https://pypi.org/simple" }
@@ -726,6 +746,15 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/21/e3/4b1a43501fb9ed17b01d137e380cb0e8fdcb39a254ce31aa2ab95bc861ac/jiter-0.17.0-cp315-cp315t-win32.whl", hash = "sha256:86d703d9faa1ffc8ae4e9de0fa007712ed2171b5c0d93811a8e2e105ac729b0d", size = 184603, upload-time = "2026-09-12T15:13:59.27Z" },
     { url = "https://files.pythonhosted.org/packages/f9/f2/b8ee0372b6ebdf1bde5cc44495d5291d17f961065f5b48f8616cc67cac2e/jiter-0.17.0-cp315-cp315t-win_amd64.whl", hash = "sha256:42b0260445251b1bc520a63baa94a32d88e0f931fba234f1764db7feb7c72174", size = 227936, upload-time = "2026-09-12T15:14:00.472Z" },
     { url = "https://files.pythonhosted.org/packages/a4/b4/923a1215daba959aed8355973315cb3f81f53e0d01c5b211870a27b41f45/jiter-0.17.0-cp315-cp315t-win_arm64.whl", hash = "sha256:d47687806f9c54c84ea38733507081337922beca90ce819c7d852dd485bc0f23", size = 182977, upload-time = "2026-09-12T15:14:01.799Z" },
+]
+
+[[package]]
+name = "json-repair"
+version = "0.64.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/dc/85/bf69dc15a066728bf477b3a3cc16a49f8712acf5a6f9271bf6494f51bb91/json_repair-0.64.0.tar.gz", hash = "sha256:2890be942a7ef20626e4eda4bd91b37485bc5271ac122efe7bb924232fef60ea", size = 53703, upload-time = "2026-10-09T09:10:33.109Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/7f/10/98f7c8a5039b791e4801f1307f5571688b4fffa2e589eea9e16be6dcf37f/json_repair-0.64.0-py3-none-any.whl", hash = "sha256:3bf14cf14d8ae96f7bc467e6964d8accd52aaad084f973e38ebe4e43f9d051e4", size = 51984, upload-time = "2026-10-09T09:10:31.708Z" },
 ]
 
 [[package]]
@@ -1179,6 +1208,26 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/7c/0b/8e10b2e693af8ec54346a14caf36221334775975a747c9ceaa3f8371d96d/pydantic-2.14.1.tar.gz", hash = "sha256:94f478203dd03404682a1ada216965651dd74b1d2d5ffd62e00e0837caab5c26", size = 900362, upload-time = "2026-10-11T18:37:55.396Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/35/ea/a56b9fe5066f3537b7882f77e9c5dfb26d8c2eefdaed9b5fc73d57b4dc22/pydantic-2.14.1-py3-none-any.whl", hash = "sha256:9195d967ec791692a04438115466764fb8b9a27b31f14a760437694f40d6b454", size = 488106, upload-time = "2026-10-11T18:37:53.437Z" },
+]
+
+[[package]]
+name = "pydantic-ai-harness"
+version = "0.56.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "genai-prices" },
+    { name = "httpx" },
+    { name = "json-repair" },
+    { name = "pydantic-ai-slim" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/73/55/8e740649248c11edf2ca4c6576a77d79618ab22ff7f3b6c164450b96a1f2/pydantic_ai_harness-0.56.0.tar.gz", hash = "sha256:19beb2573ebbb4b3ac8ffe7e679227039ee67498559aa43a3e2309268afd6817", size = 1066429, upload-time = "2026-10-13T23:50:11.08Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/08/95/27b456ec1c9abfedbcf886af1a24b961a71eb601144da1fbcb8be73d6aab/pydantic_ai_harness-0.56.0-py3-none-any.whl", hash = "sha256:14893f9fb7bb7306a3298895a2b800f536392d6e5449a8ea3627f36a0aba0ac3", size = 1324022, upload-time = "2026-10-13T23:49:58.833Z" },
+]
+
+[package.optional-dependencies]
+exa = [
+    { name = "exa-py" },
 ]
 
 [[package]]

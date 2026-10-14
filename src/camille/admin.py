@@ -5,6 +5,7 @@ from .models import (
     AgentPersonality,
     AIModel,
     AIProvider,
+    ExaApiKey,
     GoogleAIModel,
     GoogleAIProvider,
     OpenAIAIProvider,
@@ -36,9 +37,11 @@ class AgentAdmin(admin.ModelAdmin):
         "model",
         "personality",
         "ddg_enabled",
-        "webfetch_enabled",
+        "exa_enabled",
+        "exa_api_key",
         "tavily_enabled",
         "tavily_api_key",
+        "webfetch_enabled",
         "created_at",
         "updated_at",
     )
@@ -89,5 +92,11 @@ class OpenAIModelAdmin(admin.ModelAdmin):
 
 @admin.register(TavilyApiKey)
 class TavilyApiKeyAdmin(admin.ModelAdmin):
+    list_display = ("uuid", "user", "name", "created_at", "updated_at")
+    search_fields = ("uuid", "user__username", "name")
+
+
+@admin.register(ExaApiKey)
+class ExaApiKeyAdmin(admin.ModelAdmin):
     list_display = ("uuid", "user", "name", "created_at", "updated_at")
     search_fields = ("uuid", "user__username", "name")
