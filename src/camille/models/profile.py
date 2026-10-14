@@ -1,13 +1,14 @@
 from typing import TYPE_CHECKING, cast
 from uuid import uuid7
 
-from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 if TYPE_CHECKING:
+    from django.contrib.auth.models import User
+
     from .agent import Agent
     from .ai import AIModel
 
@@ -18,14 +19,14 @@ class Profile(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     user = models.OneToOneField(
-        User,
+        "auth.User",
         on_delete=models.CASCADE,
         related_name="profile",
         related_query_name="profile",
     )
 
     default_agent = models.ForeignKey(
-        "Agent",
+        "camille.Agent",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -34,7 +35,7 @@ class Profile(models.Model):
     )
 
     default_model = models.ForeignKey(
-        "AIModel",
+        "camille.AIModel",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -61,7 +62,7 @@ class Profile(models.Model):
         return cast(str, cast(User, self.user).username)
 
 
-@receiver(post_save, sender=User)
+@receiver(post_save, sender="auth.User")
 def create_user_profile(
     sender: type[User], instance: User, created: bool, **kwargs
 ) -> None:

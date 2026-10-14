@@ -19,7 +19,7 @@ class Agent(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     user = models.ForeignKey(
-        User,
+        "auth.User",
         on_delete=models.CASCADE,
         related_name="agents",
         related_query_name="agent",
@@ -28,7 +28,7 @@ class Agent(models.Model):
     name = models.CharField(max_length=255, default="default")
 
     model = models.ForeignKey(
-        "AIModel",
+        "camille.AIModel",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -37,7 +37,7 @@ class Agent(models.Model):
     )
 
     personality = models.ForeignKey(
-        "AgentPersonality",
+        "camille.AgentPersonality",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -50,7 +50,7 @@ class Agent(models.Model):
     )
     exa_enabled = models.BooleanField(default=False, help_text="Enable Exa search")
     exa_api_key = models.ForeignKey(
-        "ExaApiKey",
+        "camille.ExaApiKey",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -61,7 +61,7 @@ class Agent(models.Model):
         default=False, help_text="Enable Tavily integration"
     )
     tavily_api_key = models.ForeignKey(
-        "TavilyApiKey",
+        "camille.TavilyApiKey",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -75,7 +75,7 @@ class Agent(models.Model):
         default=False, help_text="Enable image generation"
     )
     imgen_model = models.ForeignKey(
-        "AIImageModel",
+        "camille.AIImageModel",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,

@@ -1,7 +1,6 @@
 from typing import cast
 from uuid import uuid7
 
-from django.contrib.auth.models import User
 from django.db import models
 from encrypted_fields.fields import EncryptedCharField
 
@@ -12,7 +11,7 @@ class ExaApiKey(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     user = models.ForeignKey(
-        User,
+        "auth.User",
         on_delete=models.CASCADE,
         related_name="exa_api_keys",
         related_query_name="exa_api_key",

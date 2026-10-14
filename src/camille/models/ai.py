@@ -1,7 +1,6 @@
 from typing import cast
 from uuid import uuid7
 
-from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.db import models
 from polymorphic.models import PolymorphicModel
@@ -16,7 +15,7 @@ class AIProvider(PolymorphicModel):
     updated_at = models.DateTimeField(auto_now=True)
 
     user = models.ForeignKey(
-        User,
+        "auth.User",
         on_delete=models.CASCADE,
         related_name="ai_providers",
         related_query_name="ai_provider",
@@ -40,14 +39,14 @@ class AIModel(PolymorphicModel):
     updated_at = models.DateTimeField(auto_now=True)
 
     user = models.ForeignKey(
-        User,
+        "auth.User",
         on_delete=models.CASCADE,
         related_name="ai_models",
         related_query_name="ai_model",
     )
 
     provider = models.ForeignKey(
-        AIProvider,
+        "camille.AIProvider",
         on_delete=models.CASCADE,
         related_name="ai_models",
         related_query_name="ai_model",
@@ -78,14 +77,14 @@ class AIImageModel(PolymorphicModel):
     updated_at = models.DateTimeField(auto_now=True)
 
     user = models.ForeignKey(
-        User,
+        "auth.User",
         on_delete=models.CASCADE,
         related_name="ai_image_models",
         related_query_name="ai_image_model",
     )
 
     provider = models.ForeignKey(
-        AIProvider,
+        "camille.AIProvider",
         on_delete=models.CASCADE,
         related_name="ai_image_models",
         related_query_name="ai_image_model",
