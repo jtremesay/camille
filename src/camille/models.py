@@ -1,3 +1,4 @@
+from typing import cast
 from uuid import uuid7
 
 from django.contrib.auth.models import User
@@ -32,7 +33,10 @@ class Profile(models.Model):
     def clean(self):
         super().clean()
 
-        if self.default_agent is not None and self.default_agent.user != self.user:
+        if (
+            self.default_agent is not None
+            and cast(Agent, self.default_agent).user != self.user
+        ):
             raise ValidationError("The default agent must belong to the same user.")
 
 
@@ -76,7 +80,10 @@ class Agent(models.Model):
     def clean(self):
         super().clean()
 
-        if self.personality is not None and self.personality.user != self.user:
+        if (
+            self.personality is not None
+            and cast(AgentPersonality, self.personality).user != self.user
+        ):
             raise ValidationError("The personality must belong to the same user.")
 
 
