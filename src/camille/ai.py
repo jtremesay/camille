@@ -8,7 +8,7 @@ from pydantic_ai.common_tools.tavily import tavily_search_tool
 from pydantic_ai.common_tools.web_fetch import web_fetch_tool
 
 from .capabilities.personality import PersonalityCapability
-from .models import Agent, AgentPersonality
+from .models import Agent, AgentPersonality, TavilyApiKey
 
 logger = getLogger(__name__)
 
@@ -46,7 +46,12 @@ def create_pai_agent(agent: Agent, name: str = "Camille") -> PAIAgent:
 
     # Add Tavily search tool if enabled
     if agent.tavily_enabled:
-        tools.append(tavily_search_tool())
+        if (
+            tavily_api_key := cast(TavilyApiKey | None, agent.tavily_api_key)
+        ) is not None:
+            tools.append(tavily_search_tool(api_key=cast(str, tavily_api_key.key)))
+        else:
+            raise ValueError("Tavily search tool is enabled but no API key is set.")
 
     pai_agent = PAIAgent(
         model=agent.get_model_instance(),

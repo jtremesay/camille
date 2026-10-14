@@ -10,6 +10,7 @@ from .models import (
     OpenAIAIProvider,
     OpenAIModel,
     Profile,
+    TavilyApiKey,
 )
 
 
@@ -37,6 +38,7 @@ class AgentAdmin(admin.ModelAdmin):
         "ddg_enabled",
         "webfetch_enabled",
         "tavily_enabled",
+        "tavily_api_key",
         "created_at",
         "updated_at",
     )
@@ -83,3 +85,9 @@ class GoogleAIModelAdmin(admin.ModelAdmin):
 class OpenAIModelAdmin(admin.ModelAdmin):
     list_display = ("uuid", "user", "provider", "name", "created_at", "updated_at")
     search_fields = ("uuid", "user__username", "provider__name", "name")
+
+
+@admin.register(TavilyApiKey)
+class TavilyApiKeyAdmin(admin.ModelAdmin):
+    list_display = ("uuid", "user", "name", "created_at", "updated_at")
+    search_fields = ("uuid", "user__username", "name")

@@ -114,6 +114,14 @@ class Agent(models.Model):
     tavily_enabled = models.BooleanField(
         default=False, help_text="Enable Tavily integration"
     )
+    tavily_api_key = models.ForeignKey(
+        "TavilyApiKey",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="agents",
+        related_query_name="agent",
+    )
     webfetch_enabled = models.BooleanField(
         default=False, help_text="Enable fetching web content"
     )
@@ -127,14 +135,18 @@ class Agent(models.Model):
     def clean(self):
         super().clean()
 
-        if (
-            self.personality is not None
-            and cast(AgentPersonality, self.personality).user != self.user
-        ):
+        if (personality := self.personality) is not None and cast(
+            AgentPersonality, personality
+        ).user != self.user:
             raise ValidationError("The personality must belong to the same user.")
 
-        if self.model is not None and cast(AIModel, self.model).user != self.user:
+        if (model := self.model) is not None and cast(AIModel, model).user != self.user:
             raise ValidationError("The model must belong to the same user.")
+
+        if (tavily_api_key := self.tavily_api_key) is not None and cast(
+            TavilyApiKey, tavily_api_key
+        ).user != self.user:
+            raise ValidationError("The Tavily API key must belong to the same user.")
 
     def get_model_instance(self) -> PAIModel:
         # Try to get the model assigned to the agent first
@@ -310,3 +322,6 @@ class TavilyApiKey(models.Model):
 
     class Meta:
         unique_together = ("user", "key")
+
+    def __str__(self) -> str:
+        return cast(str, self.name)

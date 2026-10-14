@@ -46,9 +46,5 @@ class Command(BaseCommand):
 
         pai_agent = create_pai_agent(agent)
 
-        return
-
-        r = pai_agent.run_sync(
-            "Tu en penses quoi ? https://raw.githubusercontent.com/jtremesay/camille/refs/heads/v7/src/camille/models.py"
-        )
+        r = pai_agent.run_sync("quel est le box office de l'année 2026 ?")
         print(r.output)
