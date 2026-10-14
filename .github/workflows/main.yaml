@@ -1,0 +1,75 @@
+name: CI/CD
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Install uv
+        uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+      
+      - name: Set up Python
+        run: uv python install
+
+      - name: Install the project
+        run: uv sync --locked --all-extras --dev
+
+      - name: Run tests
+        run: uv run camille test camille.tests
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: |
+            killruana/camille
+          tags: |
+            type=schedule
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v4
+        with:
+          username: killruana
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v7
+        with:
+          push: ${{ github.ref == 'refs/heads/v7' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          cache-from: type=registry,ref=killruana/camille:buildcache
+          cache-to: type=registry,ref=killruana/camille:buildcache,mode=max
+
+  # deploy:
+  #   runs-on: ubuntu-latest
+  #   needs: [test, build]
+  #   if: github.ref == 'refs/heads/v7'
+  #   steps:
+  #     - name: Deploy
+  #       uses: jtremesay/docker-swarm-deploy@main
+  #       with:
+  #         docker_username: killruana
+  #         docker_password: ${{ secrets.DOCKERHUB_TOKEN }}
+  #         remote_host: jtremesay.eu
+  #         remote_user: github-ci
+  #         ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
+  #         stack_name: alix
+
