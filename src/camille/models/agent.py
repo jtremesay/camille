@@ -92,15 +92,15 @@ class Agent(models.Model):
     def clean(self):
         super().clean()
 
-        if (personality := self.personality) is not None and cast(
-            "AgentPersonality", personality
-        ).user != self.user:
-            raise ValidationError("The personality must belong to the same user.")
-
         if (model := self.model) is not None and cast(
             "AIModel", model
         ).user != self.user:
             raise ValidationError("The model must belong to the same user.")
+
+        if (personality := self.personality) is not None and cast(
+            "AgentPersonality", personality
+        ).user != self.user:
+            raise ValidationError("The personality must belong to the same user.")
 
         if (exa_api_key := self.exa_api_key) is not None and cast(
             "ExaApiKey", exa_api_key
