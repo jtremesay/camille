@@ -5,4 +5,5 @@ from .models import Profile
 
 @admin.register(Profile)
 class ProfileAdmin(admin.ModelAdmin):
-    list_display = ("user",)
+    list_display = ("uuid", "user", "created_at", "updated_at")
+    search_fields = ("uuid", "user__username")
