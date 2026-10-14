@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django_extensions.db.models import AutoSlugField
 
 
 class Profile(models.Model):
@@ -30,18 +31,14 @@ def create_user_profile(
     Profile.objects.create(user=instance)
 
 
-# class Agent(models.Model):
-#     user = models.ForeignKey(User, on_delete=models.CASCADE)
-#     slug = models.SlugField(max_length=255, default="default")
+class Agent(models.Model):
+    uuid = models.UUIDField(primary_key=True, default=uuid7, editable=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
-#     class Meta:
-#         unique_together = ("user", "slug")
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    slug = AutoSlugField(populate_from="name", max_length=255)
+    name = models.CharField(max_length=255, default="default")
 
-
-# class AgentConfig(models.Model):
-#     user = models.OneToOneField(User, on_delete=models.CASCADE)
-#     api_key = EncryptedCharField(max_length=255)
-#     model_name = models.CharField(max_length=255)
-#     personality = models.TextField()
-
-#     ddg_enabled = models.BooleanField(default=False)
+    class Meta:
+        unique_together = ("user", "slug")
