@@ -3,9 +3,9 @@
 ## Project direction
 
 Camille is a work-in-progress, multi-user AI assistant built with Django and
-Pydantic AI. The long-term goal is to let each user configure their own agents,
-personalities, providers, credentials, memories, and capabilities. Mattermost
-is the next planned transport integration.
+Pydantic AI. Each user owns their agents, personalities, AI providers, models,
+and API keys, and enables the capabilities they want per agent. Mattermost is
+the next planned transport integration.
 
 The `v6` branch is useful for understanding previously supported behavior,
 especially Mattermost, user linking, conversations, model providers, memories,
@@ -15,51 +15,105 @@ and currently implements only a subset of that behavior.
 
 ## Architecture
 
-- Keep Django domain models and application code in `src/camille/`.
-- Keep Pydantic AI persistence concerns in `src/pydanticai_django/`. Do not
-  couple this package to Camille-specific users, agents, or transports.
-- Keep transport adapters such as Mattermost separate from agent construction,
-  domain logic, and model/provider selection.
-- Implement agent features as independently composable and testable
-  capabilities. Do not make a generic capability depend directly on a
+- `src/camille/models/` — domain models, one module per concern
+  (`profile.py`, `agent.py`, `ai.py`, `google.py`, `openai.py`, `tavily.py`,
+  `exa.py`). Re-export public models from `models/__init__.py`.
+- `src/camille/ai.py` — composition root. `create_pai_agent()` translates a
+  stored `Agent` into a Pydantic AI agent by assembling tools and capabilities.
+  Keep it declarative: no transport logic, no persistence, no I/O beyond
+  building provider clients.
+- `src/camille/capabilities/` — project-specific Pydantic AI capabilities
+  (currently `PersonalityCapability`). Keep each capability independently
+  composable and testable, and never couple a generic capability to a
   transport.
-- Pass explicit user, conversation, and transport context to agents and tools.
-  Avoid process-global or implicitly shared mutable state.
-- Persist AI runs and resumable execution through `pydanticai_django` rather
-  than adding ad hoc persistence to transports.
+- `src/camille/management/commands/` — operational entry points such as
+  `sandbox`, used to exercise an agent from the CLI.
+- `src/pydanticai_django/` — reusable Django persistence adapter for Pydantic AI
+  step persistence (run records, step events, tool effects, continuable
+  snapshots). It must stay decoupled from Camille's domain models. It is not
+  currently listed in `INSTALLED_APPS`; wire it up deliberately when run
+  persistence is actually needed.
+- Transport adapters (Mattermost, web) must stay separate from agent
+  construction, domain logic, and provider/model selection. They supply user
+  and conversation context; they do not decide which model or tools to use.
 
 ## Multi-user invariants
 
-User isolation is a core requirement.
+User isolation is a core requirement. Every domain object is owned by a Django
+`User`, and every reference between two owned objects must stay within one
+user.
 
-- Every customizable or sensitive object must have an explicit owner.
-- Scope reads and writes by the authenticated/current user; do not fetch an
-  object globally and rely only on a later authorization check.
-- Validate ownership for every relation between user-owned objects. Follow the
-  existing model `clean()` pattern and test both same-user success and
-  cross-user rejection.
-- Never share credentials, memories, agent configuration, conversation state,
-  or provider settings between users unless the feature explicitly models and
-  authorizes sharing.
-- Keep provider and credential selection explicit and per-user. Never introduce
-  a global credential fallback that could cross tenant boundaries.
-- For group conversations, distinguish the agent owner, message author,
-  participants, and conversation scope instead of treating them as one user.
+- Scope reads and writes by the owning user; do not fetch globally and rely on
+  a later authorization check.
+- Validate ownership in `clean()` for every FK between user-owned objects, and
+  raise `ValidationError`. See `Agent.clean()` and `Profile.clean()`.
+- Add tests for both directions of each new relation: same-user accepted,
+  another user's object rejected.
+- Keep provider, model, and credential selection explicit and per-user. Never
+  add a global credential or provider fallback that could cross users.
+- Resolution order for an agent's model is agent-level first, then
+  `Profile.default_model`, then an explicit error. Preserve this
+  per-user-only fallback chain.
+- For group conversations, distinguish agent owner, message author,
+  participants, and conversation scope instead of collapsing them into one
+  user.
 
-## Django and data conventions
+## Model conventions
 
-- Use the Django ORM and migrations for persistent state.
-- Use UUIDv7 primary keys for new Camille-owned entities unless there is a
-  documented reason not to.
-- Use `CASCADE` for data wholly owned by its parent and `SET_NULL` for optional
-  references whose target may be removed.
-- Preserve human-readable, user-scoped slugs where entities are selected by
-  name.
-- Create and test data migrations for backfills or transformations.
-- Register relevant domain models in the Django admin with useful ownership
-  and stable-identifier search fields.
-- Do not treat the current development settings, inline secret key, SQLite
-  configuration, or enabled debug mode as production-ready patterns.
+New user-owned models follow a consistent shape:
+
+- `uuid` primary key using `uuid7`, `editable=False`;
+- `created_at` / `updated_at` timestamps;
+- a `user` FK with `on_delete=CASCADE` and explicit `related_name` /
+  `related_query_name`;
+- a human-readable `name` with `unique_together = ("user", "name")`;
+- `__str__` returning the name.
+
+Other rules:
+
+- Use `CASCADE` for data wholly owned by its parent, and `SET_NULL` for
+  optional references whose target may disappear (agent model, personality,
+  API keys, profile defaults).
+- Slugs and `AutoSlugField` were intentionally removed; select objects by
+  `(user, name)` and do not reintroduce slug fields.
+- Create migrations for every schema change, and test data migrations that
+  backfill or transform rows.
+- Register new models in `src/camille/admin.py` with ownership and stable
+  identifiers in `list_display` / `search_fields`.
+
+## Providers, models, and secrets
+
+- `AIProvider`, `AIModel`, and `AIImageModel` are polymorphic
+  (`django-polymorphic`) base models. Concrete backends subclass them and
+  implement `get_instance()`, returning the matching Pydantic AI object.
+- A concrete model must validate in `clean()` that its provider is the matching
+  concrete provider type, in addition to the shared ownership check.
+- Adding a backend means: a provider subclass, a model subclass, an image-model
+  subclass when supported, migrations, admin registration, and tests.
+- Store provider credentials in `EncryptedCharField`
+  (`django-fernet-encrypted-fields`). Prefer encrypted fields for any new
+  secret at rest; plain `CharField` keys such as `TavilyApiKey.key` and
+  `ExaApiKey.key` are legacy and should not be used as a model for new work.
+- Never log, serialize, or expose credential values, and never commit real
+  keys.
+
+## Capabilities and tools
+
+Agent features are opt-in per agent with a `<feature>_enabled` boolean, plus an
+optional per-user FK when the feature needs a credential or a model.
+
+When adding a capability or tool:
+
+1. add the flag and any owned FK to `Agent`, with ownership validation in
+   `clean()`;
+2. wire it in `create_pai_agent()`, raising an explicit `ValueError` when the
+   feature is enabled but its credential or model is missing;
+3. register it in the admin and cover it with tests, including the
+   enabled-but-misconfigured failure path.
+
+Prefer Pydantic AI's built-in tools and capabilities over bespoke
+implementations. Keep local workarounds for upstream bugs small, commented with
+the upstream issue, and isolated (see `MyDDGS` in `src/camille/ai.py`).
 
 ## Mattermost
 
@@ -79,9 +133,8 @@ ported and tested.
 
 ## Development workflow
 
-The project requires Python 3.14 or newer and uses `uv`, `just`, Django's test
-runner, and coverage. Do not replace these tools without an explicit project
-decision.
+The project targets Python 3.14+ and uses `uv`, `just`, Django's test runner,
+and coverage. Do not swap these tools without an explicit project decision.
 
 Common commands:
 
@@ -100,17 +153,30 @@ uv run camille test tests.test_models
 uv run camille test tests.test_ai
 ```
 
+Known rough edges, since this is WIP:
+
+- The test suite is currently red; several tests still assume removed `slug`
+  fields and old defaults. Check whether a failure is pre-existing before
+  attributing it to your change, and leave the suite no worse than you found
+  it.
+- `just test` uses `--parallel=auto`, which can fail while serializing
+  tracebacks. Fall back to `uv run camille test tests` when diagnosing.
+- `src/camille/settings.py` holds development defaults: inline `SECRET_KEY` and
+  `SALT_KEY`, `DEBUG = True`, empty `ALLOWED_HOSTS`, and local SQLite. These are
+  not production patterns; move them to environment-driven configuration before
+  any deployment.
+
 ## Change requirements
 
-- Treat current APIs as WIP: inspect callers and tests before extending or
-  renaming them.
+- Treat current APIs as WIP: inspect callers, migrations, and tests before
+  extending or renaming anything.
 - Prefer small, explicit interfaces over prematurely recreating all of `v6`.
 - Add tests for new behavior, failure paths, ownership boundaries, and
-  persistence semantics.
-- Use Django `TestCase`/`unittest` style and existing test helpers.
-- Run the narrowest relevant tests first, then `just test` for changes that
+  persistence semantics, using Django `TestCase` and `tests/helpers.py`.
+- Keep model changes, their migrations, admin updates, and tests in the same
+  change.
+- Run the narrowest relevant tests first, then the full suite for changes that
   affect shared models, settings, persistence, or agent construction.
-- Keep migrations and their tests in the same change as model updates.
 - Regularly compare this file with the codebase while working. If its
   architecture, invariants, commands, or stated project direction have
   materially diverged from the implementation, update `AGENTS.md` in the same
