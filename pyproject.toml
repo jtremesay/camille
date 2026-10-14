@@ -1,10 +1,10 @@
 [project]
 name = "camille"
 version = "0.1.0"
-description = "Add your description here"
+description = "A multi-user multi-modal multi-agent platform."
 readme = "README.md"
 authors = [
-    { name = "Jonathan Tremesaygues", email = "jonathan.tremesaygues@slaanesh.org" },
+    { name = "Jonathan Tremesaygues", email = "jonathan@tremesaygues.eu" },
 ]
 requires-python = ">=3.14"
 dependencies = [
@@ -30,8 +30,4 @@ testing = ["coverage>=7.16.2"]
 
 [tool.coverage.run]
 branch = true
-omit = [
-    "*/migrations/*",
-    "*/asgi.py",
-    "*/wsgi.py",
-]
+omit = ["*/migrations/*", "*/asgi.py", "*/wsgi.py"]
