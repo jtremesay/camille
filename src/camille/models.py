@@ -106,3 +106,6 @@ class AgentPersonality(models.Model):
 
     class Meta:
         unique_together = ("user", "slug")
+
+    def __str__(self) -> str:
+        return f"{self.name} ({cast(User, self.user).username})"
