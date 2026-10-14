@@ -44,5 +44,7 @@ class Command(BaseCommand):
 
         pai_agent = create_pai_agent(agent)
 
-        r = pai_agent.run_sync("dessine moi un mouton")
+        r = pai_agent.run_sync(
+            "quels sont les blockbusters bollywoodiens de l'été 2026"
+        )
         print(r.output)

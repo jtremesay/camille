@@ -5,10 +5,9 @@ from ddgs.ddgs import DDGS, DDGSException
 from exa_py import AsyncExa
 from pydantic_ai import Agent as PAIAgent
 from pydantic_ai import ImageGenerator
-from pydantic_ai.capabilities import ImageGeneration
+from pydantic_ai.capabilities import ImageGeneration, WebFetch, WebSearch
 from pydantic_ai.common_tools.duckduckgo import duckduckgo_search_tool
 from pydantic_ai.common_tools.tavily import tavily_search_tool
-from pydantic_ai.common_tools.web_fetch import web_fetch_tool
 from pydantic_ai_harness import ExaSearch
 
 from .capabilities.personality import PersonalityCapability
@@ -40,13 +39,16 @@ def create_pai_agent(agent: Agent, name: str = "Camille") -> PAIAgent:
             )
         )
 
+    capabilities.append(WebSearch())
+
     # Add DuckDuckGo search tool if enabled
     if agent.ddg_enabled:
-        tools.append(duckduckgo_search_tool(duckduckgo_client=MyDDGS()))
-
-    # Add web fetch tool if enabled
-    if agent.webfetch_enabled:
-        tools.append(web_fetch_tool())
+        capabilities.append(
+            WebFetch(
+                id="duckduckgo_search",
+                local=duckduckgo_search_tool(duckduckgo_client=MyDDGS()),
+            )
+        )
 
     # Add Exa search tool if enabled
     if agent.exa_enabled:
@@ -62,7 +64,12 @@ def create_pai_agent(agent: Agent, name: str = "Camille") -> PAIAgent:
         if (
             tavily_api_key := cast(TavilyApiKey | None, agent.tavily_api_key)
         ) is not None:
-            tools.append(tavily_search_tool(api_key=cast(str, tavily_api_key.key)))
+            capabilities.append(
+                WebFetch(
+                    id="tavily_search",
+                    local=tavily_search_tool(api_key=cast(str, tavily_api_key.key)),
+                )
+            )
         else:
             raise ValueError("Tavily search tool is enabled but no API key is set.")
 
