@@ -24,7 +24,7 @@ jobs:
         run: uv sync --locked --group=testing
 
       - name: Run tests
-        run: uv run coverage run --source="src/" -m camille test camille.tests
+        run: uv run coverage run --source="src/" -m camille test --parallel=auto camille.tests
 
       - name: Generate coverage report
         run: uv run coverage report
