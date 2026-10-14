@@ -7,6 +7,8 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django_extensions.db.models import AutoSlugField
+from encrypted_fields.fields import EncryptedCharField
+from polymorphic.models import PolymorphicModel
 
 
 class Profile(models.Model):
@@ -109,3 +111,89 @@ class AgentPersonality(models.Model):
 
     def __str__(self) -> str:
         return f"{self.name} ({cast(User, self.user).username})"
+
+
+class AIProvider(PolymorphicModel):
+    uuid = models.UUIDField(primary_key=True, default=uuid7, editable=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="ai_providers",
+        related_query_name="ai_provider",
+    )
+
+    name = models.CharField(max_length=255, default="Default")
+    slug = AutoSlugField(populate_from="name", max_length=255)
+
+    class Meta:
+        unique_together = ("user", "slug")
+
+    def __str__(self) -> str:
+        return self.name
+
+
+class GoogleAIProvider(AIProvider):
+    api_key = EncryptedCharField(max_length=255)
+
+
+class OpenAIProvider(AIProvider):
+    api_key = EncryptedCharField(max_length=255)
+    base_url = models.URLField(null=True, blank=True)
+
+
+class AIModel(PolymorphicModel):
+    uuid = models.UUIDField(primary_key=True, default=uuid7, editable=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="ai_models",
+        related_query_name="ai_model",
+    )
+
+    name = models.CharField(max_length=255)
+    provider = models.ForeignKey(
+        AIProvider,
+        on_delete=models.CASCADE,
+        related_name="ai_models",
+        related_query_name="ai_model",
+    )
+
+    class Meta:
+        unique_together = ("user", "provider", "name")
+
+    def __str__(self) -> str:
+        return cast(str, self.name)
+
+    def clean(self) -> None:
+        if cast(AIProvider, self.provider).user != self.user:
+            raise ValidationError(
+                "The provider must belong to the same user as the AI model."
+            )
+
+        return super().clean()
+
+
+class GoogleAIModel(AIModel):
+    def clean(self) -> None:
+        if not isinstance(cast(AIProvider, self.provider), GoogleAIProvider):
+            raise ValidationError(
+                "The provider must be a Google AI provider for a Google AI model."
+            )
+
+        return super().clean()
+
+
+class OpenAIModel(AIModel):
+    def clean(self) -> None:
+        if not isinstance(cast(AIProvider, self.provider), OpenAIProvider):
+            raise ValidationError(
+                "The provider must be an OpenAI provider for an OpenAI model."
+            )
+
+        return super().clean()

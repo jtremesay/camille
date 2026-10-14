@@ -1,6 +1,16 @@
 from django.contrib import admin
 
-from .models import Agent, AgentPersonality, Profile
+from .models import (
+    Agent,
+    AgentPersonality,
+    AIModel,
+    AIProvider,
+    GoogleAIModel,
+    GoogleAIProvider,
+    OpenAIModel,
+    OpenAIProvider,
+    Profile,
+)
 
 
 @admin.register(Profile)
@@ -27,3 +37,39 @@ class AgentAdmin(admin.ModelAdmin):
 class AgentPersonalityAdmin(admin.ModelAdmin):
     list_display = ("uuid", "user", "slug", "name", "created_at", "updated_at")
     search_fields = ("uuid", "user__username", "slug", "name")
+
+
+@admin.register(AIProvider)
+class AIProviderAdmin(admin.ModelAdmin):
+    list_display = ("uuid", "user", "slug", "name", "created_at", "updated_at")
+    search_fields = ("uuid", "user__username", "slug", "name")
+
+
+@admin.register(AIModel)
+class AIModelAdmin(admin.ModelAdmin):
+    list_display = ("uuid", "user", "provider", "name", "created_at", "updated_at")
+    search_fields = ("uuid", "user__username", "provider__name", "name")
+
+
+@admin.register(GoogleAIProvider)
+class GoogleAIProviderAdmin(admin.ModelAdmin):
+    list_display = ("uuid", "user", "slug", "name", "created_at", "updated_at")
+    search_fields = ("uuid", "user__username", "slug", "name")
+
+
+@admin.register(OpenAIProvider)
+class OpenAIProviderAdmin(admin.ModelAdmin):
+    list_display = ("uuid", "user", "slug", "name", "created_at", "updated_at")
+    search_fields = ("uuid", "user__username", "slug", "name")
+
+
+@admin.register(GoogleAIModel)
+class GoogleAIModelAdmin(admin.ModelAdmin):
+    list_display = ("uuid", "user", "provider", "name", "created_at", "updated_at")
+    search_fields = ("uuid", "user__username", "provider__name", "name")
+
+
+@admin.register(OpenAIModel)
+class OpenAIModelAdmin(admin.ModelAdmin):
+    list_display = ("uuid", "user", "provider", "name", "created_at", "updated_at")
+    search_fields = ("uuid", "user__username", "provider__name", "name")
