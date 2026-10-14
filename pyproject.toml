@@ -31,7 +31,6 @@ testing = ["coverage>=7.16.2"]
 branch = true
 omit = [
     "*/migrations/*",
-    "*/tests/*",
     "*/asgi.py",
     "*/wsgi.py",
 ]

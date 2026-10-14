@@ -1,6 +1,6 @@
 {
     "python.testing.unittestArgs": [
-        "camille.tests"
+        "tests"
     ],
     "python.testing.pytestEnabled": false,
     "python.testing.unittestEnabled": true
