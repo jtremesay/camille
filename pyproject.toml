@@ -17,14 +17,12 @@ dependencies = [
 ]
 
 [project.scripts]
-camille = "camille.manage:main"
+camille = "camille.__main__:main"
 
 [build-system]
 requires = ["uv_build>=0.13.1,<0.14.0"]
 build-backend = "uv_build"
 
 [dependency-groups]
-dev = [
-    "pre-commit>=4.7.0",
-    "rust-just>=1.58.0",
-]
+dev = ["pre-commit>=4.7.0", "rust-just>=1.58.0"]
+testing = ["coverage>=7.16.2"]
