@@ -1,4 +1,4 @@
-makemigration:
+makemigrations:
     uv run camille makemigrations
 
 migrate:
@@ -7,5 +7,5 @@ migrate:
 runserver:
     uv run camille runserver
 
-tests:
+test:
     uv run camille test camille.tests
