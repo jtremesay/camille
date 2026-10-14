@@ -154,10 +154,10 @@ uv run camille test tests.test_ai
 
 Known rough edges, since this is WIP:
 
-- The test suite is currently red; several tests still assume removed `slug`
-  fields and old defaults. Check whether a failure is pre-existing before
-  attributing it to your change, and leave the suite no worse than you found
-  it.
+- The test suite uses Django's test runner through `uv run camille test tests`.
+  Keep model tests aligned with the current schema: slugs were removed, names
+  are unique per user, and agents require an explicitly assigned or
+  profile-default model.
 - `just test` uses `--parallel=auto`, which can fail while serializing
   tracebacks. Fall back to `uv run camille test tests` when diagnosing.
 - `src/camille/settings.py` holds development defaults: inline `SECRET_KEY` and
