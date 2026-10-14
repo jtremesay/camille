@@ -18,7 +18,7 @@ def create_pai_agent(agent: Agent, name: str = "Camille") -> PAIAgent:
         )
 
     pai_agent = PAIAgent(
-        model="google:gemini-3.5-flash-lite",
+        model=agent.get_model_instance(),
         tools=tools,
         capabilities=capabilities,
     )

@@ -9,6 +9,12 @@ from django.dispatch import receiver
 from django_extensions.db.models import AutoSlugField
 from encrypted_fields.fields import EncryptedCharField
 from polymorphic.models import PolymorphicModel
+from pydantic_ai.models import Model as PAIModel
+from pydantic_ai.models.google import GoogleModel as PAIGoogleModel
+from pydantic_ai.models.openai import OpenAIChatModel as PAIOpenAIModel
+from pydantic_ai.providers import Provider as PAIProvider
+from pydantic_ai.providers.google import GoogleProvider as PAIGoogleProvider
+from pydantic_ai.providers.openai import OpenAIProvider as PAIOpenAIProvider
 
 
 class Profile(models.Model):
@@ -118,6 +124,15 @@ class Agent(models.Model):
         if self.model is not None and cast(AIModel, self.model).user != self.user:
             raise ValidationError("The model must belong to the same user.")
 
+    def get_model_instance(self) -> PAIModel:
+        if self.model is None:
+            if (default_model := self.user.profile.default_model) is not None:
+                return default_model.get_instance()
+
+            raise ValueError("The agent does not have a model assigned.")
+
+        return cast(AIModel, self.model).get_instance()
+
 
 class AgentPersonality(models.Model):
     uuid = models.UUIDField(primary_key=True, default=uuid7, editable=False)
@@ -164,14 +179,25 @@ class AIProvider(PolymorphicModel):
     def __str__(self) -> str:
         return self.name
 
+    def get_instance(self) -> PAIProvider:
+        raise NotImplementedError("Subclasses must implement the get_instance method.")
+
 
 class GoogleAIProvider(AIProvider):
     api_key = EncryptedCharField(max_length=255)
 
+    def get_instance(self) -> PAIGoogleProvider:
+        return PAIGoogleProvider(api_key=cast(str, self.api_key))
 
-class OpenAIProvider(AIProvider):
+
+class OpenAIAIProvider(AIProvider):
     api_key = EncryptedCharField(max_length=255)
     base_url = models.URLField(null=True, blank=True)
+
+    def get_instance(self) -> PAIOpenAIProvider:
+        return PAIOpenAIProvider(
+            api_key=cast(str, self.api_key), base_url=cast(str, self.base_url)
+        )
 
 
 class AIModel(PolymorphicModel):
@@ -208,6 +234,9 @@ class AIModel(PolymorphicModel):
 
         return super().clean()
 
+    def get_instance(self) -> PAIModel:
+        raise NotImplementedError("Subclasses must implement the get_instance method.")
+
 
 class GoogleAIModel(AIModel):
     def clean(self) -> None:
@@ -218,12 +247,24 @@ class GoogleAIModel(AIModel):
 
         return super().clean()
 
+    def get_instance(self) -> PAIGoogleModel:
+        return PAIGoogleModel(
+            model_name=cast(str, self.name),
+            provider=cast(GoogleAIProvider, self.provider).get_instance(),
+        )
+
 
 class OpenAIModel(AIModel):
     def clean(self) -> None:
-        if not isinstance(cast(AIProvider, self.provider), OpenAIProvider):
+        if not isinstance(cast(AIProvider, self.provider), OpenAIAIProvider):
             raise ValidationError(
                 "The provider must be an OpenAI provider for an OpenAI model."
             )
 
         return super().clean()
+
+    def get_instance(self) -> PAIOpenAIModel:
+        return PAIOpenAIModel(
+            model_name=cast(str, self.name),
+            provider=cast(OpenAIAIProvider, self.provider).get_instance(),
+        )

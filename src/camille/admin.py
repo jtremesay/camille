@@ -7,8 +7,8 @@ from .models import (
     AIProvider,
     GoogleAIModel,
     GoogleAIProvider,
+    OpenAIAIProvider,
     OpenAIModel,
-    OpenAIProvider,
     Profile,
 )
 
@@ -65,8 +65,8 @@ class GoogleAIProviderAdmin(admin.ModelAdmin):
     search_fields = ("uuid", "user__username", "slug", "name")
 
 
-@admin.register(OpenAIProvider)
-class OpenAIProviderAdmin(admin.ModelAdmin):
+@admin.register(OpenAIAIProvider)
+class OpenAIAIProviderAdmin(admin.ModelAdmin):
     list_display = ("uuid", "user", "slug", "name", "created_at", "updated_at")
     search_fields = ("uuid", "user__username", "slug", "name")
 
