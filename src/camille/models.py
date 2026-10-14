@@ -196,7 +196,7 @@ class OpenAIAIProvider(AIProvider):
 
     def get_instance(self) -> PAIOpenAIProvider:
         return PAIOpenAIProvider(
-            api_key=cast(str, self.api_key), base_url=cast(str, self.base_url)
+            api_key=cast(str, self.api_key), base_url=cast(str | None, self.base_url)
         )
 
 
