@@ -15,7 +15,14 @@ from .models import (
 
 @admin.register(Profile)
 class ProfileAdmin(admin.ModelAdmin):
-    list_display = ("uuid", "user", "created_at", "updated_at")
+    list_display = (
+        "uuid",
+        "user",
+        "default_agent",
+        "default_model",
+        "created_at",
+        "updated_at",
+    )
     search_fields = ("uuid", "user__username")
 
 
@@ -26,6 +33,7 @@ class AgentAdmin(admin.ModelAdmin):
         "user",
         "slug",
         "name",
+        "model",
         "personality",
         "created_at",
         "updated_at",

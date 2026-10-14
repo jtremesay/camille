@@ -32,6 +32,15 @@ class Profile(models.Model):
         related_query_name="default_for_profile",
     )
 
+    default_model = models.ForeignKey(
+        "AIModel",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="default_for_profiles",
+        related_query_name="default_for_profile",
+    )
+
     def clean(self):
         super().clean()
 
@@ -40,6 +49,12 @@ class Profile(models.Model):
             and cast(Agent, self.default_agent).user != self.user
         ):
             raise ValidationError("The default agent must belong to the same user.")
+
+        if (
+            self.default_model is not None
+            and cast(AIModel, self.default_model).user != self.user
+        ):
+            raise ValidationError("The default model must belong to the same user.")
 
 
 @receiver(post_save, sender=User)
@@ -67,6 +82,15 @@ class Agent(models.Model):
     name = models.CharField(max_length=255, default="Default")
     slug = AutoSlugField(populate_from="name", max_length=255)
 
+    model = models.ForeignKey(
+        "AIModel",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="agents",
+        related_query_name="agent",
+    )
+
     personality = models.ForeignKey(
         "AgentPersonality",
         on_delete=models.SET_NULL,
@@ -79,6 +103,9 @@ class Agent(models.Model):
     class Meta:
         unique_together = ("user", "slug")
 
+    def __str__(self) -> str:
+        return f"{self.name} ({cast(User, self.user).username})"
+
     def clean(self):
         super().clean()
 
@@ -87,6 +114,9 @@ class Agent(models.Model):
             and cast(AgentPersonality, self.personality).user != self.user
         ):
             raise ValidationError("The personality must belong to the same user.")
+
+        if self.model is not None and cast(AIModel, self.model).user != self.user:
+            raise ValidationError("The model must belong to the same user.")
 
 
 class AgentPersonality(models.Model):
@@ -168,7 +198,7 @@ class AIModel(PolymorphicModel):
         unique_together = ("user", "provider", "name")
 
     def __str__(self) -> str:
-        return cast(str, self.name)
+        return f"{self.provider.name}: {cast(str, self.name)}"
 
     def clean(self) -> None:
         if cast(AIProvider, self.provider).user != self.user:
