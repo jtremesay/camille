@@ -2,6 +2,7 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 
+from .ai import create_pai_agent
 from .models import Agent, Profile
 
 
@@ -45,3 +46,11 @@ class AgentModelTest(TestCase):
         assert Agent.objects.count() == 1
         assert agent.slug == "testagent"
         assert agent.name == "TestAgent"
+
+
+class CreatePAIAgentTest(TestCase):
+    def test_create_pai_agent(self):
+        user = User.objects.create_user(username="testuser", password="testpassword")
+        agent = Agent.objects.create(user=user, name="TestAgent")
+
+        create_pai_agent(agent)
