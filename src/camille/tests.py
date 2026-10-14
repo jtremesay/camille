@@ -1,6 +1,8 @@
+from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 from django.test import TestCase
 
-from .models import Agent, Profile, User
+from .models import Agent, Profile
 
 
 class ProfileModelTest(TestCase):
@@ -12,6 +14,24 @@ class ProfileModelTest(TestCase):
         Profile.objects.get(user=user)
         assert User.objects.count() == 1
         assert Profile.objects.count() == 1
+
+    def test_default_agent_validation(self):
+        user = User.objects.create_user(username="testuser", password="testpassword")
+        agent = Agent.objects.create(user=user, name="TestAgent")
+
+        profile = user.profile
+        profile.default_agent = agent
+        profile.clean()
+
+        other_user = User.objects.create_user(
+            username="otheruser", password="otherpassword"
+        )
+        other_profile = other_user.profile
+        other_profile.default_agent = agent
+        try:
+            other_profile.clean()
+        except ValidationError:
+            pass
 
 
 class AgentModelTest(TestCase):
