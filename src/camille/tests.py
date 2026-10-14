@@ -1,3 +1,5 @@
+from os import environ
+
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.test import TestCase
@@ -53,4 +55,5 @@ class CreatePAIAgentTest(TestCase):
         user = User.objects.create_user(username="testuser", password="testpassword")
         agent = Agent.objects.create(user=user, name="TestAgent")
 
+        environ["GOOGLE_API_KEY"] = "test"
         create_pai_agent(agent)
