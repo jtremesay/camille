@@ -4,13 +4,15 @@ from typing import cast
 from ddgs.ddgs import DDGS, DDGSException
 from exa_py import AsyncExa
 from pydantic_ai import Agent as PAIAgent
+from pydantic_ai import ImageGenerator
+from pydantic_ai.capabilities import ImageGeneration
 from pydantic_ai.common_tools.duckduckgo import duckduckgo_search_tool
 from pydantic_ai.common_tools.tavily import tavily_search_tool
 from pydantic_ai.common_tools.web_fetch import web_fetch_tool
 from pydantic_ai_harness import ExaSearch
 
 from .capabilities.personality import PersonalityCapability
-from .models import Agent, AgentPersonality, ExaApiKey, TavilyApiKey
+from .models import Agent, AgentPersonality, AIImageModel, ExaApiKey, TavilyApiKey
 
 logger = getLogger(__name__)
 
@@ -63,6 +65,17 @@ def create_pai_agent(agent: Agent, name: str = "Camille") -> PAIAgent:
             tools.append(tavily_search_tool(api_key=cast(str, tavily_api_key.key)))
         else:
             raise ValueError("Tavily search tool is enabled but no API key is set.")
+
+    # Add image generation capability if enabled
+    if agent.imgen_enabled:
+        if (imgen_model := cast(AIImageModel | None, agent.imgen_model)) is not None:
+            generator = ImageGenerator(
+                model=imgen_model.get_instance(),
+            )
+        else:
+            raise ValueError("Image generation is enabled but no model is set.")
+
+        capabilities.append(ImageGeneration(local=generator))
 
     pai_agent = PAIAgent(
         model=agent.get_model_instance(),
