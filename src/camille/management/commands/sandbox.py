@@ -20,7 +20,7 @@ class Command(BaseCommand):
             "--agent",
             type=str,
             default=None,
-            help="Slug of the agent to run the sandbox for. Defaults to the user's default agent.",
+            help="Name of the agent to run the sandbox for. Defaults to the user's default agent.",
         )
 
     def handle(
@@ -30,13 +30,11 @@ class Command(BaseCommand):
     ):
         user = User.objects.get(username=options["username"])
 
-        if (agent_slug := options["agent"]) is not None:
+        if (agent_name := options["agent"]) is not None:
             try:
-                agent = user.agents.get(slug=agent_slug)
+                agent = user.agents.get(name=agent_name)
             except Agent.DoesNotExist:
-                self.stderr.write(
-                    f"Agent with slug '{agent_slug}' not found for the user."
-                )
+                self.stderr.write(f"Agent named '{agent_name}' not found for the user.")
                 return
         elif user.profile.default_agent is not None:
             agent = user.profile.default_agent

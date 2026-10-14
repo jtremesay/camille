@@ -8,9 +8,18 @@ from django.test import TestCase
 from camille.models import (
     Agent,
     AgentPersonality,
+    AIImageModel,
+    AIModel,
+    AIProvider,
+    ExaApiKey,
+    GoogleAIImageModel,
     GoogleAIModel,
     GoogleAIProvider,
+    OpenAIAIProvider,
+    OpenAIImageModel,
+    OpenAIModel,
     Profile,
+    TavilyApiKey,
 )
 
 from .helpers import make_user
@@ -159,6 +168,37 @@ class AgentTests(TestCase):
         with self.assertRaises(ValidationError):
             agent.full_clean()
 
+    def test_clean_rejects_exa_api_key_of_another_user(self):
+        owner = make_user("bob")
+        agent = Agent(
+            user=make_user("alice"),
+            exa_api_key=ExaApiKey.objects.create(user=owner, key="exa-test"),
+        )
+
+        with self.assertRaises(ValidationError):
+            agent.full_clean()
+
+    def test_clean_rejects_tavily_api_key_of_another_user(self):
+        owner = make_user("bob")
+        agent = Agent(
+            user=make_user("alice"),
+            tavily_api_key=TavilyApiKey.objects.create(user=owner, key="tavily-test"),
+        )
+
+        with self.assertRaises(ValidationError):
+            agent.full_clean()
+
+    def test_clean_rejects_image_model_of_another_user(self):
+        owner = make_user("bob")
+        provider = GoogleAIProvider.objects.create(user=owner, api_key="test")
+        image_model = GoogleAIImageModel.objects.create(
+            user=owner, provider=provider, name="imagen-4.0"
+        )
+        agent = Agent(user=make_user("alice"), imgen_model=image_model)
+
+        with self.assertRaises(ValidationError):
+            agent.full_clean()
+
     def test_get_model_instance_uses_profile_default(self):
         user = make_user()
         provider = GoogleAIProvider.objects.create(user=user, api_key="test")
@@ -213,3 +253,128 @@ class AgentPersonalityTests(TestCase):
 
         self.assertEqual(AgentPersonality.objects.count(), 0)
         self.assertEqual(User.objects.count(), 0)
+
+
+class AIModelTests(TestCase):
+    def test_base_classes_require_get_instance_implementation(self):
+        user = make_user()
+        provider = AIProvider.objects.create(user=user)
+        model = AIModel.objects.create(user=user, provider=provider, name="chat")
+        image_model = AIImageModel.objects.create(
+            user=user, provider=provider, name="image"
+        )
+
+        for obj in (provider, model, image_model):
+            with (
+                self.subTest(model=type(obj).__name__),
+                self.assertRaises(NotImplementedError),
+            ):
+                obj.get_instance()
+
+    def test_model_rejects_provider_of_another_user(self):
+        provider = GoogleAIProvider.objects.create(
+            user=make_user("bob"), api_key="test"
+        )
+        model = AIModel(
+            user=make_user("alice"),
+            provider=provider,
+            name="chat",
+        )
+
+        with self.assertRaises(ValidationError):
+            model.full_clean()
+
+    def test_image_model_rejects_provider_of_another_user(self):
+        provider = GoogleAIProvider.objects.create(
+            user=make_user("bob"), api_key="test"
+        )
+        model = AIImageModel(
+            user=make_user("alice"),
+            provider=provider,
+            name="image",
+        )
+
+        with self.assertRaises(ValidationError):
+            model.full_clean()
+
+    def test_google_models_require_google_provider(self):
+        user = make_user()
+        provider = OpenAIAIProvider.objects.create(user=user, api_key="test")
+
+        for model in (
+            GoogleAIModel(user=user, provider=provider, name="chat"),
+            GoogleAIImageModel(user=user, provider=provider, name="image"),
+        ):
+            with (
+                self.subTest(model=type(model).__name__),
+                self.assertRaises(ValidationError),
+            ):
+                model.full_clean()
+
+    def test_openai_models_require_openai_provider(self):
+        user = make_user()
+        provider = GoogleAIProvider.objects.create(user=user, api_key="test")
+
+        for model in (
+            OpenAIModel(user=user, provider=provider, name="chat"),
+            OpenAIImageModel(user=user, provider=provider, name="image"),
+        ):
+            with (
+                self.subTest(model=type(model).__name__),
+                self.assertRaises(ValidationError),
+            ):
+                model.full_clean()
+
+    def test_google_instances_use_stored_configuration(self):
+        user = make_user()
+        provider = GoogleAIProvider.objects.create(user=user, api_key="test")
+        model = GoogleAIModel.objects.create(
+            user=user, provider=provider, name="gemini-3.5-flash-lite"
+        )
+        image_model = GoogleAIImageModel.objects.create(
+            user=user, provider=provider, name="imagen-4.0"
+        )
+
+        model.full_clean()
+        image_model.full_clean()
+        self.assertEqual(model.get_instance().model_name, model.name)
+        self.assertEqual(image_model.get_instance().model_name, image_model.name)
+
+    def test_openai_instances_use_stored_configuration(self):
+        user = make_user()
+        provider = OpenAIAIProvider.objects.create(
+            user=user,
+            api_key="test",
+            base_url="https://example.com/v1",
+        )
+        model = OpenAIModel.objects.create(
+            user=user, provider=provider, name="gpt-5-mini"
+        )
+        image_model = OpenAIImageModel.objects.create(
+            user=user, provider=provider, name="gpt-image-1"
+        )
+
+        model.full_clean()
+        image_model.full_clean()
+        self.assertEqual(model.get_instance().model_name, model.name)
+        self.assertEqual(image_model.get_instance().model_name, image_model.name)
+
+    def test_string_representations(self):
+        user = make_user()
+        provider = GoogleAIProvider.objects.create(
+            user=user, name="google", api_key="test"
+        )
+        model = GoogleAIModel.objects.create(
+            user=user, provider=provider, name="gemini"
+        )
+        image_model = GoogleAIImageModel.objects.create(
+            user=user, provider=provider, name="imagen"
+        )
+        exa_key = ExaApiKey.objects.create(user=user, name="exa", key="test")
+        tavily_key = TavilyApiKey.objects.create(user=user, name="tavily", key="test")
+
+        self.assertEqual(str(provider), "google")
+        self.assertEqual(str(model), "google:gemini")
+        self.assertEqual(str(image_model), "google:imagen")
+        self.assertEqual(str(exa_key), "exa")
+        self.assertEqual(str(tavily_key), "tavily")

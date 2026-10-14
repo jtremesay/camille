@@ -2,11 +2,19 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 from django.urls import reverse
 
-from camille.models import Agent, AgentPersonality, Profile
+from camille.models import (
+    Agent,
+    AgentPersonality,
+    AIImageModel,
+    AIModel,
+    AIProvider,
+    Profile,
+)
 
 from .helpers import make_user
 
-MODELS = (Profile, Agent, AgentPersonality)
+MODELS = (Profile, Agent, AgentPersonality, AIProvider, AIModel, AIImageModel)
+SEARCH_MODELS = (Profile, Agent, AgentPersonality)
 
 
 class AdminTests(TestCase):
@@ -36,7 +44,7 @@ class AdminTests(TestCase):
                 self.assertEqual(self.client.get(url).status_code, 200)
 
     def test_search_by_username(self):
-        for model in MODELS:
+        for model in SEARCH_MODELS:
             with self.subTest(model=model.__name__):
                 url = reverse(f"admin:camille_{model._meta.model_name}_changelist")
                 response = self.client.get(url, {"q": "alice"})
