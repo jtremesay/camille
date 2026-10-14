@@ -90,10 +90,9 @@ Other rules:
   concrete provider type, in addition to the shared ownership check.
 - Adding a backend means: a provider subclass, a model subclass, an image-model
   subclass when supported, migrations, admin registration, and tests.
-- Store provider credentials in `EncryptedCharField`
-  (`django-fernet-encrypted-fields`). Prefer encrypted fields for any new
-  secret at rest; plain `CharField` keys such as `TavilyApiKey.key` and
-  `ExaApiKey.key` are legacy and should not be used as a model for new work.
+- Store every credential and API key at rest in `EncryptedCharField`
+  (`django-fernet-encrypted-fields`), following the provider, Tavily, and Exa
+  models.
 - Never log, serialize, or expose credential values, and never commit real
   keys.
 

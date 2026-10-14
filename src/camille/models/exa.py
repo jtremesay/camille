@@ -3,6 +3,7 @@ from uuid import uuid7
 
 from django.contrib.auth.models import User
 from django.db import models
+from encrypted_fields.fields import EncryptedCharField
 
 
 class ExaApiKey(models.Model):
@@ -18,7 +19,7 @@ class ExaApiKey(models.Model):
     )
 
     name = models.CharField(max_length=255, default="default")
-    key = models.CharField(max_length=255)
+    key = EncryptedCharField(max_length=255)
 
     class Meta:
         unique_together = ("user", "name")
