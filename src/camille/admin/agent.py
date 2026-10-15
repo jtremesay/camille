@@ -11,6 +11,7 @@ class AgentAdmin(admin.ModelAdmin):
         "name",
         "model",
         "personality",
+        "codemode_enabled",
         "ddg_enabled",
         "exa_enabled",
         "exa_api_key",

@@ -8,7 +8,7 @@ from pydantic_ai import ImageGenerator
 from pydantic_ai.capabilities import ImageGeneration, WebFetch
 from pydantic_ai.common_tools.duckduckgo import duckduckgo_search_tool
 from pydantic_ai.common_tools.tavily import tavily_search_tool
-from pydantic_ai_harness import ExaSearch, Planning, SubAgent, SubAgents
+from pydantic_ai_harness import CodeMode, ExaSearch, Planning, SubAgent, SubAgents
 
 from pydanticai_django.planning import DjangoPlanStore
 
@@ -38,6 +38,23 @@ def create_pai_agent(
     # Add personality capability if needed
     if (personality := cast(AgentPersonality | None, agent.personality)) is not None:
         capabilities.append(PersonalityCapability(personality=personality))
+
+    # Add planning capability if enabled
+    if agent.planning_enabled:
+        if planning_session_id is None:
+            raise ValueError(
+                "Planning session ID must be provided if planning is enabled."
+            )
+        capabilities.append(
+            Planning(
+                store=DjangoPlanStore(session_id=planning_session_id),
+                enable_subtasks=True,
+            )
+        )
+
+    # Add code mode capability if enabled
+    if agent.codemode_enabled:
+        capabilities.append(CodeMode())
 
     # Add DuckDuckGo search tool if enabled
     if agent.ddg_enabled:
@@ -81,19 +98,6 @@ def create_pai_agent(
             raise ValueError("Image generation is enabled but no model is set.")
 
         capabilities.append(ImageGeneration(local=generator))
-
-    # Add planning capability if enabled
-    if agent.planning_enabled:
-        if planning_session_id is None:
-            raise ValueError(
-                "Planning session ID must be provided if planning is enabled."
-            )
-        capabilities.append(
-            Planning(
-                store=DjangoPlanStore(session_id=planning_session_id),
-                enable_subtasks=True,
-            )
-        )
 
     # Add sub-agents if any
     if sub_agents := [

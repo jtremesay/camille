@@ -45,6 +45,9 @@ class Agent(models.Model):
         related_query_name="agent",
     )
 
+    codemode_enabled = models.BooleanField(
+        default=False, help_text="Enable code mode capabilities"
+    )
     ddg_enabled = models.BooleanField(
         default=False, help_text="Enable DuckDuckGo search"
     )
