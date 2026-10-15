@@ -13,7 +13,7 @@ dependencies = [
     "django-fernet-encrypted-fields>=0.4.0",
     "django-polymorphic>=4.11.7",
     "pydantic-ai-harness[codemode,exa]>=0.56.0",
-    "pydantic-ai-slim[duckduckgo,google,logfire,openai,tavily,web-fetch]>=2.56.0",
+    "pydantic-ai-slim[dbos,duckduckgo,google,logfire,openai,tavily,web-fetch]>=2.56.0",
     "python-dotenv>=1.2.4",
 ]
 

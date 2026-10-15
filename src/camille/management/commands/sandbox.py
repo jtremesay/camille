@@ -2,11 +2,29 @@ from argparse import ArgumentParser
 from getpass import getuser
 from typing import cast
 
+from dbos import DBOS, DBOSConfig
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
+from pydantic_ai import Agent as PAIAgent
 
 from camille.ai import create_pai_agent
 from camille.models import Agent
+
+dbos_config: DBOSConfig = {
+    "name": "pydantic_dbos_agent",
+    "system_database_url": f"sqlite:///{settings.BASE_DIR}/dbostest.sqlite3",
+}
+DBOS(config=dbos_config)
+
+
+def run_flow(pai_agent: PAIAgent):
+    @DBOS.workflow()
+    def answer(question: str) -> str:
+        result = pai_agent.run_sync(question)
+        return result.output
+
+    return answer
 
 
 class Command(BaseCommand):
@@ -47,9 +65,7 @@ class Command(BaseCommand):
 
         pai_agent = create_pai_agent(agent, planning_session_id="sandbox")
 
-        prompt = ""
+        prompt = "Quel fruit j'aime le plus ?"
 
-        return
-
-        response = pai_agent.run_sync(prompt)
-        print(response.output)
+        DBOS.launch()
+        print(run_flow(pai_agent)(prompt))

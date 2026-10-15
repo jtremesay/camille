@@ -8,6 +8,7 @@ from pydantic_ai import ImageGenerator
 from pydantic_ai.capabilities import ImageGeneration, WebFetch
 from pydantic_ai.common_tools.duckduckgo import duckduckgo_search_tool
 from pydantic_ai.common_tools.tavily import tavily_search_tool
+from pydantic_ai.durable_exec.dbos import DBOSDurability
 from pydantic_ai_harness import (
     CodeMode,
     ExaSearch,
@@ -123,6 +124,9 @@ def create_pai_agent(
         ]
     ):
         capabilities.append(SubAgents(agents=sub_agents))
+
+    # Add DBOS durability if enabled
+    capabilities.append(DBOSDurability())
 
     pai_agent = PAIAgent(
         model=agent.get_model_instance(),
