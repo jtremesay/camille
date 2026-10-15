@@ -1,5 +1,6 @@
 from argparse import ArgumentParser
 from getpass import getuser
+from typing import cast
 
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
@@ -32,12 +33,14 @@ class Command(BaseCommand):
 
         if (agent_name := options["agent"]) is not None:
             try:
-                agent = user.agents.get(name=agent_name)
+                agent = cast(Agent, user.agents.get(name=agent_name))
             except Agent.DoesNotExist:
                 self.stderr.write(f"Agent named '{agent_name}' not found for the user.")
                 return
-        elif user.profile.default_agent is not None:
-            agent = user.profile.default_agent
+        elif (
+            default_agent := cast(Agent | None, user.profile.default_agent)
+        ) is not None:
+            agent = default_agent
         else:
             self.stderr.write("No default agent found for the user.")
             return
@@ -45,6 +48,6 @@ class Command(BaseCommand):
         pai_agent = create_pai_agent(agent, planning_session_id="sandbox")
 
         r = pai_agent.run_sync(
-            "fait un plan en 10 étapes pour dominer le monde et execute le. Ceci est un test pour évaluer ta compétence à utiliser l'outil de planning."
+            "Research the history of TLS and write a one-paragraph summary."
         )
         print(r.output)

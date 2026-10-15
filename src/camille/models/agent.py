@@ -85,6 +85,13 @@ class Agent(models.Model):
     planning_enabled = models.BooleanField(
         default=False, help_text="Enable planning capabilities"
     )
+    sub_agents = models.ManyToManyField(
+        "self",
+        symmetrical=False,
+        related_name="parent_agents",
+        related_query_name="sub_agent",
+        blank=True,
+    )
 
     class Meta:
         unique_together = ("user", "name")
@@ -121,6 +128,11 @@ class Agent(models.Model):
             raise ValidationError(
                 "The image generation model must belong to the same user."
             )
+
+        if (sub_agents := self.sub_agents) is not None and any(
+            cast("Agent", sub_agent).user != self.user for sub_agent in sub_agents.all()
+        ):
+            raise ValidationError("All sub-agents must belong to the same user.")
 
     def get_model_instance(self) -> PAIModel:
         # Try to get the model assigned to the agent first

@@ -5,10 +5,10 @@ from ddgs.ddgs import DDGS, DDGSException
 from exa_py import AsyncExa
 from pydantic_ai import Agent as PAIAgent
 from pydantic_ai import ImageGenerator
-from pydantic_ai.capabilities import ImageGeneration, WebFetch, WebSearch
+from pydantic_ai.capabilities import ImageGeneration, WebFetch
 from pydantic_ai.common_tools.duckduckgo import duckduckgo_search_tool
 from pydantic_ai.common_tools.tavily import tavily_search_tool
-from pydantic_ai_harness import ExaSearch, Planning
+from pydantic_ai_harness import ExaSearch, Planning, SubAgent, SubAgents
 
 from pydanticai_django.planning import DjangoPlanStore
 
@@ -36,14 +36,8 @@ def create_pai_agent(
     capabilities = []
 
     # Add personality capability if needed
-    if (personality := agent.personality) is not None:
-        capabilities.append(
-            PersonalityCapability(
-                personality=cast(AgentPersonality, personality), agent_name=name
-            )
-        )
-
-    capabilities.append(WebSearch())
+    if (personality := cast(AgentPersonality | None, agent.personality)) is not None:
+        capabilities.append(PersonalityCapability(personality=personality))
 
     # Add DuckDuckGo search tool if enabled
     if agent.ddg_enabled:
@@ -101,8 +95,18 @@ def create_pai_agent(
             )
         )
 
+    # Add sub-agents if any
+    if sub_agents := [
+        SubAgent(agent=create_pai_agent(sub_agent, name=sub_agent.name))
+        for sub_agent in agent.sub_agents.all()
+    ]:
+        capabilities.append(SubAgents(agents=sub_agents))
+
     pai_agent = PAIAgent(
-        model=agent.get_model_instance(), tools=tools, capabilities=capabilities
+        model=agent.get_model_instance(),
+        tools=tools,
+        capabilities=capabilities,
+        name=name,
     )
 
     return pai_agent
