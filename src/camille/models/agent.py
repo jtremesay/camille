@@ -82,6 +82,9 @@ class Agent(models.Model):
         related_name="imgen_agents",
         related_query_name="imgen_agent",
     )
+    planning_enabled = models.BooleanField(
+        default=False, help_text="Enable planning capabilities"
+    )
 
     class Meta:
         unique_together = ("user", "name")

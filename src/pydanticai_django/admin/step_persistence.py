@@ -1,9 +1,14 @@
 from django.contrib import admin
 
-from . import models
+from ..models.step_persistence import (
+    DjangoContinuableSnapshot,
+    DjangoRunRecord,
+    DjangoStepEvent,
+    DjangoToolEffectRecord,
+)
 
 
-@admin.register(models.DjangoRunRecord)
+@admin.register(DjangoRunRecord)
 class DjangoRunRecordAdmin(admin.ModelAdmin):
     list_display = (
         "id",
@@ -15,7 +20,7 @@ class DjangoRunRecordAdmin(admin.ModelAdmin):
     )
 
 
-@admin.register(models.DjangoStepEvent)
+@admin.register(DjangoStepEvent)
 class DjangoStepEventAdmin(admin.ModelAdmin):
     list_display = (
         "run",
@@ -33,7 +38,7 @@ class DjangoStepEventAdmin(admin.ModelAdmin):
     )
 
 
-@admin.register(models.DjangoContinuableSnapshot)
+@admin.register(DjangoContinuableSnapshot)
 class DjangoContinuableSnapshotAdmin(admin.ModelAdmin):
     list_display = (
         "run",
@@ -47,7 +52,7 @@ class DjangoContinuableSnapshotAdmin(admin.ModelAdmin):
     )
 
 
-@admin.register(models.DjangoToolEffectRecord)
+@admin.register(DjangoToolEffectRecord)
 class DjangoToolEffectRecordAdmin(admin.ModelAdmin):
     list_display = (
         "tool_call_id",

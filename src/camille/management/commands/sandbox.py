@@ -42,9 +42,9 @@ class Command(BaseCommand):
             self.stderr.write("No default agent found for the user.")
             return
 
-        pai_agent = create_pai_agent(agent)
+        pai_agent = create_pai_agent(agent, planning_session_id="sandbox")
 
         r = pai_agent.run_sync(
-            "quels sont les blockbusters bollywoodiens de l'été 2026"
+            "fait un plan en 10 étapes pour dominer le monde et execute le. Ceci est un test pour évaluer ta compétence à utiliser l'outil de planning."
         )
         print(r.output)

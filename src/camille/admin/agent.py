@@ -19,6 +19,7 @@ class AgentAdmin(admin.ModelAdmin):
         "webfetch_enabled",
         "imgen_enabled",
         "imgen_model",
+        "planning_enabled",
         "created_at",
         "updated_at",
     )

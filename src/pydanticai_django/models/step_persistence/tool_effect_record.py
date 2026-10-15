@@ -4,6 +4,10 @@ from django.db import models
 from pydantic_ai_harness.step_persistence import ToolEffectRecord, ToolEffectStatus
 
 
+def tool_effect_status_len() -> int:
+    return max(len(status) for status in get_args(ToolEffectStatus))
+
+
 def validate_is_tool_effect_status(value):
     if value not in get_args(ToolEffectStatus):
         raise ValueError(f"Value '{value}' is not a valid ToolEffectStatus.")
@@ -39,7 +43,7 @@ class DjangoToolEffectRecord(models.Model):
         related_query_name="tool_effect_records",
     )
     status = models.CharField(
-        max_length=255, validators=[validate_is_tool_effect_status]
+        max_length=tool_effect_status_len(), validators=[validate_is_tool_effect_status]
     )
     started_at = models.DateTimeField()
     ended_at = models.DateTimeField(null=True, blank=True)

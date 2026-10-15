@@ -6,6 +6,10 @@ from pydantic_ai_harness.step_persistence import EventKind, StepEvent
 from pydanticai_django.validators import validate_is_dict
 
 
+def event_kind_len() -> int:
+    return max(len(kind) for kind in get_args(EventKind))
+
+
 def validate_is_event_kind(value):
     if value not in get_args(EventKind):
         raise ValueError(f"Value '{value}' is not a valid EventKind.")
@@ -39,7 +43,7 @@ class DjangoStepEvent(models.Model):
         related_query_name="step_event",
     )
     kind = models.CharField(
-        max_length=255,
+        max_length=event_kind_len(),
         validators=[validate_is_event_kind],
     )
     step_index = models.IntegerField()

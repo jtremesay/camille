@@ -5,6 +5,10 @@ from pydantic_ai.messages import ModelMessagesTypeAdapter
 from pydantic_ai_harness.step_persistence import ContinuableSnapshot, SnapshotState
 
 
+def snapshot_state_len() -> int:
+    return max(len(state) for state in get_args(SnapshotState))
+
+
 def validate_is_snapshot_state(value):
     if value not in get_args(SnapshotState):
         raise ValueError(f"Value '{value}' is not a valid SnapshotState.")
@@ -49,7 +53,9 @@ class DjangoContinuableSnapshot(models.Model):
     )
     agent_name = models.CharField(max_length=255, null=True, blank=True)
     timestamp = models.DateTimeField()
-    state = models.CharField(max_length=255, validators=[validate_is_snapshot_state])
+    state = models.CharField(
+        max_length=snapshot_state_len(), validators=[validate_is_snapshot_state]
+    )
     idempotency_key = models.CharField(max_length=255, null=True, blank=True)
 
     def to_pydanticai(self) -> ContinuableSnapshot:

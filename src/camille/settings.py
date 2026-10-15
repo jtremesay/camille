@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "polymorphic",
     "django_extensions",
+    "pydanticai_django",
     "camille",
 ]
 
