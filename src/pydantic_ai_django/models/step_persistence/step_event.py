@@ -3,7 +3,7 @@ from typing import get_args
 from django.db import models
 from pydantic_ai_harness.step_persistence import EventKind, StepEvent
 
-from pydanticai_django.validators import validate_is_dict
+from pydantic_ai_django.validators import validate_is_dict
 
 
 def event_kind_len() -> int:
@@ -37,7 +37,7 @@ class DjangoStepEvent(models.Model):
     objects = DjangoStepEventManager()
 
     run = models.ForeignKey(
-        "pydanticai_django.DjangoRunRecord",
+        "pydantic_ai_django.DjangoRunRecord",
         on_delete=models.CASCADE,
         related_name="step_events",
         related_query_name="step_event",
@@ -50,7 +50,7 @@ class DjangoStepEvent(models.Model):
     timestamp = models.DateTimeField()
     conversation_id = models.CharField(max_length=255, null=True, blank=True)
     parent_run = models.ForeignKey(
-        "pydanticai_django.DjangoRunRecord",
+        "pydantic_ai_django.DjangoRunRecord",
         on_delete=models.CASCADE,
         related_name="child_step_events",
         related_query_name="child_step_event",

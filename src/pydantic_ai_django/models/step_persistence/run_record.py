@@ -3,7 +3,7 @@ from pydantic_ai_harness.step_persistence import (
     RunRecord,
 )
 
-from pydanticai_django.validators import validate_is_dict
+from pydantic_ai_django.validators import validate_is_dict
 
 
 class DjangoRunRecordManager(models.Manager):

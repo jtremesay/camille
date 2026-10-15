@@ -46,7 +46,9 @@ class Command(BaseCommand):
             return
 
         pai_agent = create_pai_agent(agent, planning_session_id="sandbox")
+        pai_agent.to_cli_sync()
 
+        return
         r = pai_agent.run_sync(
             # "Research the history of TLS and write a one-paragraph summary."
             "Renseigne toi sur comment établir la révolution communiste mondiale puis un plan en 5 étapes l'établir. Délègue chaque étape à un mignon. Execute les en parallèle. Ceci est un test pous évaluer ta capacité à planifier un plan, investiguer un sujet et déléguer des tâches. Les taches devront être dummy."

@@ -35,7 +35,7 @@ class DjangoContinuableSnapshot(models.Model):
     objects = DjangoContinuableSnapshotManager()
 
     run = models.ForeignKey(
-        "pydanticai_django.DjangoRunRecord",
+        "pydantic_ai_django.DjangoRunRecord",
         on_delete=models.CASCADE,
         related_name="continuable_snapshots",
         related_query_name="continuable_snapshot",
@@ -44,7 +44,7 @@ class DjangoContinuableSnapshot(models.Model):
     messages = models.BinaryField()
     conversation_id = models.CharField(max_length=255, null=True, blank=True)
     parent_run = models.ForeignKey(
-        "pydanticai_django.DjangoRunRecord",
+        "pydantic_ai_django.DjangoRunRecord",
         on_delete=models.CASCADE,
         related_name="child_continuable_snapshots",
         related_query_name="child_continuable_snapshot",

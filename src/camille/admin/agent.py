@@ -12,6 +12,7 @@ class AgentAdmin(admin.ModelAdmin):
         "model",
         "personality",
         "codemode_enabled",
+        "memory_enabled",
         "ddg_enabled",
         "exa_enabled",
         "exa_api_key",
@@ -21,6 +22,7 @@ class AgentAdmin(admin.ModelAdmin):
         "imgen_enabled",
         "imgen_model",
         "planning_enabled",
+        "sub_agents_enabled",
         "created_at",
         "updated_at",
     )

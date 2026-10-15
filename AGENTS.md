@@ -28,7 +28,7 @@ and currently implements only a subset of that behavior.
   transport.
 - `src/camille/management/commands/` — operational entry points such as
   `sandbox`, used to exercise an agent from the CLI.
-- `src/pydanticai_django/` — reusable Django persistence adapter for Pydantic AI
+- `src/pydantic_ai_django/` — reusable Django persistence adapter for Pydantic AI
   step persistence (run records, step events, tool effects, continuable
   snapshots). It must stay decoupled from Camille's domain models. It is not
   currently listed in `INSTALLED_APPS`; wire it up deliberately when run

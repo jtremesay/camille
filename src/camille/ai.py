@@ -8,9 +8,17 @@ from pydantic_ai import ImageGenerator
 from pydantic_ai.capabilities import ImageGeneration, WebFetch
 from pydantic_ai.common_tools.duckduckgo import duckduckgo_search_tool
 from pydantic_ai.common_tools.tavily import tavily_search_tool
-from pydantic_ai_harness import CodeMode, ExaSearch, Planning, SubAgent, SubAgents
+from pydantic_ai_harness import (
+    CodeMode,
+    ExaSearch,
+    Memory,
+    Planning,
+    SubAgent,
+    SubAgents,
+)
 
-from pydanticai_django.planning import DjangoPlanStore
+from pydantic_ai_django.memory import DjangoMemoryStore
+from pydantic_ai_django.planning import DjangoPlanStore
 
 from .capabilities.personality import PersonalityCapability
 from .models import Agent, AgentPersonality, AIImageModel, ExaApiKey, TavilyApiKey
@@ -56,6 +64,10 @@ def create_pai_agent(
     if agent.codemode_enabled:
         capabilities.append(CodeMode())
 
+    # Add memory capability if enabled
+    if agent.memory_enabled:
+        capabilities.append(Memory(store=DjangoMemoryStore()))
+
     # Add DuckDuckGo search tool if enabled
     if agent.ddg_enabled:
         capabilities.append(
@@ -100,10 +112,12 @@ def create_pai_agent(
         capabilities.append(ImageGeneration(local=generator))
 
     # Add sub-agents if any
-    if sub_agents := [
-        SubAgent(agent=create_pai_agent(sub_agent, name=sub_agent.name))
-        for sub_agent in agent.sub_agents.all()
-    ]:
+    if agent.sub_agents_enabled and (
+        sub_agents := [
+            SubAgent(agent=create_pai_agent(sub_agent, name=sub_agent.name))
+            for sub_agent in agent.sub_agents.all()
+        ]
+    ):
         capabilities.append(SubAgents(agents=sub_agents))
 
     pai_agent = PAIAgent(

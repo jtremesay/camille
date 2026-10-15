@@ -49,6 +49,10 @@ class Agent(models.Model):
         default=False,
         help_text="Enable code mode capabilities. https://pydantic.dev/docs/ai/harness/code-mode/",
     )
+    memory_enabled = models.BooleanField(
+        default=False,
+        help_text="Enable memory capabilities. https://pydantic.dev/docs/ai/harness/memory/",
+    )
     ddg_enabled = models.BooleanField(
         default=False, help_text="Enable DuckDuckGo search."
     )
@@ -92,13 +96,17 @@ class Agent(models.Model):
         default=False,
         help_text="Enable planning capabilities. https://pydantic.dev/docs/ai/harness/planning/",
     )
+    sub_agents_enabled = models.BooleanField(
+        default=False,
+        help_text="Enable sub-agents capabilities. https://pydantic.dev/docs/ai/harness/subagents/",
+    )
     sub_agents = models.ManyToManyField(
         "self",
         symmetrical=False,
         related_name="parent_agents",
         related_query_name="sub_agent",
         blank=True,
-        help_text="Assign sub-agents to this agent. https://pydantic.dev/docs/ai/harness/subagents/",
+        help_text="Assign sub-agents to this agent.",
     )
 
     class Meta:

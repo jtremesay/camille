@@ -59,7 +59,7 @@ class Profile(models.Model):
             raise ValidationError("The default model must belong to the same user.")
 
     def __str__(self) -> str:
-        return cast(str, cast(User, self.user).username)
+        return cast(str, cast("User", self.user).username)
 
 
 @receiver(post_save, sender="auth.User")
