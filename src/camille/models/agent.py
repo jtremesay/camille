@@ -46,10 +46,11 @@ class Agent(models.Model):
     )
 
     codemode_enabled = models.BooleanField(
-        default=False, help_text="Enable code mode capabilities"
+        default=False,
+        help_text="Enable code mode capabilities. https://pydantic.dev/docs/ai/harness/code-mode/",
     )
     ddg_enabled = models.BooleanField(
-        default=False, help_text="Enable DuckDuckGo search"
+        default=False, help_text="Enable DuckDuckGo search."
     )
     exa_enabled = models.BooleanField(default=False, help_text="Enable Exa search")
     exa_api_key = models.ForeignKey(
@@ -72,10 +73,12 @@ class Agent(models.Model):
         related_query_name="agent",
     )
     webfetch_enabled = models.BooleanField(
-        default=False, help_text="Enable fetching web content"
+        default=False,
+        help_text="Enable fetching web content. https://pydantic.dev/docs/ai/capabilities/web-fetch/",
     )
     imgen_enabled = models.BooleanField(
-        default=False, help_text="Enable image generation"
+        default=False,
+        help_text="Enable image generation. https://pydantic.dev/docs/ai/capabilities/image-generation/",
     )
     imgen_model = models.ForeignKey(
         "camille.AIImageModel",
@@ -86,7 +89,8 @@ class Agent(models.Model):
         related_query_name="imgen_agent",
     )
     planning_enabled = models.BooleanField(
-        default=False, help_text="Enable planning capabilities"
+        default=False,
+        help_text="Enable planning capabilities. https://pydantic.dev/docs/ai/harness/planning/",
     )
     sub_agents = models.ManyToManyField(
         "self",
@@ -94,6 +98,7 @@ class Agent(models.Model):
         related_name="parent_agents",
         related_query_name="sub_agent",
         blank=True,
+        help_text="Assign sub-agents to this agent. https://pydantic.dev/docs/ai/harness/subagents/",
     )
 
     class Meta:

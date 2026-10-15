@@ -18,7 +18,7 @@ class TavilyApiKey(models.Model):
     )
 
     name = models.CharField(max_length=255, default="default")
-    key = EncryptedCharField(max_length=255)
+    key = EncryptedCharField(max_length=255, help_text="https://app.tavily.com/home")
 
     class Meta:
         unique_together = ("user", "name")

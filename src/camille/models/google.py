@@ -10,7 +10,9 @@ from .ai import AIImageModel, AIModel, AIProvider
 
 
 class GoogleAIProvider(AIProvider):
-    api_key = EncryptedCharField(max_length=255)
+    api_key = EncryptedCharField(
+        max_length=255, help_text="https://aistudio.google.com/api-keys"
+    )
 
     def get_instance(self) -> PAIGoogleProvider:
         return PAIGoogleProvider(api_key=cast(str, self.api_key))

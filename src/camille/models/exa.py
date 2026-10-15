@@ -18,7 +18,9 @@ class ExaApiKey(models.Model):
     )
 
     name = models.CharField(max_length=255, default="default")
-    key = EncryptedCharField(max_length=255)
+    key = EncryptedCharField(
+        max_length=255, help_text="https://dashboard.exa.ai/api-keys"
+    )
 
     class Meta:
         unique_together = ("user", "name")
