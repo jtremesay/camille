@@ -49,6 +49,6 @@ class Command(BaseCommand):
 
         r = pai_agent.run_sync(
             # "Research the history of TLS and write a one-paragraph summary."
-            "Renseigne toi sur comment établir la révolution communiste mondiale puis un plan en 5 étapes l'établir. Enfin, délègue le à tes mignions. Ceci est un test pous évaluer ta capacité à planifier un plan, investiguer un sujet et déléguer des tâches."
+            "Renseigne toi sur comment établir la révolution communiste mondiale puis un plan en 5 étapes l'établir. Délègue chaque étape à un mignon. Execute les en parallèle. Ceci est un test pous évaluer ta capacité à planifier un plan, investiguer un sujet et déléguer des tâches. Les taches devront être dummy."
         )
         print(r.output)
