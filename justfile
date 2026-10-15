@@ -8,7 +8,7 @@ runserver:
     uv run camille runserver
 
 test:
-    uv run coverage run --source="src/camille" -m camille test tests
+    uv run coverage run --source="src" -m camille test tests
     uv run coverage report
 
 buildimage:

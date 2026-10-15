@@ -199,6 +199,20 @@ class AgentTests(TestCase):
         with self.assertRaises(ValidationError):
             agent.full_clean()
 
+    def test_clean_accepts_own_sub_agents(self):
+        user = make_user()
+        agent = Agent.objects.create(user=user)
+        agent.sub_agents.add(Agent.objects.create(user=user, name="Helper"))
+
+        agent.full_clean()
+
+    def test_clean_rejects_sub_agent_of_another_user(self):
+        agent = Agent.objects.create(user=make_user("alice"))
+        agent.sub_agents.add(Agent.objects.create(user=make_user("bob"), name="Helper"))
+
+        with self.assertRaises(ValidationError):
+            agent.full_clean()
+
     def test_get_model_instance_uses_profile_default(self):
         user = make_user()
         provider = GoogleAIProvider.objects.create(user=user, api_key="test")

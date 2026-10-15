@@ -41,7 +41,7 @@ class DjangoRunRecord(models.Model):
         return RunRecord(
             run_id=self.id,
             conversation_id=self.conversation_id,
-            parent_run_id=self.parent_run_id if self.parent_run else None,
+            parent_run_id=self.parent_run_id,
             agent_name=self.agent_name,
             metadata=self.metadata,
             started_at=self.started_at,

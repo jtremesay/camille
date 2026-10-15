@@ -145,11 +145,12 @@ just test
 just buildimage
 ```
 
-For focused tests, use Django's test labels:
+For focused tests, use Django's test labels. The project root must be on
+`PYTHONPATH` for dotted labels to resolve:
 
 ```bash
-uv run camille test tests.test_models
-uv run camille test tests.test_ai
+PYTHONPATH=. uv run camille test tests.test_models
+PYTHONPATH=. uv run camille test tests.test_ai
 ```
 
 Known rough edges, since this is WIP:
@@ -158,8 +159,8 @@ Known rough edges, since this is WIP:
   Keep model tests aligned with the current schema: slugs were removed, names
   are unique per user, and agents require an explicitly assigned or
   profile-default model.
-- `just test` uses `--parallel=auto`, which can fail while serializing
-  tracebacks. Fall back to `uv run camille test tests` when diagnosing.
+- `just test` measures coverage over all of `src/`, which includes
+  `pydantic_ai_django`, not only `camille`.
 - `src/camille/settings.py` holds development defaults: inline `SECRET_KEY` and
   `SALT_KEY`, `DEBUG = True`, empty `ALLOWED_HOSTS`, and local SQLite. These are
   not production patterns; move them to environment-driven configuration before
