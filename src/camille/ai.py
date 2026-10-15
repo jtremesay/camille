@@ -77,6 +77,10 @@ def create_pai_agent(
             )
         )
 
+    # Add web fetch capability if enabled
+    if agent.webfetch_enabled:
+        capabilities.append(WebFetch(local=True))
+
     # Add Exa search tool if enabled
     if agent.exa_enabled:
         if (exa_api_key := cast(ExaApiKey | None, agent.exa_api_key)) is not None:
