@@ -18,7 +18,7 @@ from typing import Any
 
 from asgiref.sync import sync_to_async
 from django.template.loader import render_to_string
-from pydantic_ai import FunctionToolset, RunContext
+from pydantic_ai import FunctionToolset, ModelRetry, RunContext
 from pydantic_ai.capabilities import AbstractCapability
 from pydantic_ai.messages import BinaryContent
 
@@ -34,18 +34,10 @@ class MattermostToolset(FunctionToolset):
             ctx: RunContext[MattermostDeps], file_id: str
         ) -> BinaryContent:
             """Get the contents of a Mattermost file by its ID."""
-            r = await ctx.deps.mattermost_client.get(f"/files/{file_id}")
-            r.raise_for_status()
+            if (content := await ctx.deps.get_file(file_id)) is None:
+                raise ModelRetry(f"Mattermost file {file_id} not found")
 
-            if content_type := r.headers.get("Content-Type", None):
-                content_type = content_type.split(";")[0]
-            else:
-                content_type = "application/octet-stream"
-
-            return BinaryContent(
-                r.content,
-                media_type=content_type,
-            )
+            return content
 
         @self.tool()
         async def add_file_to_mattermost_post(

@@ -38,7 +38,7 @@ from httpx_ws import AsyncWebSocketSession, aconnect_ws
 from pydantic_ai import TextPart, ToolCallPart
 from pydantic_ai.messages import BinaryContent, FilePart, ToolReturnPart
 
-from camille.ai.agent import IMAGE_GENERATION_TOOL_NAME, create_agent_from_config
+from camille.ai.agent import IMAGE_TOOL_NAMES, create_agent_from_config
 from camille.ai.capabilities.mattermost import MattermostCapability
 from camille.ai.deps import MattermostDeps
 from camille.ai.models import NoCredentialsError, create_model_for_user
@@ -215,12 +215,12 @@ class Mattermost:
             ) as run:
                 async for node in run:
                     if agent.is_model_request_node(node):
-                        # Generated images are returned by the tool, not by the
-                        # model response, grab them from the tool returns
+                        # Generated and edited images are returned by the tools,
+                        # not by the model response, grab them from the tool returns
                         for part in node.request.parts:
                             if (
                                 isinstance(part, ToolReturnPart)
-                                and part.tool_name == IMAGE_GENERATION_TOOL_NAME
+                                and part.tool_name in IMAGE_TOOL_NAMES
                             ):
                                 await self.upload_generated_files(
                                     deps, self.extract_files(part.content)

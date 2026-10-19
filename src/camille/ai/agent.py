@@ -27,6 +27,10 @@ from pydantic_ai.common_tools.web_fetch import web_fetch_tool
 from camille.ai.capabilities.agpl import AGPLCapability
 from camille.ai.capabilities.conversation import ConversationCapability
 from camille.ai.capabilities.current_time import CurrentTimeCapability
+from camille.ai.capabilities.image_editing import (
+    IMAGE_EDITING_TOOL_NAME,
+    ImageEditingCapability,
+)
 from camille.ai.capabilities.instructions import InstructionsCapability
 from camille.ai.capabilities.memory import MemoryCapability
 from camille.ai.capabilities.personality import PersonalityCapability
@@ -35,6 +39,8 @@ from camille.ai.image_models import create_image_model_for_user
 from camille.models import AgentConfig
 
 IMAGE_GENERATION_TOOL_NAME = "generate_image"
+# Tools returning images that must be shown to the user
+IMAGE_TOOL_NAMES = frozenset({IMAGE_GENERATION_TOOL_NAME, IMAGE_EDITING_TOOL_NAME})
 
 
 class MyDDGS(DDGS):
@@ -69,14 +75,11 @@ async def create_agent_from_config(
 
     if config.model_image:
         user = await sync_to_async(getattr)(config, "user")
-        all_capabilities.append(
-            ImageGeneration(
-                native=False,
-                fallback_image_model=await create_image_model_for_user(
-                    user, config.model_image
-                ),
-            )
-        )
+        image_model = await create_image_model_for_user(user, config.model_image)
+        all_capabilities += [
+            ImageGeneration(native=False, fallback_image_model=image_model),
+            ImageEditingCapability(image_model),
+        ]
 
     return Agent(
         deps_type=Deps,
