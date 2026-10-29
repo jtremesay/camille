@@ -21,7 +21,7 @@ from pydantic_ai.providers.google import GoogleProvider
 from pydantic_ai.providers.openai import OpenAIProvider
 
 from camille.ai.models import NoCredentialsError
-from camille.models import CustomCredentials, GoogleGLACredentials, MistralCredentials
+from camille.models import CustomCredentials, GoogleGLACredentials
 
 
 async def create_google_image_model_for_user(
@@ -37,24 +37,6 @@ async def create_google_image_model_for_user(
     return GoogleImageGenerationModel(
         model_name,
         provider=GoogleProvider(api_key=credentials.api_key),
-    )
-
-
-async def create_mistral_image_model_for_user(
-    user: User, model_name: str
-) -> ImageGenerationModel:
-    try:
-        credentials = await MistralCredentials.objects.aget(user=user)
-    except MistralCredentials.DoesNotExist:
-        raise NoCredentialsError(
-            f"User {user.username} does not have Mistral credentials"
-        )
-
-    return OpenAIImageGenerationModel(
-        model_name,
-        provider=OpenAIProvider(
-            base_url="https://api.mistral.ai/v1/", api_key=credentials.api_key
-        ),
     )
 
 
@@ -80,9 +62,6 @@ async def create_image_model_for_user(user: User, model: str) -> ImageGeneration
     match model_provider:
         case "google-gla":
             return await create_google_image_model_for_user(user, model_name)
-
-        case "mistral":
-            return await create_mistral_image_model_for_user(user, model_name)
 
         case "custom":
             return await create_custom_image_model_for_user(user, model_name)
