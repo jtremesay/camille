@@ -27,20 +27,13 @@ from pydantic_ai.common_tools.web_fetch import web_fetch_tool
 from camille.ai.capabilities.agpl import AGPLCapability
 from camille.ai.capabilities.conversation import ConversationCapability
 from camille.ai.capabilities.current_time import CurrentTimeCapability
-from camille.ai.capabilities.image_editing import (
-    IMAGE_EDITING_TOOL_NAME,
-    ImageEditingCapability,
-)
+from camille.ai.capabilities.image_editing import ImageEditingCapability
 from camille.ai.capabilities.instructions import InstructionsCapability
 from camille.ai.capabilities.memory import MemoryCapability
 from camille.ai.capabilities.personality import PersonalityCapability
 from camille.ai.deps import Deps
 from camille.ai.image_models import create_image_model_for_user
 from camille.models import AgentConfig
-
-IMAGE_GENERATION_TOOL_NAME = "generate_image"
-# Tools returning images that must be shown to the user
-IMAGE_TOOL_NAMES = frozenset({IMAGE_GENERATION_TOOL_NAME, IMAGE_EDITING_TOOL_NAME})
 
 
 class MyDDGS(DDGS):

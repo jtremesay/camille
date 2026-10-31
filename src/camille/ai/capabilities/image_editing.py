@@ -32,9 +32,8 @@ from pydantic_ai.messages import (
     UserPromptPart,
 )
 
+from camille.ai.capabilities.image_tools import IMAGE_EDITING_TOOL_NAME
 from camille.ai.deps import Deps
-
-IMAGE_EDITING_TOOL_NAME = "edit_image"
 
 
 def iter_binary_contents(messages: Sequence[ModelMessage]) -> Iterator[BinaryContent]:
@@ -92,7 +91,7 @@ class ImageEditingToolset(FunctionToolset):
                 image_ids: Identifiers of the reference images, in order. Use the
                     file identifier of an image previously generated, edited or
                     retrieved in the conversation (as given by "See file <id>"),
-                    or the ID of a file attached by the user.
+                    or the Mattermost ID of a file attached by the user.
             """
             if not image_ids:
                 raise ModelRetry("At least one image ID is required")

@@ -14,14 +14,17 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+from collections.abc import Awaitable, Callable
 from typing import Any
 
 from asgiref.sync import sync_to_async
 from django.template.loader import render_to_string
 from pydantic_ai import FunctionToolset, ModelRetry, RunContext
 from pydantic_ai.capabilities import AbstractCapability
-from pydantic_ai.messages import BinaryContent
+from pydantic_ai.messages import BinaryContent, BinaryImage, ToolCallPart
+from pydantic_ai.tools import ToolDefinition
 
+from camille.ai.capabilities.image_tools import IMAGE_TOOL_NAMES
 from camille.ai.deps import MattermostDeps
 
 
@@ -61,6 +64,33 @@ class MattermostToolset(FunctionToolset):
 class MattermostCapability(AbstractCapability):
     def get_toolset(self) -> MattermostToolset:
         return MattermostToolset()
+
+    async def wrap_tool_execute(
+        self,
+        ctx: RunContext[Any],
+        *,
+        call: ToolCallPart,
+        tool_def: ToolDefinition,
+        args: dict[str, Any],
+        handler: Callable[[dict[str, Any]], Awaitable[Any]],
+    ) -> Any:
+        result = await handler(args)
+        if tool_def.name not in IMAGE_TOOL_NAMES:
+            return result
+        if not isinstance(ctx.deps, MattermostDeps):
+            raise TypeError("Image tools in Mattermost require MattermostDeps")
+        if not isinstance(result, BinaryContent) or not result.is_image:
+            raise TypeError(
+                f"Image tool {tool_def.name!r} returned a non-image result"
+            )
+
+        file_id = await ctx.deps.upload_file(result)
+        image = BinaryImage(
+            result.data,
+            media_type=result.media_type,
+            identifier=file_id,
+        )
+        return [f"Mattermost file ID: {file_id}", image]
 
     def get_instructions(self) -> Any:
         @sync_to_async
