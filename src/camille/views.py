@@ -295,7 +295,7 @@ class MistralCredentialsDeleteView(LoginRequiredMixin, DeleteView):
 # Custom Credentials Views
 class CustomCredentialsCreateView(LoginRequiredMixin, CreateView):
     model = CustomCredentials
-    fields = ["url", "api_key"]
+    fields = ["url", "api_key", "image_url", "image_api_key"]
     success_url = reverse_lazy("home")
 
     def form_valid(self, form):
@@ -305,7 +305,7 @@ class CustomCredentialsCreateView(LoginRequiredMixin, CreateView):
 
 class CustomCredentialsUpdateView(LoginRequiredMixin, UpdateView):
     model = CustomCredentials
-    fields = ["url", "api_key"]
+    fields = ["url", "api_key", "image_url", "image_api_key"]
     success_url = reverse_lazy("home")
 
     def get_object(self, queryset=None):

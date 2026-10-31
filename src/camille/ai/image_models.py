@@ -50,9 +50,10 @@ async def create_custom_image_model_for_user(
             f"User {user.username} does not have Custom credentials"
         )
 
+    base_url, api_key = credentials.image_endpoint()
     return OpenAIImageGenerationModel(
         model_name,
-        provider=OpenAIProvider(base_url=credentials.url, api_key=credentials.api_key),
+        provider=OpenAIProvider(base_url=base_url, api_key=api_key),
     )
 
 
