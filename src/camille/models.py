@@ -143,8 +143,25 @@ class CustomCredentials(models.Model):
     user = models.OneToOneField(
         User, on_delete=models.CASCADE, related_name="custom_credentials"
     )
-    url = models.URLField(max_length=255, default="http://localhost:11434/v1")
+    url = models.URLField(
+        max_length=255,
+        default="http://localhost:11434/v1",
+        help_text="OpenAI-compatible endpoint used by the LLM model.",
+    )
     api_key = EncryptedCharField(max_length=255, null=True, blank=True)
+    image_url = models.URLField(
+        max_length=255,
+        blank=True,
+        help_text="OpenAI-compatible endpoint used by the image model. "
+        "Leave empty to use the same endpoint and API key as the LLM model.",
+    )
+    image_api_key = EncryptedCharField(max_length=255, null=True, blank=True)
+
+    def image_endpoint(self) -> tuple[str, str | None]:
+        """Return the (url, api_key) pair to use for the image model."""
+        if self.image_url:
+            return self.image_url, self.image_api_key
+        return self.url, self.api_key
 
 
 class MattermostConversation(models.Model):
