@@ -33,6 +33,7 @@ from camille.models import (
     GoogleGLACredentials,
     MattermostBinding,
     MistralCredentials,
+    ZulipBinding,
 )
 
 
@@ -148,6 +149,55 @@ class MattermostBindCreateView(LoginRequiredMixin, TemplateView):
 
 class MattermostBindDeleteView(LoginRequiredMixin, DeleteView):
     model = MattermostBinding
+    success_url = reverse_lazy("home")
+
+    def get_object(self, queryset=None):
+        return self.model.objects.get(user=self.request.user)
+
+
+class ZulipBindCreateView(LoginRequiredMixin, TemplateView):
+    template_name = "camille/zulip_bind.html"
+
+    def get(self, request, *args, **kwargs):
+        # Check if user is already bound to a Zulip account
+        if ZulipBinding.objects.filter(user=self.request.user).exists():
+            kwargs["error"] = "Your account is already linked to a Zulip account."
+            return super().get(request, *args, **kwargs)
+
+        # Get token from query parameters
+        token = request.GET.get("token")
+        if token is None:
+            kwargs["error"] = "No token provided. Please use the link sent by the bot."
+            return super().get(request, *args, **kwargs)
+
+        # Validate token
+        signer = TimestampSigner()
+        try:
+            zulip_id = signer.unsign_object(token, max_age=60 * 5)["zulip_id"]
+        except SignatureExpired:
+            kwargs["error"] = (
+                "Token has expired. Please request a new link from the bot."
+            )
+            return super().get(request, *args, **kwargs)
+        except (BadSignature, KeyError):
+            kwargs["error"] = "Invalid token. Please use the link sent by the bot."
+            return super().get(request, *args, **kwargs)
+
+        # Check if zulip_id is already used
+        if ZulipBinding.objects.filter(zulip_id=zulip_id).exists():
+            kwargs["error"] = (
+                "This Zulip account is already linked to another user account."
+            )
+            return super().get(request, *args, **kwargs)
+
+        # Create binding
+        ZulipBinding.objects.create(user=self.request.user, zulip_id=zulip_id)
+
+        return super().get(request, *args, **kwargs)
+
+
+class ZulipBindDeleteView(LoginRequiredMixin, DeleteView):
+    model = ZulipBinding
     success_url = reverse_lazy("home")
 
     def get_object(self, queryset=None):

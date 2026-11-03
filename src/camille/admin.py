@@ -25,6 +25,12 @@ class MattermostBindingAdmin(admin.ModelAdmin):
     search_fields = ("user__username", "mm_id")
 
 
+@admin.register(models.ZulipBinding)
+class ZulipBindingAdmin(admin.ModelAdmin):
+    list_display = ("user", "zulip_id")
+    search_fields = ("user__username", "zulip_id")
+
+
 @admin.register(models.AgentPersonality)
 class AgentPersonalityAdmin(admin.ModelAdmin):
     list_display = ("user", "name")

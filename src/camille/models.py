@@ -35,6 +35,18 @@ class MattermostBinding(models.Model):
         return self.user.username
 
 
+class ZulipBinding(models.Model):
+    """Bind a Django user to a Zulip user for conversation tracking."""
+
+    user = models.OneToOneField(
+        User, on_delete=models.CASCADE, related_name="zulip_binding"
+    )
+    zulip_id = models.CharField(max_length=64, unique=True)
+
+    def __str__(self):
+        return self.user.username
+
+
 class AgentPersonality(models.Model):
     """Defines a personality for the AI agent, including a prompt template and description."""
 
@@ -180,6 +192,31 @@ class MattermostConversation(models.Model):
 class MattermostConversationRun(models.Model):
     conversation = models.ForeignKey(
         MattermostConversation, on_delete=models.CASCADE, related_name="runs"
+    )
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    messages_json = models.BinaryField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def messages(self) -> list[ModelMessage]:
+        return ModelMessagesTypeAdapter.validate_json(self.messages_json)
+
+
+class ZulipConversation(models.Model):
+    # "stream:<stream id>:<topic>" or "dm:<sorted user ids>"
+    key = models.CharField(max_length=512, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    async def amessages(self) -> list[ModelMessage]:
+        messages = []
+        async for run in self.runs.order_by("created_at"):
+            messages.extend(run.messages())
+
+        return messages
+
+
+class ZulipConversationRun(models.Model):
+    conversation = models.ForeignKey(
+        ZulipConversation, on_delete=models.CASCADE, related_name="runs"
     )
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     messages_json = models.BinaryField()

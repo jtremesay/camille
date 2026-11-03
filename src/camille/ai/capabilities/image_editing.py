@@ -91,7 +91,7 @@ class ImageEditingToolset(FunctionToolset):
                 image_ids: Identifiers of the reference images, in order. Use the
                     file identifier of an image previously generated, edited or
                     retrieved in the conversation (as given by "See file <id>"),
-                    or the Mattermost ID of a file attached by the user.
+                    or the file ID of a file attached by the user.
             """
             if not image_ids:
                 raise ModelRetry("At least one image ID is required")

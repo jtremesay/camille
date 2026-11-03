@@ -195,6 +195,11 @@ LOGOUT_REDIRECT_URL = "home"
 MATTERMOST_BASE_URL = environ.get("MATTERMOST_BASE_URL")
 MATTERMOST_API_TOKEN = environ.get("MATTERMOST_API_TOKEN")
 
+# Zulip settings
+ZULIP_SITE = environ.get("ZULIP_SITE")
+ZULIP_EMAIL = environ.get("ZULIP_EMAIL")
+ZULIP_API_KEY = environ.get("ZULIP_API_KEY")
+
 # Camille settings
 DEFAULT_PROMPT_TEMPLATE = """\
 You are {agent_name}, an Occitan non-binary anarcho-communist comrade.
