@@ -66,8 +66,8 @@ async def create_agent_from_config(
         *(capabilities or []),
     ]
 
-    # Default (empty) leaves the model's own behavior untouched
-    if config.thinking:
+    # None (Default) leaves the model's own behavior untouched
+    if config.thinking is not None:
         effort = False if config.thinking == "off" else config.thinking
         all_capabilities.append(Thinking(effort=effort))
 

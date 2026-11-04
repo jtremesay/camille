@@ -56,7 +56,7 @@ class AgentConfig(models.Model):
     """Configuration for the AI agent, including model, personality, and instructions."""
 
     class Thinking(models.TextChoices):
-        AUTO = "", "Default (recommended)"
+        __empty__ = "Default (recommended)"
         OFF = "off", "Off: fastest, no reasoning"
         LOW = "low", "Low: quick answers"
         MEDIUM = "medium", "Medium: balanced"
@@ -80,7 +80,7 @@ class AgentConfig(models.Model):
         "Reasoning",
         max_length=16,
         choices=Thinking.choices,
-        default=Thinking.AUTO,
+        null=True,
         blank=True,
         help_text="How much the model thinks before answering. "
         "More thinking gives better answers to hard questions, but is slower and costs more. "
