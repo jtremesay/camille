@@ -69,6 +69,29 @@
         </p>
       {% endif %}
     </div>
+
+    <!-- Zulip -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Zulip</span>
+      </div>
+      {% if request.user.zulip_binding %}
+        <div class="kv-grid">
+          <span class="kv-label">Linked ID</span>
+          <span class="kv-value">
+            {{ request.user.zulip_binding.zulip_id }}
+            <span class="badge badge-success">Connected</span>
+          </span>
+        </div>
+        <div class="mt-1">
+          <a href="{% url 'zulip_unbind' %}" class="text-danger" style="font-size: 0.85rem;">Unbind</a>
+        </div>
+      {% else %}
+        <p class="text-muted" style="font-size: 0.9rem;">
+          Not linked. Send <code>!/link</code> to the bot in a Zulip direct message to bind your account.
+        </p>
+      {% endif %}
+    </div>
   </div>
 
   <!-- Personalities -->

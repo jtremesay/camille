@@ -156,6 +156,17 @@ urlpatterns = [
         views.MattermostBindDeleteView.as_view(),
         name="mattermost_unbind",
     ),
+    # Zulip integration
+    path(
+        "zulip/bind/",
+        views.ZulipBindCreateView.as_view(),
+        name="zulip_bind",
+    ),
+    path(
+        "zulip/unbind/",
+        views.ZulipBindDeleteView.as_view(),
+        name="zulip_unbind",
+    ),
     path(
         "auth/passwordless/",
         views.PasswordlessLoginView.as_view(),
