@@ -20,7 +20,7 @@ import logfire
 from asgiref.sync import sync_to_async
 from ddgs.ddgs import DDGS, DDGSException
 from pydantic_ai import Agent
-from pydantic_ai.capabilities import AbstractCapability, ImageGeneration
+from pydantic_ai.capabilities import AbstractCapability, ImageGeneration, Thinking
 from pydantic_ai.common_tools.duckduckgo import duckduckgo_search_tool
 from pydantic_ai.common_tools.web_fetch import web_fetch_tool
 
@@ -65,6 +65,11 @@ async def create_agent_from_config(
         CurrentTimeCapability(),
         *(capabilities or []),
     ]
+
+    # Default (empty) leaves the model's own behavior untouched
+    if config.thinking:
+        effort = False if config.thinking == "off" else config.thinking
+        all_capabilities.append(Thinking(effort=effort))
 
     if config.model_image:
         user = await sync_to_async(getattr)(config, "user")

@@ -55,6 +55,14 @@ class AgentPersonality(models.Model):
 class AgentConfig(models.Model):
     """Configuration for the AI agent, including model, personality, and instructions."""
 
+    class Thinking(models.TextChoices):
+        AUTO = "", "Default (recommended)"
+        OFF = "off", "Off: fastest, no reasoning"
+        LOW = "low", "Low: quick answers"
+        MEDIUM = "medium", "Medium: balanced"
+        HIGH = "high", "High: better on complex questions"
+        MAX = "max", "Maximum: slowest, most thorough"
+
     user = models.OneToOneField(
         User, on_delete=models.CASCADE, related_name="agent_config"
     )
@@ -67,6 +75,16 @@ class AgentConfig(models.Model):
         help_text="Optional image generation model (e.g. `google-gla:gemini-3.1-flash-image`). "
         "Leave empty to disable image generation. "
         "https://pydantic.dev/docs/ai/capabilities/image-generation/",
+    )
+    thinking = models.CharField(
+        "Reasoning",
+        max_length=16,
+        choices=Thinking.choices,
+        default=Thinking.AUTO,
+        blank=True,
+        help_text="How much the model thinks before answering. "
+        "More thinking gives better answers to hard questions, but is slower and costs more. "
+        "If unsure, keep Default.",
     )
     personality = models.ForeignKey(
         AgentPersonality, on_delete=models.SET_NULL, null=True, blank=True
