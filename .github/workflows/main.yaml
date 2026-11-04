@@ -24,6 +24,9 @@ jobs:
         name: Run tests
         # For example, using `pytest`
         run: uv run camille test
+        env:
+          SECRET_KEY: sk-insecure
+          SALT_KEY: sk-insecure
 
   build:
     runs-on: ubuntu-latest
