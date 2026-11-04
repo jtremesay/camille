@@ -16,8 +16,9 @@
 
 import random
 import re
-from asyncio import Task, create_task, sleep
-from collections.abc import Mapping
+from asyncio import CancelledError, Task, create_task, sleep
+from collections.abc import AsyncIterator, Mapping
+from contextlib import asynccontextmanager, suppress
 from dataclasses import dataclass
 from datetime import datetime
 from json import dumps
@@ -48,6 +49,9 @@ from camille.models import AgentConfig, ZulipConversation
 
 # Zulip refuses messages longer than this
 MAX_MESSAGE_LENGTH = 10000
+
+# Zulip clients forget a typing indicator after 15s unless it is renewed
+TYPING_RENEW_PERIOD = 10
 
 # Links to uploaded files, as written in the raw markdown of a message
 UPLOAD_LINK_RE = re.compile(r"\[([^\]]*)\]\((/user_uploads/[^)\s]+)\)")
@@ -290,14 +294,15 @@ class Zulip:
                 key=target.key
             )
 
-            await self.user_typing(target)
-
-            async with agent.iter(
-                dumps(user_prompt),
-                deps=deps,
-                model=model,
-                message_history=await conversation.amessages(),
-            ) as run:
+            async with (
+                self.typing(target),
+                agent.iter(
+                    dumps(user_prompt),
+                    deps=deps,
+                    model=model,
+                    message_history=await conversation.amessages(),
+                ) as run,
+            ):
                 async for node in run:
                     if agent.is_call_tools_node(node):
                         # Upload the files first so they can be linked in the
@@ -365,16 +370,39 @@ class Zulip:
                 logfire.error("Failed to send Zulip message: {error}", error=str(e))
                 return
 
-    async def user_typing(self, target: Target) -> None:
+    @asynccontextmanager
+    async def typing(self, target: Target) -> AsyncIterator[None]:
+        """Show the typing indicator while the body runs.
+
+        Zulip expires the indicator unless it is renewed regularly, and keeps
+        showing it until it expires or is explicitly stopped.
+        """
+
+        async def keep_typing():
+            while True:
+                await self.user_typing(target, "start")
+                await sleep(TYPING_RENEW_PERIOD)
+
+        task = create_task(keep_typing())
+        try:
+            yield
+        finally:
+            task.cancel()
+            # Wait for a pending "start" so it can't arrive after the "stop"
+            with suppress(CancelledError):
+                await task
+            await self.user_typing(target, "stop")
+
+    async def user_typing(self, target: Target, op: str) -> None:
         if target.is_direct:
             data = {
-                "op": "start",
+                "op": op,
                 "type": "private",
                 "to": dumps([i for i in target.participant_ids if i != self.me_id]),
             }
         else:
             data = {
-                "op": "start",
+                "op": op,
                 "type": "stream",
                 "stream_id": target.stream_id,
                 "topic": target.topic,
