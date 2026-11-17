@@ -6,6 +6,8 @@ RUN apk add --no-cache \
     chromium \
     nodejs
 
+ENV PLAYWRIGHT_NODEJS_PATH=/usr/bin/node
+
 # Install uv
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
