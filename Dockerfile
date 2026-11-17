@@ -3,19 +3,6 @@ FROM ubuntu:latest
 # Install GCC and other dependencies
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     build-essential \
-    libasound2t64 \
-    libatk-bridge2.0-0t64 \
-    libatk1.0-0t64 \
-    libgbm1 \
-    libglib2.0-0t64 \
-    libnspr4 \
-    libnss3 \
-    libxcomposite1 \
-    libxdamage1 \
-    libxrandr2 \
-    libxfixes3 \
-    libxkbcommon0 \
-    nodejs \
     && rm -rf /var/lib/apt/lists/*
 
 # Install uv
@@ -33,10 +20,6 @@ ENV UV_FROZEN=1
 ENV UV_NO_DEV=1
 COPY pyproject.toml uv.lock ./
 RUN uv sync --no-install-project
-
-# Install Playwright browsers
-ENV PLAYWRIGHT_NODEJS_PATH=/usr/bin/node
-RUN uv run --no-sync playwright install chromium
 
 # Remove build dependencies
 RUN apt-get remove -y build-essential && apt-get autoremove -y && rm -rf /var/lib/apt/lists/*

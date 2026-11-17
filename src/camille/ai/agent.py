@@ -23,7 +23,6 @@ from pydantic_ai import Agent
 from pydantic_ai.capabilities import AbstractCapability, ImageGeneration, Thinking
 from pydantic_ai.common_tools.duckduckgo import duckduckgo_search_tool
 from pydantic_ai.common_tools.web_fetch import web_fetch_tool
-from pydantic_ai_harness.playwright import PlaywrightBrowser
 
 from camille.ai.capabilities.agpl import AGPLCapability
 from camille.ai.capabilities.conversation import ConversationCapability
@@ -64,7 +63,6 @@ async def create_agent_from_config(
         InstructionsCapability(),
         MemoryCapability(),
         CurrentTimeCapability(),
-        PlaywrightBrowser(),
         *(capabilities or []),
     ]
 
