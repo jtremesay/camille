@@ -22,6 +22,7 @@ ENV UV_FROZEN=1
 ENV UV_NO_DEV=1
 COPY pyproject.toml uv.lock ./
 RUN uv sync --no-install-project
+RUN playwright install chromium
 
 # Remove build dependencies
 RUN apk del build-base

@@ -64,7 +64,7 @@ async def create_agent_from_config(
         InstructionsCapability(),
         MemoryCapability(),
         CurrentTimeCapability(),
-        PlaywrightBrowser(auto_install_chromium=True),
+        PlaywrightBrowser(),
         *(capabilities or []),
     ]
 
