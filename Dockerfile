@@ -3,9 +3,18 @@ FROM alpine:latest
 # Install GCC and other dependencies
 RUN apk add --no-cache \
     build-base \
-    nodejs
+    nodejs \
+    npm
 
+# Install playwright
+RUN npm install -g playwright
+RUN cat > /usr/bin/playwright <<'EOF'
+#!/bin/sh
+exec npx playwright "$@"
+EOF
+RUN chmod +x /usr/bin/playwright
 ENV PLAYWRIGHT_NODEJS_PATH=/usr/bin/node
+RUN playwright install chromium
 
 # Install uv
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
@@ -22,7 +31,6 @@ ENV UV_FROZEN=1
 ENV UV_NO_DEV=1
 COPY pyproject.toml uv.lock ./
 RUN uv sync --no-install-project
-RUN playwright install chromium
 
 # Remove build dependencies
 RUN apk del build-base
