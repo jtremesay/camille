@@ -1,9 +1,22 @@
-FROM alpine:latest
+FROM ubuntu:latest
 
 # Install GCC and other dependencies
-RUN apk add --no-cache \
-    build-base \
-    nodejs
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    build-essential \
+    libasound2t64 \
+    libatk-bridge2.0-0t64 \
+    libatk1.0-0t64 \
+    libgbm1 \
+    libglib2.0-0t64 \
+    libnspr4 \
+    libnss3 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxrandr2 \
+    libxfixes3 \
+    libxkbcommon0 \
+    nodejs \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install uv
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
@@ -26,7 +39,7 @@ ENV PLAYWRIGHT_NODEJS_PATH=/usr/bin/node
 RUN uv run --no-sync playwright install chromium
 
 # Remove build dependencies
-RUN apk del build-base
+RUN apt-get remove -y build-essential && apt-get autoremove -y && rm -rf /var/lib/apt/lists/*
 
 # Copy source
 COPY entrypoint.sh README.md ./
