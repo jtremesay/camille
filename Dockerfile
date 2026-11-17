@@ -3,7 +3,6 @@ FROM alpine:latest
 # Install GCC and other dependencies
 RUN apk add --no-cache \
     build-base \
-    chromium \
     nodejs
 
 ENV PLAYWRIGHT_NODEJS_PATH=/usr/bin/node
