@@ -3,6 +3,7 @@ FROM ubuntu:latest
 # Install GCC and other dependencies
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     build-essential \
+    ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
 # Install uv
