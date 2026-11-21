@@ -8,10 +8,10 @@ authors = [
     { name = "Jonathan Tremesaygues", email = "jonathan@tremesaygues.eu" },
 ]
 requires-python = ">=3.15"
-dependencies = []
+dependencies = ["django>=6.1.3"]
 
 [project.scripts]
-camille-v7 = "camille_v7:main"
+camille = "camille.manage:main"
 
 [build-system]
 requires = ["uv_build>=0.13.9,<0.14.0"]
