@@ -1,0 +1,17 @@
+[project]
+name = "camille-v7"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Jonathan Tremesaygues", email = "jonathan@tremesaygues.eu" }
+]
+requires-python = ">=3.15"
+dependencies = []
+
+[project.scripts]
+camille-v7 = "camille_v7:main"
+
+[build-system]
+requires = ["uv_build>=0.13.9,<0.14.0"]
+build-backend = "uv_build"
