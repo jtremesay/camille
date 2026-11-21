@@ -1,8 +1,9 @@
 [project]
 name = "camille"
 version = "7.0.0"
-description = "Add your description here"
+description = "A chatbot"
 readme = "README.md"
+license = "AGPL-3.0-or-later"
 authors = [
     { name = "Jonathan Tremesaygues", email = "jonathan@tremesaygues.eu" },
 ]
