@@ -1,0 +1,29 @@
+name: Deploy Camille
+description: Restart Camille services on the production host over SSH
+
+inputs:
+  ssh_private_key:
+    description: Private key for the deployment SSH account
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Configure SSH
+      shell: bash
+      env:
+        SSH_PRIVATE_KEY: ${{ inputs.ssh_private_key }}
+      run: |
+        mkdir -p ~/.ssh
+        chmod 700 ~/.ssh
+        printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/alix-gh-ci
+        chmod 600 ~/.ssh/alix-gh-ci
+        ssh-keyscan -H -p 2210 jtremesay.eu >> ~/.ssh/known_hosts
+
+    - name: Restart Camille services
+      shell: bash
+      run: |
+        ssh -i ~/.ssh/alix-gh-ci -p 2210 ci@jtremesay.eu \
+          sudo /run/current-system/sw/bin/systemctl restart \
+          podman-camille-web.service podman-camille-mattermost.service
+
