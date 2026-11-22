@@ -1,3 +1,0 @@
-[submodule "thirds/pydantic_skills"]
-	path = thirds/pydantic_skills
-	url = https://github.com/pydantic/skills.git
