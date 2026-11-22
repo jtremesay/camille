@@ -20,14 +20,14 @@ import logfire
 from asgiref.sync import sync_to_async
 from ddgs.ddgs import DDGS, DDGSException
 from pydantic_ai import Agent
-from pydantic_ai.capabilities import AbstractCapability, ImageGeneration, Thinking
+from pydantic_ai.capabilities import AbstractCapability, Thinking
 from pydantic_ai.common_tools.duckduckgo import duckduckgo_search_tool
 from pydantic_ai.common_tools.web_fetch import web_fetch_tool
 
 from camille.ai.capabilities.agpl import AGPLCapability
 from camille.ai.capabilities.conversation import ConversationCapability
 from camille.ai.capabilities.current_time import CurrentTimeCapability
-from camille.ai.capabilities.image_editing import ImageEditingCapability
+from camille.ai.capabilities.image import ImageCapability
 from camille.ai.capabilities.instructions import InstructionsCapability
 from camille.ai.capabilities.memory import MemoryCapability
 from camille.ai.capabilities.personality import PersonalityCapability
@@ -74,10 +74,7 @@ async def create_agent_from_config(
     if config.model_image:
         user = await sync_to_async(getattr)(config, "user")
         image_model = await create_image_model_for_user(user, config.model_image)
-        all_capabilities += [
-            ImageGeneration(native=False, fallback_image_model=image_model),
-            ImageEditingCapability(image_model),
-        ]
+        all_capabilities.append(ImageCapability(image_model))
 
     return Agent(
         deps_type=Deps,
